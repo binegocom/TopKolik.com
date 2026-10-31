@@ -1,5 +1,7 @@
 # Staff MFA and session boundary (P03-006)
 
+**Backend verified:** https://github.com/binegocom/TopKolik.com/actions/runs/41250991386 — 67 Laravel tests, 486 assertions, SMTP/HTTP and editorial guard passed. P03-006 is done at the backend slice; P03-GATE and release are not.
+
 TOTP is the mandatory second factor for approved staff. The RFC 6238 implementation uses the maintained `pragmarx/google2fa:^9.1` package, not custom OTP cryptography. Staff secrets and pending secrets use Laravel encrypted model casts, backed by `APP_KEY`. Never log or display them outside a verified MFA setup response.
 
 ## Enrollment
