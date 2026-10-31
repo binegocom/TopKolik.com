@@ -32,7 +32,7 @@ Policy unit/feature tests use isolated PostgreSQL test records and internal type
 
 ## P03-007 support-ticket read slice
 
-- A forward-only migration creates empty `support_tickets` storage with FK assignment to `staff_members`, an indexed assignment/status lookup, and a PostgreSQL status check. No runtime tickets are fabricated or seeded.
+- A forward-only migration creates empty `support_tickets` storage with FK assignment to `staff_members`, an indexed assignment/status lookup, encrypted subject/body Eloquent casts, and a PostgreSQL status check. No runtime tickets are fabricated or seeded.
 - `GET /api/v1/staff/support/tickets/{ticket}` requires a valid short-lived staff bearer session, verified MFA and an active staff member. The query filters `assigned_staff_id` **before** authorization; another operator's or unassigned ticket yields 404. The Gate additionally checks the persisted support role and allowed status.
 - Responses contain only the assigned ticket's content and status, and are marked `Cache-Control: no-store, private`. There is no ticket list, create, reply, reassignment, export, or public API yet.
 - Feature tests cover assignment IDOR, role changes, deactivation, expired sessions, reader tokens and non-cacheability against disposable PostgreSQL in CI.
