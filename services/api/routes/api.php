@@ -74,5 +74,9 @@ Route::prefix('staff')->group(function (): void {
         // No public ticket discovery: SQL assignment scope and Gate both enforce access.
         Route::get('/support/tickets/{ticket}', [StaffSupportTicketController::class, 'show'])
             ->whereNumber('ticket');
+        Route::post('/support/tickets/{ticket}/replies', [StaffSupportTicketController::class, 'reply'])
+            ->whereNumber('ticket')->middleware('throttle:20,1');
+        Route::post('/support/tickets/{ticket}/escalate', [StaffSupportTicketController::class, 'escalate'])
+            ->whereNumber('ticket')->middleware('throttle:6,1');
     });
 });
