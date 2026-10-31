@@ -78,4 +78,27 @@ final class StaffAuthorizationPolicy
         // their scopes depend on P03-008 and the finance dual-approval model.
         return false;
     }
+
+    /**
+     * Creation has no persisted resource ID yet; enforce a separate exact
+     * editor privilege before the first insert. No general admin grant.
+     */
+    public function canCreateDraft(Authenticatable $principal, ?PersonalAccessToken $token): bool
+    {
+        if (! $principal instanceof StaffMember || ! $token
+            || $token->expires_at?->isPast()
+            || ! $token->can('staff:session')
+            || $token->tokenable_type !== $principal->getMorphClass()
+            || (string) $token->tokenable_id !== (string) $principal->getKey()) {
+            return false;
+        }
+
+        $staff = StaffMember::query()->find($principal->getKey());
+
+        return $staff !== null
+            && $staff->role === 'editor'
+            && $staff->is_active
+            && $staff->email_verified_at !== null
+            && $staff->mfa_enrolled_at !== null;
+    }
 }
