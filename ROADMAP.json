@@ -703,7 +703,7 @@
       "id": "P03-001",
       "phase": "P03",
       "title": "Implement consumer registration and email verification",
-      "status": "in_review",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P02-GATE"
@@ -724,15 +724,26 @@
           "command": "php artisan test --filter=ReaderAuthenticationTest",
           "result": "API registration and signed verification tests pass in PR CI; actual SMTP delivery remains untested",
           "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41246890524"
+        },
+        {
+          "type": "verification",
+          "command": "bash scripts/check-reader-email-delivery.sh",
+          "result": "Real HTTP registration returned 202 and signed verification email was received via SMTP in Mailpit; CI succeeded",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41247084594"
+        },
+        {
+          "type": "revision",
+          "value": "b8e5eb3756e62d9c291f0eff600ad7cea80058cb",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/21"
         }
       ],
-      "verified_at": null,
+      "verified_at": "2026-10-31",
       "owner": null,
       "issue_url": null,
       "pr_url": "https://github.com/binegocom/TopKolik.com/pull/21",
       "limitations": [
         "Production SMTP delivery, actual iOS/Android client integration and staff MFA are outside this slice. P02 and P01 gates remain open.",
-        "P03-001 remains in_review until Mailpit SMTP delivery and verification-link receipt are tested against a running Laravel API, and public client link handling is implemented."
+        "Backend registration and email verification are complete; user-friendly verification page in the future web/mobile client and production SMTP credentials remain separate release prerequisites."
       ]
     },
     {

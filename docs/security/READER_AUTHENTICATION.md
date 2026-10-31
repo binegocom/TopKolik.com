@@ -20,11 +20,14 @@ Email verification links are valid for an hour and use a signed GET URL. Email s
 
 ## Pending
 
+Backend auth features tested here do not mean a complete end-user app; production SMTP and polished verification presentation are part of the web/mobile launch gates.
+
+
 Password reset/revocation of all issued tokens, device management, staff invite-only identities, mandatory MFA, security event ledger, privacy/export/delete, and cross-advertiser authorization. Do not treat P03-GATE as complete.
 
 ## Verification
 
-CI evidence: https://github.com/binegocom/TopKolik.com/actions/runs/41246890524 — 15 Laravel tests (52 assertions) and 17 stand-alone publication guard tests passed. P03-002 is verified, P03-001 is still in review pending real SMTP delivery.
+CI evidence: https://github.com/binegocom/TopKolik.com/actions/runs/41246890524 — 15 Laravel tests (52 assertions) and 17 stand-alone publication guard tests passed. Both P03-001 and P03-002 are backend-verified. Email delivery confirmed by real Mailpit SMTP in Actions run https://github.com/binegocom/TopKolik.com/actions/runs/41247084594. Production mail delivery and UI flows remain pending.
 
 
 See `services/api/tests/Feature/ReaderAuthenticationTest.php`. CI must confirm actual PostgreSQL-backed migrations and Sanctum token persistence, email notification intent, signed URL protection, wrong credentials, logout revocation, anonymous access, and weak password rejection.
