@@ -114,4 +114,7 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    // Trusted frontend reset form URL; empty means reset mail dispatch is disabled.
+    'reader_password_reset_url' => env('READER_PASSWORD_RESET_URL'),
+
 ];
