@@ -55,6 +55,13 @@ final class StaffSupportTicketController extends Controller
                 'status' => $record->status,
                 'created_at' => $record->created_at?->toIso8601String(),
                 'updated_at' => $record->updated_at?->toIso8601String(),
+                'escalated_at' => $record->escalated_at?->toIso8601String(),
+                'replies' => $record->replies()->orderBy('id')->get()
+                    ->map(static fn (SupportTicketReply $reply): array => [
+                        'id' => $reply->getKey(),
+                        'message' => $reply->message,
+                        'created_at' => $reply->created_at?->toIso8601String(),
+                    ])->all(),
             ],
         ])->header('Cache-Control', 'no-store, private');
     }

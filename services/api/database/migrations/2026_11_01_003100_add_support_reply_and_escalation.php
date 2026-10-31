@@ -19,7 +19,7 @@ return new class extends Migration
             $table->uuid('idempotency_key');
             $table->char('message_fingerprint', 64);
             $table->text('message');
-            $table->timestampTz('created_at');
+            $table->timestampTz('created_at')->useCurrent();
 
             $table->unique(['support_ticket_id', 'idempotency_key'], 'support_reply_idempotency_unique');
             $table->index(['support_ticket_id', 'id'], 'support_reply_ticket_index');
