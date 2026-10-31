@@ -16,9 +16,9 @@ final class ReplaceReaderFavoritesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'sport_ids' => ['required', 'array', 'list', 'max:30'],
+            'sport_ids' => ['present', 'array', 'list', 'max:30'],
             'sport_ids.*' => ['required', 'integer', 'distinct', 'exists:sports,id'],
-            'team_ids' => ['required', 'array', 'list', 'max:100'],
+            'team_ids' => ['present', 'array', 'list', 'max:100'],
             'team_ids.*' => ['required', 'integer', 'distinct', 'exists:teams,id'],
             'user_id' => ['missing'],
         ];
