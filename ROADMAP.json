@@ -925,7 +925,7 @@
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/25",
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/26",
       "limitations": [
         "Pre-production MFA implementation on feature branch awaiting PostgreSQL test and security review; admin web BFF, staff authorization matrix and audit ledger are separate open tasks. No production activation."
       ]

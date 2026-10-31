@@ -59,12 +59,12 @@ final class StaffMfaTest extends TestCase
     {
         [$staff, $grant] = $this->acceptInvite();
         $setup = $this->postJson('/api/v1/staff/mfa/setup', ['setup_token' => $grant])
-            ->assertOk()->assertHeader('Cache-Control', 'no-store')->json();
+            ->assertOk()->assertHeader('Cache-Control', 'no-store, private')->json();
         $secret = $setup['secret'];
         $code = app(Google2FA::class)->getCurrentOtp($secret);
         $confirmed = $this->postJson('/api/v1/staff/mfa/confirm', [
             'setup_token' => $grant, 'code' => $code,
-        ])->assertOk()->assertHeader('Cache-Control', 'no-store')->json();
+        ])->assertOk()->assertHeader('Cache-Control', 'no-store, private')->json();
 
         return [$staff->fresh(), $secret, $code, $confirmed['recovery_codes'], $grant];
     }
@@ -167,7 +167,7 @@ final class StaffMfaTest extends TestCase
 
         $response = $this->postJson('/api/v1/staff/auth/login', [
             ...$login, 'recovery_code' => $codes[0],
-        ])->assertOk()->assertHeader('Cache-Control', 'no-store');
+        ])->assertOk()->assertHeader('Cache-Control', 'no-store, private');
         $token = $response->json('access_token');
         $this->assertNotEmpty($token);
         $this->assertSame(['staff:session'], $staff->fresh()->tokens()->latest('id')->first()->abilities);
