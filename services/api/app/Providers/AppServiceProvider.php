@@ -5,6 +5,11 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use Illuminate\Auth\Notifications\ResetPassword;
+use App\Authorization\StaffAuthorizationPolicy;
+use App\Authorization\StaffResourceContext;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Laravel\Sanctum\PersonalAccessToken;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Http\Request;
@@ -19,6 +24,15 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Gate::define('staff-resource', function (
+            Authenticatable $principal,
+            string $action,
+            StaffResourceContext $resource,
+            PersonalAccessToken $token,
+        ): bool {
+            return app(StaffAuthorizationPolicy::class)->allows($principal, $action, $resource, $token);
+        });
+
         RateLimiter::for('reader-register', fn (Request $request) => Limit::perMinute(5)
             ->by('register:'.($request->ip() ?? 'unknown')));
 
