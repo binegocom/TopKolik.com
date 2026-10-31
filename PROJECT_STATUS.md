@@ -62,6 +62,11 @@
 - Production email provider setup, password reset, web cookie+CSRF auth, staff RBAC/MFA and reader UI are **not complete**.
 - P03-001 and P03-002 are backend-complete with recorded tests; P03-GATE is **not complete** (password reset, staff MFA/RBAC, browser session, privacy operations pending).
 
+## P03-003 password reset — in progress
+
+- Laravel password broker API, generic anti-enumeration responses, hashed expiring tokens, per-account and IP throttle, PostgreSQL row locks, session and Sanctum token revocation are in implementation review.
+- Negative tests include token expiry, replay, cross-account token use and unsafe frontend reset URLs. Final GitHub Actions evidence is pending; do not count this as done yet.
+
 ## Open blocking decisions
 
 - [x] Repository created: https://github.com/binegocom/TopKolik.com — baseline planning PR #1 merged; engineering code remains on an independent review PR.
