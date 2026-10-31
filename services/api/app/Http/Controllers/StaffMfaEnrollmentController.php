@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\StaffMember;
+use App\Services\SecurityAuditRecorder;
 use App\Services\StaffMfaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,14 +45,14 @@ final class StaffMfaEnrollmentController extends Controller
         ]);
     }
 
-    public function confirm(Request $request, StaffMfaService $service): JsonResponse
+    public function confirm(Request $request, StaffMfaService $service, SecurityAuditRecorder $audit): JsonResponse
     {
         $data = $request->validate([
             'setup_token' => ['required', 'string', 'size:64', 'regex:/^[a-f0-9]{64}$/'],
             'code' => ['required', 'string', 'regex:/^[0-9]{6}$/'],
         ]);
 
-        $codes = DB::transaction(static function () use ($data, $service): ?array {
+        $codes = DB::transaction(static function () use ($data, $service, $audit, $request): ?array {
             $member = self::findLockedMember($data['setup_token']);
 
             if (! $member || $member->mfa_enrolled_at || ! $member->mfa_pending_secret
@@ -73,7 +74,10 @@ final class StaffMfaEnrollmentController extends Controller
                 'mfa_last_step' => $step,
             ])->save();
 
-            return $service->issueRecoveryCodes($member);
+            $codes = $service->issueRecoveryCodes($member);
+            $audit->record($member, 'staff.mfa.enrolled', 'staff_member', (int) $member->getKey(), $request->attributes->get('request_id'));
+
+            return $codes;
         });
 
         if ($codes === null) {

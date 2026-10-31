@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\StaffMember;
 use App\Services\StaffMfaService;
+use App\Services\SecurityAuditRecorder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +15,7 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 final class StaffAuthController extends Controller
 {
-    public function login(Request $request, StaffMfaService $mfa): JsonResponse
+    public function login(Request $request, StaffMfaService $mfa, SecurityAuditRecorder $audit): JsonResponse
     {
         $data = $request->validate([
             'email' => ['required', 'email:rfc', 'max:254'],
@@ -30,7 +31,7 @@ final class StaffAuthController extends Controller
             return response()->json(['message' => 'Invalid credentials or MFA.'], 401);
         }
 
-        $token = DB::transaction(static function () use ($candidate, $data, $mfa): ?string {
+        $token = DB::transaction(static function () use ($candidate, $data, $mfa, $audit, $request): ?string {
             $staff = StaffMember::query()->whereKey($candidate->getKey())->lockForUpdate()->firstOrFail();
             if (! $staff->is_active || ! $staff->mfa_enrolled_at || ! $staff->email_verified_at
                 || ! Hash::check($data['password'], $staff->password)
@@ -38,7 +39,10 @@ final class StaffAuthController extends Controller
                 return null;
             }
 
-            return $staff->createToken('staff-session', ['staff:session'], now()->addMinutes(15))->plainTextToken;
+            $token = $staff->createToken('staff-session', ['staff:session'], now()->addMinutes(15))->plainTextToken;
+            $audit->record($staff, 'staff.session.started', 'staff_member', (int) $staff->getKey(), $request->attributes->get('request_id'));
+
+            return $token;
         });
 
         if ($token === null) {
@@ -68,7 +72,7 @@ final class StaffAuthController extends Controller
         ]);
     }
 
-    public function logout(Request $request): JsonResponse
+    public function logout(Request $request, SecurityAuditRecorder $audit): JsonResponse
     {
         // The guard may cache the previous request's currentAccessToken in
         // long-lived workers and tests. Revoke the *presented* token only.
@@ -79,12 +83,16 @@ final class StaffAuthController extends Controller
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 
-        $token->delete();
+        DB::transaction(static function () use ($token, $request, $audit): void {
+            $token->delete();
+            $staff = $request->user();
+            $audit->record($staff, 'staff.session.ended', 'staff_member', (int) $staff->getKey(), $request->attributes->get('request_id'));
+        });
 
         return response()->json(['message' => 'Signed out.']);
     }
 
-    public function stepUp(Request $request, StaffMfaService $mfa): JsonResponse
+    public function stepUp(Request $request, StaffMfaService $mfa, SecurityAuditRecorder $audit): JsonResponse
     {
         $data = $request->validate([
             'code' => ['nullable', 'string', 'regex:/^[0-9]{6}$/'],
@@ -92,18 +100,21 @@ final class StaffAuthController extends Controller
         ]);
         $staff = $request->user();
 
-        $token = DB::transaction(static function () use ($staff, $data, $mfa): ?string {
+        $token = DB::transaction(static function () use ($staff, $data, $mfa, $audit, $request): ?string {
             $locked = StaffMember::query()->whereKey($staff->getKey())->lockForUpdate()->firstOrFail();
             if (! $locked->is_active || ! $locked->mfa_enrolled_at
                 || ! $mfa->consumeFactor($locked, $data['code'] ?? null, $data['recovery_code'] ?? null)) {
                 return null;
             }
 
-            return $locked->createToken(
+            $token = $locked->createToken(
                 'staff-step-up',
                 ['staff:session', 'staff:step-up'],
                 now()->addMinutes(5),
             )->plainTextToken;
+            $audit->record($locked, 'staff.session.stepped_up', 'staff_member', (int) $locked->getKey(), $request->attributes->get('request_id'));
+
+            return $token;
         });
 
         if ($token === null) {
