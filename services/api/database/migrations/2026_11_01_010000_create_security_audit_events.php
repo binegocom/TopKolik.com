@@ -28,7 +28,7 @@ return new class extends Migration
         // still drop triggers; production requires separate DB privileges and
         // external log shipping for protection against privileged tampering.
         DB::unprepared(<<<'SQL'
-CREATE FUNCTION reject_security_audit_mutation() RETURNS trigger
+CREATE OR REPLACE FUNCTION reject_security_audit_mutation() RETURNS trigger
 LANGUAGE plpgsql AS $$
 BEGIN
     RAISE EXCEPTION 'security audit events are append-only';
