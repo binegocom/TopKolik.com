@@ -7,6 +7,8 @@ use App\Http\Controllers\ReaderEmailVerificationController;
 use App\Http\Controllers\ReaderPasswordResetController;
 use App\Http\Controllers\ReaderProfileController;
 use App\Http\Controllers\StaffInvitationAcceptanceController;
+use App\Http\Controllers\StaffMfaEnrollmentController;
+use App\Http\Controllers\StaffAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/status', fn () => response()->json(['service' => 'topkolik-api', 'status' => 'operational']))
@@ -52,3 +54,20 @@ Route::middleware('auth:sanctum')->prefix('me')->group(function (): void {
 // Public acceptance only; never expose invitation issuance, staff login or role mutation.
 Route::post('/staff/invitations/accept', StaffInvitationAcceptanceController::class)
     ->middleware('throttle:staff-invite-accept');
+
+
+Route::prefix('staff')->group(function (): void {
+    Route::post('/mfa/setup', [StaffMfaEnrollmentController::class, 'setup'])
+        ->middleware('throttle:staff-mfa-setup');
+    Route::post('/mfa/confirm', [StaffMfaEnrollmentController::class, 'confirm'])
+        ->middleware('throttle:staff-mfa-confirm');
+    Route::post('/auth/login', [StaffAuthController::class, 'login'])
+        ->middleware('throttle:staff-login');
+
+    Route::middleware(['auth:sanctum', 'staff.session'])->group(function (): void {
+        Route::get('/auth/me', [StaffAuthController::class, 'me']);
+        Route::post('/auth/logout', [StaffAuthController::class, 'logout']);
+        Route::post('/auth/step-up', [StaffAuthController::class, 'stepUp'])
+            ->middleware('throttle:staff-step-up');
+    });
+});

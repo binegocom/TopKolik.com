@@ -11,7 +11,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Str;
 
 final class StaffInvitationAcceptanceController extends Controller
 {
