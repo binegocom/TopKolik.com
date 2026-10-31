@@ -842,11 +842,6 @@
       ],
       "evidence": [
         {
-          "type": "file",
-          "path": "docs/security/READER_PROFILE_PREFERENCES.md",
-          "validation": "Architecture/contract recorded; CI tests pending."
-        },
-        {
           "type": "verification",
           "command": "php artisan migrate --force && php artisan test",
           "result": "39 Laravel tests (212 assertions) passed against disposable PostgreSQL; 13 new feature scenarios cover own account permissions, localization, referential favorites, privacy and consent defaults, atomic replacement, negative IDOR cases.",
