@@ -23,6 +23,7 @@ export MAIL_HOST=127.0.0.1
 export MAIL_PORT=51025
 export MAIL_FROM_ADDRESS=verify@example.test
 export MAIL_FROM_NAME=Topkolik
+export READER_PASSWORD_RESET_URL="http://127.0.0.1:$PORT/reset-password"
 
 cd "$ROOT/services/api"
 php artisan serve --host=127.0.0.1 --port="$PORT" >"$TEMP/server.log" 2>&1 &
@@ -79,4 +80,27 @@ for attempt in range(30):
     time.sleep(1)
 else:
     raise SystemExit("FAIL: Mailpit did not receive the signed Laravel verification email.")
+
+forgot_request = urllib.request.Request(
+    f"http://127.0.0.1:{port}/api/v1/auth/password/forgot",
+    data=json.dumps({"email": email}).encode(),
+    headers={"Content-Type": "application/json", "Accept": "application/json"},
+    method="POST",
+)
+with urllib.request.urlopen(forgot_request, timeout=5) as response:
+    assert response.status == 202, response.status
+    assert b"token" not in response.read(), "Reset token leaked in API response"
+
+for attempt in range(30):
+    try:
+        with urllib.request.urlopen("http://127.0.0.1:58025/view/latest.txt", timeout=3) as response:
+            message = response.read().decode("utf-8")
+        if "reset-password?token=" in message and "email=" in message:
+            print("PASS: Laravel sent a password reset notification over real SMTP to Mailpit.")
+            break
+    except (urllib.error.URLError, TimeoutError):
+        pass
+    time.sleep(1)
+else:
+    raise SystemExit("FAIL: Mailpit did not receive the password reset email.")
 PY

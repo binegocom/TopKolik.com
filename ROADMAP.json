@@ -790,7 +790,7 @@
       "id": "P03-003",
       "phase": "P03",
       "title": "Implement forgot/reset password",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P02-GATE"
@@ -799,12 +799,33 @@
       "acceptance_criteria": [
         "Token replay, account enumeration and rate-limit tests pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "26 Laravel feature/unit tests passed (99 assertions) on real disposable PostgreSQL; hashed tokens, expiration, replay, account enumeration, IP/account rate limits, and session revocation verified.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41247766322"
+        },
+        {
+          "type": "verification",
+          "command": "bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh",
+          "result": "Real Mailpit SMTP verification/reset notification sent; 17 publication guard tests pass; Composer audit reports no vulnerability advisories.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41247766322"
+        },
+        {
+          "type": "revision",
+          "value": "d43974a93fd429eabba09a184a55298400a1324b",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/22"
+        }
+      ],
+      "verified_at": "2026-10-31",
       "owner": null,
       "issue_url": null,
-      "pr_url": null,
-      "limitations": []
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/22",
+      "limitations": [
+        "Backend reset form URL must be configured to a deployed HTTPS client screen; current app has no web/mobile reset UI or production SMTP.",
+        "Backend feature is complete, but consumer reset form UI, production SMTP provider and actual iOS/Android device flows are not built; configured trusted URL is required before reset requests are enabled."
+      ]
     },
     {
       "id": "P03-004",

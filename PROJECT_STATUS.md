@@ -4,7 +4,7 @@
 
 **As of:** 2026-10-31  
 **Release:** Not started  
-**Tracked tasks:** 147 | **Documentation tasks done:** 3 | **Implementation done:** 3
+**Tracked tasks:** 147 | **Documentation tasks done:** 3 | **Implementation done:** 4
 
 ## Phase status
 
@@ -61,6 +61,12 @@
 - Latest GitHub Actions run passed 15 Laravel tests (52 assertions) and 17 editorial checks: https://github.com/binegocom/TopKolik.com/actions/runs/41246890524
 - Production email provider setup, password reset, web cookie+CSRF auth, staff RBAC/MFA and reader UI are **not complete**.
 - P03-001 and P03-002 are backend-complete with recorded tests; P03-GATE is **not complete** (password reset, staff MFA/RBAC, browser session, privacy operations pending).
+
+## P03-003 password reset backend — verified
+
+- **done:** Laravel broker with hashed expiring single-use reset token, per-account/IP throttling, PostgreSQL row lock, global Sanctum and DB session revocation.
+- CI evidence: https://github.com/binegocom/TopKolik.com/actions/runs/41247766322 — 26 passing Laravel tests (99 assertions), 17 editorial guard tests, real Mailpit SMTP reset message, successful Composer audit.
+- UI confirmation form, production SMTP and device flows remain separate unresolved release requirements. A trusted reset URL must be configured; default is fail closed.
 
 ## Open blocking decisions
 
