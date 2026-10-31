@@ -94,6 +94,12 @@
 - GitHub Actions run [41250002242](https://github.com/binegocom/TopKolik.com/actions/runs/41250002242) on commit `ad9e14b703400734fe2985beaf22729ea6e39a25`: **58 Laravel tests / 369 assertions passed** on disposable PostgreSQL and Redis; live HTTP and real Mailpit SMTP checks, Composer audit and 17 editorial guard cases passed. PR [#25](https://github.com/binegocom/TopKolik.com/pull/25).
 - Automated adversarial regression tests are not an independent penetration test. Production trusted-proxy configuration, Redis rate-limit topology, WAF and monitoring remain release checks; no production deployment is implied.
 
+## P03-006 staff MFA — verification pending
+
+- RFC 6238 TOTP enrollment, encrypted staff secrets, short-lived setup grant, 10 single-use hashed recovery codes, separately scoped 15-minute staff sessions and 5-minute step-up are implemented on an isolated feature branch.
+- Staff login requires operator activation following email proof and successful MFA. Reader bearer tokens are explicitly denied by staff route middleware.
+- CI acceptance and adversarial/recovery test evidence must pass before this task can be marked done; no staff admin privileges are available while RBAC is missing.
+
 ## Open blocking decisions
 
 - [x] Repository created: https://github.com/binegocom/TopKolik.com — baseline planning PR #1 merged; engineering code remains on an independent review PR.
