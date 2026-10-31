@@ -1,0 +1,3084 @@
+{
+  "project": "Topkolik",
+  "as_of": "2026-10-31",
+  "tracking_policy": {
+    "statuses": [
+      "todo",
+      "in_progress",
+      "blocked",
+      "in_review",
+      "done"
+    ],
+    "done_requires": "evidence file, test, commit/PR and acceptance; documentation evidence allowed only for docs",
+    "phase_gate": "All tasks complete and required acceptance verified; handoff criteria signed off",
+    "do_not_infer_completion": true,
+    "scope": "planning docs only; all implementation tasks not started",
+    "conditional_go_live": "license/legal approvals and production checks required"
+  },
+  "phases": [
+    {
+      "id": "P00",
+      "name": "Project blueprint and governance",
+      "status": "in_progress",
+      "gate": "P00-GATE",
+      "task_count": 4
+    },
+    {
+      "id": "P01",
+      "name": "Rights, provider discovery and legal foundations",
+      "status": "todo",
+      "gate": "P01-GATE",
+      "task_count": 10
+    },
+    {
+      "id": "P02",
+      "name": "Repository and engineering foundation",
+      "status": "todo",
+      "gate": "P02-GATE",
+      "task_count": 11
+    },
+    {
+      "id": "P03",
+      "name": "Authentication, roles and privacy",
+      "status": "todo",
+      "gate": "P03-GATE",
+      "task_count": 11
+    },
+    {
+      "id": "P04",
+      "name": "Sports catalog and licensed ingestion",
+      "status": "todo",
+      "gate": "P04-GATE",
+      "task_count": 10
+    },
+    {
+      "id": "P05",
+      "name": "Match center, discovery and search API",
+      "status": "todo",
+      "gate": "P05-GATE",
+      "task_count": 8
+    },
+    {
+      "id": "P06",
+      "name": "Autonomous editorial and fact validation",
+      "status": "todo",
+      "gate": "P06-GATE",
+      "task_count": 12
+    },
+    {
+      "id": "P07",
+      "name": "Automated media production",
+      "status": "todo",
+      "gate": "P07-GATE",
+      "task_count": 8
+    },
+    {
+      "id": "P08",
+      "name": "Consumer web (SEO-first)",
+      "status": "todo",
+      "gate": "P08-GATE",
+      "task_count": 9
+    },
+    {
+      "id": "P09",
+      "name": "Flutter mobile iOS and Android",
+      "status": "todo",
+      "gate": "P09-GATE",
+      "task_count": 11
+    },
+    {
+      "id": "P10",
+      "name": "Newsroom admin and staff workflows",
+      "status": "todo",
+      "gate": "P10-GATE",
+      "task_count": 11
+    },
+    {
+      "id": "P11",
+      "name": "Ads sales, serving and reporting",
+      "status": "todo",
+      "gate": "P11-GATE",
+      "task_count": 9
+    },
+    {
+      "id": "P12",
+      "name": "Billing, accounting and finance",
+      "status": "todo",
+      "gate": "P12-GATE",
+      "task_count": 8
+    },
+    {
+      "id": "P13",
+      "name": "Support, personalization and analytics",
+      "status": "todo",
+      "gate": "P13-GATE",
+      "task_count": 7
+    },
+    {
+      "id": "P14",
+      "name": "Security, performance, accessibility and compliance",
+      "status": "todo",
+      "gate": "P14-GATE",
+      "task_count": 10
+    },
+    {
+      "id": "P15",
+      "name": "Release and operation",
+      "status": "todo",
+      "gate": "P15-GATE",
+      "task_count": 8
+    }
+  ],
+  "tasks": [
+    {
+      "id": "P00-001",
+      "phase": "P00",
+      "title": "Define Topkolik product scope and brand constraints",
+      "status": "done",
+      "priority": "P0",
+      "depends_on": [],
+      "implementation": "Document platforms, core outcome, target audience and approved logo/colors.",
+      "acceptance_criteria": [
+        "Brand source and PRD files exist and are internally consistent."
+      ],
+      "evidence": [
+        {
+          "type": "file",
+          "path": "docs/product/PRODUCT_REQUIREMENTS.md",
+          "validation": "Blueprint source file exists; full blueprint validator must pass"
+        }
+      ],
+      "verified_at": "2026-10-31",
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P00-002",
+      "phase": "P00",
+      "title": "Publish baseline architecture and domain boundaries",
+      "status": "done",
+      "priority": "P0",
+      "depends_on": [],
+      "implementation": "Create auditable stack, domain and backend/API architecture documentation.",
+      "acceptance_criteria": [
+        "Architecture, data model and AI pipeline documents are present."
+      ],
+      "evidence": [
+        {
+          "type": "file",
+          "path": "docs/architecture/ARCHITECTURE.md",
+          "validation": "Blueprint source file exists; full blueprint validator must pass"
+        }
+      ],
+      "verified_at": "2026-10-31",
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P00-003",
+      "phase": "P00",
+      "title": "Publish quality, risk and delivery governance",
+      "status": "done",
+      "priority": "P0",
+      "depends_on": [],
+      "implementation": "Create release criteria, role map, security policy, process and task tracker.",
+      "acceptance_criteria": [
+        "Roadmap, AGENTS, QA plan and status files pass validation."
+      ],
+      "evidence": [
+        {
+          "type": "file",
+          "path": "docs/qa/TEST_AND_RELEASE_PLAN.md",
+          "validation": "Blueprint source file exists; full blueprint validator must pass"
+        }
+      ],
+      "verified_at": "2026-10-31",
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P00-004",
+      "phase": "P00",
+      "title": "Approve unresolved first-release product decisions",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [],
+      "implementation": "Record explicit decisions for UI locales, legal entity, domain, provider rights, finance country and advertising policy.",
+      "acceptance_criteria": [
+        "Written owner-approved ADRs recorded; no unsupported defaults."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P01-001",
+      "phase": "P01",
+      "title": "Verify domain and trademark availability",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P00-GATE"
+      ],
+      "implementation": "Check trademark, developer identifiers and brand conflict before public usage.",
+      "acceptance_criteria": [
+        "Trademark/domain/store-name assessment recorded."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P01-002",
+      "phase": "P01",
+      "title": "Register publisher and responsible editorial contact",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P00-GATE"
+      ],
+      "implementation": "Confirm legal entity, publisher identity and accessible public contact channels.",
+      "acceptance_criteria": [
+        "Approved ownership and public contact policy exists."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P01-003",
+      "phase": "P01",
+      "title": "Evaluate sports data providers and feature coverage",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P00-GATE"
+      ],
+      "implementation": "Matrix Turkish leagues and other sports by schedule/live/events/stats/media and price.",
+      "acceptance_criteria": [
+        "Provider probe results from legitimate credentials and exact coverage recorded."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P01-004",
+      "phase": "P01",
+      "title": "Approve sports-data licenses",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P00-GATE"
+      ],
+      "implementation": "Confirm contractual rights for storage, redistribution, automated derivative journalism and attribution.",
+      "acceptance_criteria": [
+        "Signed license references for each activated provider."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P01-005",
+      "phase": "P01",
+      "title": "Approve player/photo/club asset licensing",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P00-GATE"
+      ],
+      "implementation": "Document photographic and team mark rights separately from data rights.",
+      "acceptance_criteria": [
+        "Asset usage rights and expiry registry reviewed."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P01-006",
+      "phase": "P01",
+      "title": "Approve privacy and international data transfer design",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P00-GATE"
+      ],
+      "implementation": "Map purpose, retention, controllers/processors, notices, transfer mechanisms and user rights.",
+      "acceptance_criteria": [
+        "Counsel-reviewed privacy DPIA/assessment and vendor register."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P01-007",
+      "phase": "P01",
+      "title": "Approve advertising and gambling-exclusion policy",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P00-GATE"
+      ],
+      "implementation": "Set allowed verticals, banned campaigns, age/placement checks and creative review.",
+      "acceptance_criteria": [
+        "Documented ad policy and refusal behavior tested in admin."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P01-008",
+      "phase": "P01",
+      "title": "Select AI vendors and contractual data controls",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P00-GATE"
+      ],
+      "implementation": "Confirm usage rights, data retention, model costs and output handling.",
+      "acceptance_criteria": [
+        "Approved AI provider ADR and spend ceiling."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P01-009",
+      "phase": "P01",
+      "title": "Select tax jurisdiction and invoicing path",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P00-GATE"
+      ],
+      "implementation": "Confirm billing entity, VAT/KDV/e-invoice provider, tax data and retention rules.",
+      "acceptance_criteria": [
+        "Professional finance/tax signoff for accounting flows."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P01-010",
+      "phase": "P01",
+      "title": "Approve editorial AI policy and high-risk hold rules",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P00-GATE"
+      ],
+      "implementation": "Define source truth, banned topics, correction and disclosure rules.",
+      "acceptance_criteria": [
+        "Signed editorial policy with automated quarantine tests specified."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P02-001",
+      "phase": "P02",
+      "title": "Initialize protected GitHub monorepo",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P01-GATE"
+      ],
+      "implementation": "Create standard folders while preserving any existing files.",
+      "acceptance_criteria": [
+        "Repo clone and branch protection visible."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P02-002",
+      "phase": "P02",
+      "title": "Configure status tracking and issue templates",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P01-GATE"
+      ],
+      "implementation": "Import roadmap task IDs, milestones, issue/PR templates and owner labels.",
+      "acceptance_criteria": [
+        "GitHub issues match ROADMAP.json IDs with evidence fields."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P02-003",
+      "phase": "P02",
+      "title": "Pin language runtimes and dependency versions",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P01-GATE"
+      ],
+      "implementation": "Write tested version manifests and reproducible installs.",
+      "acceptance_criteria": [
+        "Local installs repeat with lockfiles and version checks."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P02-004",
+      "phase": "P02",
+      "title": "Create developer Docker environment",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P01-GATE"
+      ],
+      "implementation": "PostgreSQL, Redis, S3 emulator, mail catcher and health checks without data loss.",
+      "acceptance_criteria": [
+        "Fresh local startup with compose validation and isolated volumes."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P02-005",
+      "phase": "P02",
+      "title": "Scaffold Laravel modular API",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P01-GATE"
+      ],
+      "implementation": "Create modules, error envelope, request IDs, logging, middleware and readiness.",
+      "acceptance_criteria": [
+        "Composer lint/type/test and API health check pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P02-006",
+      "phase": "P02",
+      "title": "Scaffold Next.js public web",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P01-GATE"
+      ],
+      "implementation": "App Router, SSR route foundation, shared token integration.",
+      "acceptance_criteria": [
+        "Typecheck, build and server smoke pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P02-007",
+      "phase": "P02",
+      "title": "Scaffold Next.js admin",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P01-GATE"
+      ],
+      "implementation": "Independent auth boundary, route guards and admin design shell.",
+      "acceptance_criteria": [
+        "Typecheck/build; unauthorized access denied."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P02-008",
+      "phase": "P02",
+      "title": "Scaffold Flutter iOS and Android",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P01-GATE"
+      ],
+      "implementation": "Feature-first structure, adaptive nav, API client/error handling and app themes.",
+      "acceptance_criteria": [
+        "flutter analyze, flutter test, iOS/Android compile checks pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P02-009",
+      "phase": "P02",
+      "title": "Define OpenAPI and typed client generation",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P01-GATE"
+      ],
+      "implementation": "API versioning, pagination, errors, auth and generated TS/Dart types.",
+      "acceptance_criteria": [
+        "Contract validation and generated clients build."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P02-010",
+      "phase": "P02",
+      "title": "Configure CI and local/self-hosted runner options",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P01-GATE"
+      ],
+      "implementation": "Protected workflows, secrets boundary, test matrix and dependency scanning.",
+      "acceptance_criteria": [
+        "Fresh PR runs required checks without secrets exposure."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P02-011",
+      "phase": "P02",
+      "title": "Set ADR, release notes and dependency audit protocol",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P01-GATE"
+      ],
+      "implementation": "Require ADR for major choices and regular package policy checks.",
+      "acceptance_criteria": [
+        "PR checklist and release policy validated."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P03-001",
+      "phase": "P03",
+      "title": "Implement consumer registration and email verification",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P02-GATE"
+      ],
+      "implementation": "Optional email registration, validation, secure password hash and verification token.",
+      "acceptance_criteria": [
+        "Guest access persists; verification and abuse cases pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P03-002",
+      "phase": "P03",
+      "title": "Implement consumer login, logout and sessions",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P02-GATE"
+      ],
+      "implementation": "Secure cookie/token strategy and session revocation.",
+      "acceptance_criteria": [
+        "Wrong credentials and expired sessions safely fail."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P03-003",
+      "phase": "P03",
+      "title": "Implement forgot/reset password",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P02-GATE"
+      ],
+      "implementation": "Hashed single-use expiring tokens and reset session invalidation.",
+      "acceptance_criteria": [
+        "Token replay, account enumeration and rate-limit tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P03-004",
+      "phase": "P03",
+      "title": "Implement reader profile and preferences",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P02-GATE"
+      ],
+      "implementation": "Support privacy settings, favorites, history minimization and user locale.",
+      "acceptance_criteria": [
+        "Authorization and data persistence tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P03-005",
+      "phase": "P03",
+      "title": "Implement staff invite-only enrollment",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P02-GATE"
+      ],
+      "implementation": "Separate staff membership, verified email and no public enrollment path.",
+      "acceptance_criteria": [
+        "No reader can self-assign any staff role."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P03-006",
+      "phase": "P03",
+      "title": "Implement staff MFA and recovery",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P02-GATE"
+      ],
+      "implementation": "TOTP/passkey approach approved, mandatory MFA, recovery and step-up.",
+      "acceptance_criteria": [
+        "MFA bypass and recovery tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P03-007",
+      "phase": "P03",
+      "title": "Implement RBAC permissions and policy enforcement",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P02-GATE"
+      ],
+      "implementation": "Backend policies, role scopes, resource states and default deny.",
+      "acceptance_criteria": [
+        "Full role matrix + BOLA tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P03-008",
+      "phase": "P03",
+      "title": "Implement advertiser organization scoping",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P02-GATE"
+      ],
+      "implementation": "Advertiser membership and query/queue/export/cache isolation.",
+      "acceptance_criteria": [
+        "Cross-advertiser IDOR tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P03-009",
+      "phase": "P03",
+      "title": "Implement account deletion/export and consent",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P02-GATE"
+      ],
+      "implementation": "Verified privacy requests, consent and retention exceptions.",
+      "acceptance_criteria": [
+        "Export/delete with finance/legal retention tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P03-010",
+      "phase": "P03",
+      "title": "Implement security audit events",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P02-GATE"
+      ],
+      "implementation": "Record authentication, role grants and sensitive actions without secrets.",
+      "acceptance_criteria": [
+        "Audit records immutable and searchable by authorized staff."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P03-011",
+      "phase": "P03",
+      "title": "Implement supportable session/security controls",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P02-GATE"
+      ],
+      "implementation": "Device sessions, force revoke, rate limits, risk alerts and throttling.",
+      "acceptance_criteria": [
+        "Pen tests for brute-force, reset and revocation pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P04-001",
+      "phase": "P04",
+      "title": "Implement sports taxonomy and competition mapping",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P03-GATE"
+      ],
+      "implementation": "Model sports, competitions, seasons and coverage metadata.",
+      "acceptance_criteria": [
+        "Unique mappings and sport taxonomy tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P04-002",
+      "phase": "P04",
+      "title": "Implement club/team/athlete/venue model",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P03-GATE"
+      ],
+      "implementation": "Canonical identities, multi-team athlete history and provider maps.",
+      "acceptance_criteria": [
+        "FK and source map tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P04-003",
+      "phase": "P04",
+      "title": "Implement fixture/event domain model",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P03-GATE"
+      ],
+      "implementation": "Sport-neutral fixture/event types plus sport-specific extensions.",
+      "acceptance_criteria": [
+        "Out-of-order event and status transition tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P04-004",
+      "phase": "P04",
+      "title": "Implement normalized statistics dictionary",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P03-GATE"
+      ],
+      "implementation": "Units, denominators, periods, supported sports and missing data.",
+      "acceptance_criteria": [
+        "Stats never conflated across sports/periods."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P04-005",
+      "phase": "P04",
+      "title": "Implement provider adapter contract",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P03-GATE"
+      ],
+      "implementation": "Authentication, quotas, caching and typed provider interface.",
+      "acceptance_criteria": [
+        "Contract tests with legitimately acquired provider payloads."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P04-006",
+      "phase": "P04",
+      "title": "Implement first licensed football provider",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P03-GATE"
+      ],
+      "implementation": "Ingest Turkey prioritized competition coverage and revisions.",
+      "acceptance_criteria": [
+        "Live provider sandbox/authorized integration verified."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P04-007",
+      "phase": "P04",
+      "title": "Implement basketball and volleyball provider coverage",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P03-GATE"
+      ],
+      "implementation": "Ingest approved sports with explicit capability mapping.",
+      "acceptance_criteria": [
+        "Coverage and league/sample event test matrix verified."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P04-008",
+      "phase": "P04",
+      "title": "Implement remaining sports adapter expansion",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P03-GATE"
+      ],
+      "implementation": "Add only verified sport/competition entitlements in phases.",
+      "acceptance_criteria": [
+        "Every enabled sport has capabilities and alerting checks."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P04-009",
+      "phase": "P04",
+      "title": "Implement provenance and conflict records",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P03-GATE"
+      ],
+      "implementation": "Snapshot, observation, source revision, reconciliation and license expiry.",
+      "acceptance_criteria": [
+        "Conflicting versions trigger hold, not wrong publication."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P04-010",
+      "phase": "P04",
+      "title": "Implement live ingestion scheduling",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P03-GATE"
+      ],
+      "implementation": "Rate-limited polling or webhooks, backoff/circuit breakers and freshness.",
+      "acceptance_criteria": [
+        "Load/latency/outage tests pass within provider quota."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P05-001",
+      "phase": "P05",
+      "title": "Implement fixtures and scores public endpoints",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P04-GATE"
+      ],
+      "implementation": "Schedule, live, results by sport/league/date with pagination.",
+      "acceptance_criteria": [
+        "OpenAPI contract and real-source read tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P05-002",
+      "phase": "P05",
+      "title": "Implement match timeline and team stats API",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P04-GATE"
+      ],
+      "implementation": "Expose only licensed available facts with provenance.",
+      "acceptance_criteria": [
+        "Missing/VAR/corrected events displayed accurately."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P05-003",
+      "phase": "P05",
+      "title": "Implement lineups, standings and rankings",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P04-GATE"
+      ],
+      "implementation": "Sport-specific point systems and source contracts.",
+      "acceptance_criteria": [
+        "Standings reproducibility and sport rules tested."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P05-004",
+      "phase": "P05",
+      "title": "Implement team/athlete/league detail endpoints",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P04-GATE"
+      ],
+      "implementation": "Joined content, fixtures, standings and profile facts.",
+      "acceptance_criteria": [
+        "Authorization/latency/query count tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P05-005",
+      "phase": "P05",
+      "title": "Implement entity search and typo tolerance",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P04-GATE"
+      ],
+      "implementation": "Search sports, athletes, clubs, competitions and articles.",
+      "acceptance_criteria": [
+        "Relevance, special characters and empty results pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P05-006",
+      "phase": "P05",
+      "title": "Implement follow and saved-content services",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P04-GATE"
+      ],
+      "implementation": "Public preference fallback, user-linked follow, opt in.",
+      "acceptance_criteria": [
+        "Data consistency/ownership tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P05-007",
+      "phase": "P05",
+      "title": "Implement caching and invalidation policy",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P04-GATE"
+      ],
+      "implementation": "Cache live states with short TTL; public articles with event invalidation.",
+      "acceptance_criteria": [
+        "Staleness and unpublished leakage tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P05-008",
+      "phase": "P05",
+      "title": "Implement API usage/rate controls",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P04-GATE"
+      ],
+      "implementation": "Public vs privileged quotas, consistent errors and abuse thresholds.",
+      "acceptance_criteria": [
+        "Load and rate-limiting tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P06-001",
+      "phase": "P06",
+      "title": "Implement deterministic story signal rules",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P05-GATE"
+      ],
+      "implementation": "Emit candidates for final scores, verified events and official announcements.",
+      "acceptance_criteria": [
+        "No news emitted for missing/conflicted/provisional facts."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P06-002",
+      "phase": "P06",
+      "title": "Implement evidence-bound fact packs",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P05-GATE"
+      ],
+      "implementation": "Use typed, versioned metric facts and licensed source references.",
+      "acceptance_criteria": [
+        "Every required claim links to exact source evidence."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P06-003",
+      "phase": "P06",
+      "title": "Implement AI schema and prompt version registry",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P05-GATE"
+      ],
+      "implementation": "Model-safe JSON contract, cost attribution and prompt lineage.",
+      "acceptance_criteria": [
+        "Schema and prompt-injection adversarial tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P06-004",
+      "phase": "P06",
+      "title": "Implement AI article drafting pipeline",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P05-GATE"
+      ],
+      "implementation": "Generate title/lead/body/summary from only provided fact packs.",
+      "acceptance_criteria": [
+        "Claims are structured and no unsupported values pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P06-005",
+      "phase": "P06",
+      "title": "Implement numerical/identity claim validation",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P05-GATE"
+      ],
+      "implementation": "Exact scores, names, times, metrics and source version verification.",
+      "acceptance_criteria": [
+        "Wrong numbers/names rejected in test suite."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P06-006",
+      "phase": "P06",
+      "title": "Implement cross-source and high-risk review gate",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P05-GATE"
+      ],
+      "implementation": "Quarantine rumors, allegations, injuries, contradictions and rights gaps.",
+      "acceptance_criteria": [
+        "No high-risk story auto-publishes."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P06-007",
+      "phase": "P06",
+      "title": "Implement semantic and event duplicate suppression",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P05-GATE"
+      ],
+      "implementation": "Unique keys plus similarity detection without deleting valid corrections.",
+      "acceptance_criteria": [
+        "Parallel ingest produces one canonical article."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P06-008",
+      "phase": "P06",
+      "title": "Implement autonomous safe publishing state machine",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P05-GATE"
+      ],
+      "implementation": "Transactional approval, publication records and outbox.",
+      "acceptance_criteria": [
+        "No partial publish, retry-safe concurrency tests."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P06-009",
+      "phase": "P06",
+      "title": "Implement correction/retraction lifecycle",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P05-GATE"
+      ],
+      "implementation": "Surface change reasons, history, cache purge and corrected syndication.",
+      "acceptance_criteria": [
+        "VAR/result corrections update exact article safely."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P06-010",
+      "phase": "P06",
+      "title": "Implement editorial quality analytics",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P05-GATE"
+      ],
+      "implementation": "Track factual issues, duplicates, source lag and publish latency.",
+      "acceptance_criteria": [
+        "Quality dashboard recomputes from measured events."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P06-011",
+      "phase": "P06",
+      "title": "Implement source-aware official transfer reporting",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P05-GATE"
+      ],
+      "implementation": "Differentiate confirmation from market rumor and forbid inference.",
+      "acceptance_criteria": [
+        "Unverified transfer never presented as confirmed."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P06-012",
+      "phase": "P06",
+      "title": "Implement emergency editorial kill switch",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P05-GATE"
+      ],
+      "implementation": "Stop automated publishing globally, sport or provider with audit.",
+      "acceptance_criteria": [
+        "Circuit-breaker rehearsal halts publication."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P07-001",
+      "phase": "P07",
+      "title": "Create vector production logo and master tokens",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P06-GATE"
+      ],
+      "implementation": "Extract approved brand icon/wordmark into editable approved masters.",
+      "acceptance_criteria": [
+        "Owner-approved assets validated at small icon sizes."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P07-002",
+      "phase": "P07",
+      "title": "Implement article hero visual templates",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P06-GATE"
+      ],
+      "implementation": "16:9, 4:3, 1:1 safe layouts for result and news graphics.",
+      "acceptance_criteria": [
+        "Correct names/scores at all crop sizes and legible alt."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P07-003",
+      "phase": "P07",
+      "title": "Implement authorized image asset registry",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P06-GATE"
+      ],
+      "implementation": "Store license terms, expiry, attribution and allowed platforms.",
+      "acceptance_criteria": [
+        "Unlicensed or expired image cannot publish."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P07-004",
+      "phase": "P07",
+      "title": "Integrate image generation vendor",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P06-GATE"
+      ],
+      "implementation": "Abstract editorial background generation with usage/cost limits.",
+      "acceptance_criteria": [
+        "Provider production test and content policy pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P07-005",
+      "phase": "P07",
+      "title": "Implement deterministic text/stat overlays",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P06-GATE"
+      ],
+      "implementation": "Exact typography and verified score drawn by renderer, not LLM.",
+      "acceptance_criteria": [
+        "Pixel and content validation rejects malformed outputs."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P07-006",
+      "phase": "P07",
+      "title": "Implement derivatives and object storage security",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P06-GATE"
+      ],
+      "implementation": "Private pending media, signed previews, public approved renditions.",
+      "acceptance_criteria": [
+        "Unauthenticated access to unpublished media denied."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P07-007",
+      "phase": "P07",
+      "title": "Implement media audit and correction",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P06-GATE"
+      ],
+      "implementation": "Track revision and image substitutions after new facts.",
+      "acceptance_criteria": [
+        "Old image invalidation and license takedown tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P07-008",
+      "phase": "P07",
+      "title": "Export native app/OG icons and image assets",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P06-GATE"
+      ],
+      "implementation": "iOS/Android adaptive, dark/tinted and web media variants.",
+      "acceptance_criteria": [
+        "Real device icon review and store asset checks pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P08-001",
+      "phase": "P08",
+      "title": "Implement public layout/header/footer",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P07-GATE"
+      ],
+      "implementation": "Responsive accessible layout with real API navigation.",
+      "acceptance_criteria": [
+        "320–1920px responsive and keyboard tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P08-002",
+      "phase": "P08",
+      "title": "Implement homepage and latest news feeds",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P07-GATE"
+      ],
+      "implementation": "Hero, breaking, live strip, sport filters, news stream.",
+      "acceptance_criteria": [
+        "SSR, real data, freshness and empty state tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P08-003",
+      "phase": "P08",
+      "title": "Implement article pages and correction disclosure",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P07-GATE"
+      ],
+      "implementation": "Readable content, sources, AI notice, dates and linked entities.",
+      "acceptance_criteria": [
+        "Correct canonical/SSR/metadata checks pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P08-004",
+      "phase": "P08",
+      "title": "Implement match center and match detail web",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P07-GATE"
+      ],
+      "implementation": "Fixtures, scores, stats, lineups and timelines where licensed.",
+      "acceptance_criteria": [
+        "Live source end-to-end and mobile responsive checks pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P08-005",
+      "phase": "P08",
+      "title": "Implement sport/team/league/athlete web",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P07-GATE"
+      ],
+      "implementation": "Reusable category pages with genuine data and internal links.",
+      "acceptance_criteria": [
+        "Entity mapping and crawlable links verified."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P08-006",
+      "phase": "P08",
+      "title": "Implement search, follow, save and auth web",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P07-GATE"
+      ],
+      "implementation": "Search with filters; account functions where relevant.",
+      "acceptance_criteria": [
+        "Protected actions deny guest and IDOR tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P08-007",
+      "phase": "P08",
+      "title": "Implement SEO structured data and sitemaps",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P07-GATE"
+      ],
+      "implementation": "NewsArticle, publisher/contact, canonical, robots, news sitemap.",
+      "acceptance_criteria": [
+        "Rich Results Test and sitemap freshness checks pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P08-008",
+      "phase": "P08",
+      "title": "Integrate policy-compliant public ad slots",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P07-GATE"
+      ],
+      "implementation": "Reserved ad containers with labels and exclusion zones.",
+      "acceptance_criteria": [
+        "No CLS spike, editorial vs sponsored distinction tested."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P08-009",
+      "phase": "P08",
+      "title": "Implement analytics and consent UX",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P07-GATE"
+      ],
+      "implementation": "First-party page events/privacy/legal controls.",
+      "acceptance_criteria": [
+        "Consent and opt-out events verified."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P09-001",
+      "phase": "P09",
+      "title": "Implement native-adaptive navigation and theme",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P08-GATE"
+      ],
+      "implementation": "iOS HIG tabs; Android Material 3; Topkolik tokens.",
+      "acceptance_criteria": [
+        "Screen reader, back, text scaling and icon tests."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P09-002",
+      "phase": "P09",
+      "title": "Implement onboarding and guest-first reader experience",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P08-GATE"
+      ],
+      "implementation": "Skippable sport/team favorites, no mandatory account.",
+      "acceptance_criteria": [
+        "iOS/Android onboarding E2E tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P09-003",
+      "phase": "P09",
+      "title": "Implement mobile home and breaking news",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P08-GATE"
+      ],
+      "implementation": "Real feed, live ticker and personalized favorites.",
+      "acceptance_criteria": [
+        "Offline/error/empty and fast refresh tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P09-004",
+      "phase": "P09",
+      "title": "Implement mobile article reading and sharing",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P08-GATE"
+      ],
+      "implementation": "Hero image, evidence disclosure, corrections, share/save.",
+      "acceptance_criteria": [
+        "Real article navigation and accessibility tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P09-005",
+      "phase": "P09",
+      "title": "Implement mobile fixtures and match detail",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P08-GATE"
+      ],
+      "implementation": "Sport-specific results, data missing states and timelines.",
+      "acceptance_criteria": [
+        "Cross-sport live provider E2E tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P09-006",
+      "phase": "P09",
+      "title": "Implement mobile discover/search/entities",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P08-GATE"
+      ],
+      "implementation": "Teams, sports, athletes, leagues and search.",
+      "acceptance_criteria": [
+        "Index, pagination, keyboard tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P09-007",
+      "phase": "P09",
+      "title": "Implement consumer login/registration/reset on mobile",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P08-GATE"
+      ],
+      "implementation": "Secure auth token/session handling and recovery.",
+      "acceptance_criteria": [
+        "Authentication replay/revocation E2E tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P09-008",
+      "phase": "P09",
+      "title": "Implement follow and push preferences",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P08-GATE"
+      ],
+      "implementation": "Opt-in notification channels, tokens and user interests.",
+      "acceptance_criteria": [
+        "Permission, revoke, invalid token cleanup tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P09-009",
+      "phase": "P09",
+      "title": "Implement offline-safe reading cache",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P08-GATE"
+      ],
+      "implementation": "Cache licensed public articles only, with retraction awareness.",
+      "acceptance_criteria": [
+        "Offline/privacy and correction tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P09-010",
+      "phase": "P09",
+      "title": "Implement iOS store and Android assets",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P08-GATE"
+      ],
+      "implementation": "Icons, launch screens, metadata, privacy links and release config.",
+      "acceptance_criteria": [
+        "Store validation and real device screenshots pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P09-011",
+      "phase": "P09",
+      "title": "Run device accessibility and performance tests",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P08-GATE"
+      ],
+      "implementation": "VoiceOver/TalkBack, dynamic type, back navigation, start latency.",
+      "acceptance_criteria": [
+        "Signed build and physical device test evidence recorded."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P10-001",
+      "phase": "P10",
+      "title": "Implement admin design shell and RBAC routes",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P09-GATE"
+      ],
+      "implementation": "Sidebar, search, command bar, identity and permission guards.",
+      "acceptance_criteria": [
+        "Unauthorized screen/API navigation denied."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P10-002",
+      "phase": "P10",
+      "title": "Implement operational dashboard",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P09-GATE"
+      ],
+      "implementation": "Real monitored metrics, bot status, incidents and release flags.",
+      "acceptance_criteria": [
+        "Metrics reconcile with source records."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P10-003",
+      "phase": "P10",
+      "title": "Implement editorial review queue",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P09-GATE"
+      ],
+      "implementation": "Evidence, risk flags, duplicate candidates and safe manual decisions.",
+      "acceptance_criteria": [
+        "Reviewer permissions and audit tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P10-004",
+      "phase": "P10",
+      "title": "Implement article editor and revisions",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P09-GATE"
+      ],
+      "implementation": "Structured rich text, proofing, preview, publish/correct/retract.",
+      "acceptance_criteria": [
+        "Sanitization, saved revisions and reviewer test pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P10-005",
+      "phase": "P10",
+      "title": "Implement AI bot management",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P09-GATE"
+      ],
+      "implementation": "Queue health, per-bot configuration, budgets and emergency stop.",
+      "acceptance_criteria": [
+        "Paused jobs cannot sneak through to publish."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P10-006",
+      "phase": "P10",
+      "title": "Implement sports data source operations",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P09-GATE"
+      ],
+      "implementation": "Coverage matrix, sync status, conflicts, retries and license checks.",
+      "acceptance_criteria": [
+        "Stale provider and conflict incident tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P10-007",
+      "phase": "P10",
+      "title": "Implement media library and rights management",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P09-GATE"
+      ],
+      "implementation": "Preview/private approval and license restrictions.",
+      "acceptance_criteria": [
+        "Invalid rights and media leakage tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P10-008",
+      "phase": "P10",
+      "title": "Implement notifications administration",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P09-GATE"
+      ],
+      "implementation": "Targeting by follows and permitted campaign categories.",
+      "acceptance_criteria": [
+        "Send only after publish and consent tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P10-009",
+      "phase": "P10",
+      "title": "Implement SEO and publication operations",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P09-GATE"
+      ],
+      "implementation": "Preview, structured metadata, re-indexing and public cache purge.",
+      "acceptance_criteria": [
+        "No drafts indexed; released metadata verified."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P10-010",
+      "phase": "P10",
+      "title": "Implement audit, roles and account administration",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P09-GATE"
+      ],
+      "implementation": "Staff onboarding, MFA resets under policy and audit exports.",
+      "acceptance_criteria": [
+        "Privilege escalation and break-glass tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P10-011",
+      "phase": "P10",
+      "title": "Implement admin responsive/accessibility QA",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P09-GATE"
+      ],
+      "implementation": "Dense desktop tables and safe small-screen operations.",
+      "acceptance_criteria": [
+        "Keyboard/screen reader/viewport tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P11-001",
+      "phase": "P11",
+      "title": "Implement advertiser account data model",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P10-GATE"
+      ],
+      "implementation": "Organization, contacts, identity and staff permissions.",
+      "acceptance_criteria": [
+        "Cross-advertiser scope tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P11-002",
+      "phase": "P11",
+      "title": "Implement inventory and ad placement management",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P10-GATE"
+      ],
+      "implementation": "Slots by platform/content/sport with responsive reserved sizes.",
+      "acceptance_criteria": [
+        "No unapproved content rendered."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P11-003",
+      "phase": "P11",
+      "title": "Implement contract and campaign creation",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P10-GATE"
+      ],
+      "implementation": "Contract version, budget, dates, creative/targeting and approval.",
+      "acceptance_criteria": [
+        "Invalid dates/budget/approval rejected."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P11-004",
+      "phase": "P11",
+      "title": "Implement creative review and policy checks",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P10-GATE"
+      ],
+      "implementation": "Malware/content moderation, restricted ad categories and audit.",
+      "acceptance_criteria": [
+        "Disallowed betting/illegal ads blocked by default."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P11-005",
+      "phase": "P11",
+      "title": "Implement ad scheduling, pacing and cap enforcement",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P10-GATE"
+      ],
+      "implementation": "Atomic spend/impression control with device/user privacy rules.",
+      "acceptance_criteria": [
+        "Concurrent requests never exceed agreed cap rules."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P11-006",
+      "phase": "P11",
+      "title": "Implement web/native app ad rendering",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P10-GATE"
+      ],
+      "implementation": "Clearly labeled ad placements with no hidden click traps.",
+      "acceptance_criteria": [
+        "Store policies/accessibility and layout checks pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P11-007",
+      "phase": "P11",
+      "title": "Implement impression/click collection",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P10-GATE"
+      ],
+      "implementation": "Dedup, anti-fraud and privacy-friendly measurement.",
+      "acceptance_criteria": [
+        "Idempotent reporting and bot filtering verified."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P11-008",
+      "phase": "P11",
+      "title": "Implement campaign and revenue reports",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P10-GATE"
+      ],
+      "implementation": "Explainable contract/delivery/invoice/report reconciliation.",
+      "acceptance_criteria": [
+        "Reports match event source and financial records."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P11-009",
+      "phase": "P11",
+      "title": "Implement future advertiser portal authorization",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P10-GATE"
+      ],
+      "implementation": "Only scoped advertisers see their own campaigns and invoices.",
+      "acceptance_criteria": [
+        "Cross-tenant penetration tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P12-001",
+      "phase": "P12",
+      "title": "Implement business and tax identity validation",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P11-GATE"
+      ],
+      "implementation": "Store payer data with protected fields and approved requirements.",
+      "acceptance_criteria": [
+        "Country/tax validation and access tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P12-002",
+      "phase": "P12",
+      "title": "Implement billable events and pricing",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P11-GATE"
+      ],
+      "implementation": "Contracts, currencies, amounts, unit quantities, tax rules.",
+      "acceptance_criteria": [
+        "Integer math, rounding and snapshot tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P12-003",
+      "phase": "P12",
+      "title": "Implement invoice issuance state machine",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P11-GATE"
+      ],
+      "implementation": "Draft, issue, send, due, paid, void/credit statuses.",
+      "acceptance_criteria": [
+        "Posted invoices immutable and validated."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P12-004",
+      "phase": "P12",
+      "title": "Implement payments and reconciliation",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P11-GATE"
+      ],
+      "implementation": "Manual or selected gateway receipts with idempotency.",
+      "acceptance_criteria": [
+        "Duplicate events cannot double-apply payment."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P12-005",
+      "phase": "P12",
+      "title": "Implement credit notes and dispute workflow",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P11-GATE"
+      ],
+      "implementation": "Compensating financial records with linked reason.",
+      "acceptance_criteria": [
+        "Totals/reversal audit and permission tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P12-006",
+      "phase": "P12",
+      "title": "Implement approved e-invoice/accounting export",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P11-GATE"
+      ],
+      "implementation": "Only after approved local provider and fiscal spec.",
+      "acceptance_criteria": [
+        "Provider sandbox or approved real integration verified."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P12-007",
+      "phase": "P12",
+      "title": "Implement finance dashboards and exports",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P11-GATE"
+      ],
+      "implementation": "Receivables, overdue, tax, campaign revenue and currency.",
+      "acceptance_criteria": [
+        "Independent SQL reconciliation and access tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P12-008",
+      "phase": "P12",
+      "title": "Implement financial audit and retention",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P11-GATE"
+      ],
+      "implementation": "Log sensitive changes and legal retention policies.",
+      "acceptance_criteria": [
+        "Tamper/authorization tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P13-001",
+      "phase": "P13",
+      "title": "Implement help center, contact and editorial corrections",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P12-GATE"
+      ],
+      "implementation": "Public correction/privacy/rights/contact forms with anti-spam.",
+      "acceptance_criteria": [
+        "Routing, email and ticket creation tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P13-002",
+      "phase": "P13",
+      "title": "Implement ticket lifecycle and staff scopes",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P12-GATE"
+      ],
+      "implementation": "Assign, prioritize, SLA, response, closure and attachment checks.",
+      "acceptance_criteria": [
+        "Sensitive ticket IDOR and attachment leakage tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P13-003",
+      "phase": "P13",
+      "title": "Implement notification subscriptions and delivery",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P12-GATE"
+      ],
+      "implementation": "FCM/APNs opt-in, preferences and idempotent delivery.",
+      "acceptance_criteria": [
+        "Invalid/stale device token handling verified."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P13-004",
+      "phase": "P13",
+      "title": "Implement privacy-aware event analytics",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P12-GATE"
+      ],
+      "implementation": "Event schema, consent controls and aggregation definitions.",
+      "acceptance_criteria": [
+        "Metric reproducibility and opt-out tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P13-005",
+      "phase": "P13",
+      "title": "Implement recommendation ranking v1",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P12-GATE"
+      ],
+      "implementation": "Freshness, interests, relevance, source credibility, diversity.",
+      "acceptance_criteria": [
+        "No contentless trending noise or repeated events."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P13-006",
+      "phase": "P13",
+      "title": "Implement editorial/content and finance dashboards",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P12-GATE"
+      ],
+      "implementation": "Quality, reach, costs, ad and support KPIs by authorization.",
+      "acceptance_criteria": [
+        "Dashboards reconcile against raw events."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P13-007",
+      "phase": "P13",
+      "title": "Implement alerting for correction and removal requests",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P12-GATE"
+      ],
+      "implementation": "Urgent content rights/privacy tickets and review deadlines.",
+      "acceptance_criteria": [
+        "Escalation/runbook rehearsal pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P14-001",
+      "phase": "P14",
+      "title": "Run identity and authorization penetration suite",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P13-GATE"
+      ],
+      "implementation": "BOLA, BFLA, MFA, tokens, session replay and rate-limit paths.",
+      "acceptance_criteria": [
+        "No unresolved high/critical auth issues."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P14-002",
+      "phase": "P14",
+      "title": "Run media/source and web security suite",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P13-GATE"
+      ],
+      "implementation": "Signed URLs, SSRF, CSP, XSS, CSRF, path traversal and upload scanning.",
+      "acceptance_criteria": [
+        "No unpublished assets or provider secrets exposed."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P14-003",
+      "phase": "P14",
+      "title": "Run high-concurrency publishing and billing suite",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P13-GATE"
+      ],
+      "implementation": "Race conditions for final score, AI retries, ads and invoices.",
+      "acceptance_criteria": [
+        "Idempotency and invariants under load pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P14-004",
+      "phase": "P14",
+      "title": "Run WCAG and native UX audit",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P13-GATE"
+      ],
+      "implementation": "WCAG 2.2 AA target; HIG/Material 3 device reviews.",
+      "acceptance_criteria": [
+        "All critical/major a11y findings corrected."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P14-005",
+      "phase": "P14",
+      "title": "Run SEO and quality validation",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P13-GATE"
+      ],
+      "implementation": "Structured data, render freshness, canonical, thin content, news sitemap.",
+      "acceptance_criteria": [
+        "Rich Results Test and crawl tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P14-006",
+      "phase": "P14",
+      "title": "Run source rights and privacy compliance review",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P13-GATE"
+      ],
+      "implementation": "Recheck provider rights, privacy, ads and takedown process.",
+      "acceptance_criteria": [
+        "Approval records current and signed."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P14-007",
+      "phase": "P14",
+      "title": "Run backup/PITR recovery drill",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P13-GATE"
+      ],
+      "implementation": "Restore encrypted backup into isolated environment.",
+      "acceptance_criteria": [
+        "Measured RPO/RTO and integrity evidence."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P14-008",
+      "phase": "P14",
+      "title": "Run performance and operational load testing",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P13-GATE"
+      ],
+      "implementation": "Peak derby traffic, worker lag, throttling, source outages.",
+      "acceptance_criteria": [
+        "Measured SLOs and cost boundaries signed off."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P14-009",
+      "phase": "P14",
+      "title": "Run real-data staged end-to-end tests",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P13-GATE"
+      ],
+      "implementation": "Actual licensed sports integrations, real mobile/admin/browser flows.",
+      "acceptance_criteria": [
+        "Reconciled reports, screenshots and logs stored."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P14-010",
+      "phase": "P14",
+      "title": "Complete incident runbooks and on-call ownership",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P13-GATE"
+      ],
+      "implementation": "Wrong score, breach, license expiry, billing double issue, provider failure.",
+      "acceptance_criteria": [
+        "Named incident owners and exercises documented."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P15-001",
+      "phase": "P15",
+      "title": "Prepare store listings and legal documentation",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P14-GATE"
+      ],
+      "implementation": "Store declarations, age rating, privacy/contact and AI editorial disclosures.",
+      "acceptance_criteria": [
+        "Apple/Google policy checklist signed."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P15-002",
+      "phase": "P15",
+      "title": "Validate signing and release builds",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P14-GATE"
+      ],
+      "implementation": "Real signing, release reproducibility and secure distribution.",
+      "acceptance_criteria": [
+        "iOS/TestFlight and Android/internal testing build evidence."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P15-003",
+      "phase": "P15",
+      "title": "Provision production infrastructure securely",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P14-GATE"
+      ],
+      "implementation": "Network, credentials, databases, queues, storage and monitoring.",
+      "acceptance_criteria": [
+        "Staging-prod parity, secrets and TLS validation."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P15-004",
+      "phase": "P15",
+      "title": "Deploy staging and exercise rollback",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P14-GATE"
+      ],
+      "implementation": "Migration safeguards, backup, smoke and rollback tests.",
+      "acceptance_criteria": [
+        "Failed deploy recovers without data loss."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P15-005",
+      "phase": "P15",
+      "title": "Approve production GO/NO-GO",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P14-GATE"
+      ],
+      "implementation": "Collect legal, security, quality, provider and finance evidence.",
+      "acceptance_criteria": [
+        "Explicit owner sign-off of zero blocking findings."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P15-006",
+      "phase": "P15",
+      "title": "Launch web and mobile in controlled rollout",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P14-GATE"
+      ],
+      "implementation": "Phased exposure, platform health monitoring and alerts.",
+      "acceptance_criteria": [
+        "Store publication and production smoke logged."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P15-007",
+      "phase": "P15",
+      "title": "Monitor launch health and corrections",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P14-GATE"
+      ],
+      "implementation": "Track wrong-score incidents, publication delay, API budget and ad safety.",
+      "acceptance_criteria": [
+        "Post-launch incident and KPI report generated."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P15-008",
+      "phase": "P15",
+      "title": "Establish ongoing maintenance cadence",
+      "status": "todo",
+      "priority": "P0",
+      "depends_on": [
+        "P14-GATE"
+      ],
+      "implementation": "Dependency security updates, backups and provider contract/rights reviews.",
+      "acceptance_criteria": [
+        "Owner, calendar and test routine documented."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    }
+  ]
+}

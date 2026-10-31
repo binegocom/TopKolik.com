@@ -1,0 +1,25 @@
+# Secrets and local environments
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.p8
+*.mobileprovision
+**/secrets/**
+# Package and build artifacts
+node_modules/
+.next/
+dist/
+build/
+.dart_tool/
+.flutter-plugins*
+.pub-cache/
+vendor/
+coverage/
+.DS_Store
+__pycache__/
+*.pyc
+.idea/
+.vscode/
