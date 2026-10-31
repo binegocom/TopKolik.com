@@ -83,9 +83,12 @@ final class ReaderSecurityControlsTest extends TestCase
         $this->assertDatabaseCount('personal_access_tokens', 2);
         $this->assertTrue(Hash::check('Old!Password2026', $user->fresh()->password));
 
+        // The original broker token also expires after 60 minutes. Generate a
+        // fresh authorized token rather than relying on an expired credential.
         $this->travel(61)->minutes();
+        $freshToken = Password::broker('users')->createToken($user);
         $this->postJson('/api/v1/auth/password/reset', [
-            ...$payload, 'token' => $token,
+            ...$payload, 'token' => $freshToken,
         ])->assertOk();
         $this->assertDatabaseCount('personal_access_tokens', 0);
         $this->assertTrue(Hash::check('New!Password2026', $user->fresh()->password));
