@@ -1,0 +1,59 @@
+name: Laravel API checks
+
+on:
+  pull_request:
+    paths:
+      - 'services/api/**'
+      - 'scripts/configure-local-api-env.py'
+      - 'scripts/test-editorial-guard.sh'
+      - '.github/workflows/laravel-api.yml'
+  push:
+    branches:
+      - main
+      - feat/laravel13-api-foundation
+    paths:
+      - 'services/api/**'
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Configure PHP
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, curl, zip, intl, pdo_pgsql, redis
+          coverage: none
+          tools: composer:v2
+      - name: Prepare database, cache and isolated credentials
+        run: |
+          python3 scripts/dev-env.py init
+          bash scripts/check-dev-infra.sh
+          python3 scripts/configure-local-api-env.py
+      - name: Install locked dependencies
+        working-directory: services/api
+        run: |
+          composer validate --strict
+          composer install --prefer-dist --no-interaction --no-progress
+          composer audit --no-interaction
+      - name: Verify API with real PostgreSQL and Redis
+        working-directory: services/api
+        run: |
+          php artisan key:generate --force
+          php artisan migrate --force
+          php artisan route:list --except-vendor
+          php artisan test
+      - name: Verify standalone publication gate
+        run: bash scripts/test-editorial-guard.sh
+      - name: Stop isolated development containers
+        if: always()
+        run: |
+          if [[ -f infrastructure/.env ]]; then
+            docker compose --env-file infrastructure/.env -f infrastructure/compose.dev.yaml down || true
+          fi
