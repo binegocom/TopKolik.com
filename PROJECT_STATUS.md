@@ -140,4 +140,5 @@
 
 - Added encrypted, idempotent staff replies and recorded step-up escalation; both operations use locked, assignment-scoped persisted tickets and fresh role policy.
 - Conversation history is available only to the assigned support operator. No consumer ticket creation, real outbound messaging, finance/ads permissions or external notification has been added.
-- PostgreSQL/HTTP/security acceptance tests are pending on the feature branch; do not mark P03-007 done from this slice alone.
+- CI verified: 95 tests / 641 assertions on PostgreSQL/Redis, real Mailpit SMTP, 17 editorial policy tests, Composer audit: https://github.com/binegocom/TopKolik.com/actions/runs/41253330607
+- Implementation remains **partial** and P03-007 stays `in_progress` until editorial models, full staff-resource authorization and advertiser/finance role scopes are built.
