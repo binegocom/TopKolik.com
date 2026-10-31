@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\StaffInvitation;
 use App\Models\StaffMember;
+use App\Services\SecurityAuditRecorder;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,7 +15,7 @@ use Illuminate\Validation\Rules\Password;
 
 final class StaffInvitationAcceptanceController extends Controller
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request, SecurityAuditRecorder $audit): JsonResponse
     {
         $data = $request->validate([
             'invitation' => ['required', 'uuid'],
@@ -30,7 +31,7 @@ final class StaffInvitationAcceptanceController extends Controller
         ]);
 
         try {
-            $setupToken = DB::transaction(static function () use ($data): ?string {
+            $setupToken = DB::transaction(static function () use ($data, $audit, $request): ?string {
                 $invitation = StaffInvitation::query()->whereKey($data['invitation'])
                     ->lockForUpdate()->first();
 
@@ -43,12 +44,13 @@ final class StaffInvitationAcceptanceController extends Controller
 
                 $token = bin2hex(random_bytes(32));
 
-                StaffMember::create([
+                $staff = StaffMember::create([
                     'name' => trim($data['name']),
                     'email' => $invitation->email,
                     'password' => $data['password'],
                     'role' => $invitation->role,
-                ])->forceFill([
+                ]);
+                $staff->forceFill([
                     'email_verified_at' => now(),
                     'is_active' => false,
                     'mfa_enrolled_at' => null,
@@ -57,6 +59,7 @@ final class StaffInvitationAcceptanceController extends Controller
                 ])->save();
 
                 $invitation->forceFill(['accepted_at' => now()])->save();
+                $audit->record($staff, 'staff.invitation.accepted', 'staff_member', (int) $staff->getKey(), $request->attributes->get('request_id'));
 
                 return $token;
             }, attempts: 3);

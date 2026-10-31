@@ -8,6 +8,7 @@ use App\Authorization\StaffResourceContext;
 use App\Models\StaffMember;
 use App\Models\SupportTicket;
 use App\Models\SupportTicketReply;
+use App\Services\SecurityAuditRecorder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -66,7 +67,7 @@ final class StaffSupportTicketController extends Controller
         ])->header('Cache-Control', 'no-store, private');
     }
 
-    public function reply(Request $request, int $ticket): JsonResponse
+    public function reply(Request $request, int $ticket, SecurityAuditRecorder $audit): JsonResponse
     {
         $data = $request->validate([
             'message' => ['required', 'string', 'min:1', 'max:4000'],
@@ -81,7 +82,7 @@ final class StaffSupportTicketController extends Controller
         $staff = $request->user();
         $token = $this->presentedStaffToken($request);
 
-        [$reply, $replayed] = DB::transaction(function () use ($staff, $token, $ticket, $data): array {
+        [$reply, $replayed] = DB::transaction(function () use ($staff, $token, $ticket, $data, $audit, $request): array {
             // Lock the actual scoped record; authorization must be evaluated
             // against the persisted assignment and current state.
             $record = SupportTicket::query()
@@ -128,6 +129,8 @@ final class StaffSupportTicketController extends Controller
                 $record->forceFill(['status' => 'pending'])->save();
             }
 
+            $audit->record($staff, 'support.ticket.replied', 'support_ticket', (int) $record->getKey(), $request->attributes->get('request_id'));
+
             return [$created, false];
         });
 
@@ -141,7 +144,7 @@ final class StaffSupportTicketController extends Controller
         ], $replayed ? 200 : 201)->header('Cache-Control', 'no-store, private');
     }
 
-    public function escalate(Request $request, int $ticket): JsonResponse
+    public function escalate(Request $request, int $ticket, SecurityAuditRecorder $audit): JsonResponse
     {
         $request->validate([
             'assigned_staff_id' => ['missing'],
@@ -153,7 +156,7 @@ final class StaffSupportTicketController extends Controller
         $staff = $request->user();
         $token = $this->presentedStaffToken($request);
 
-        $record = DB::transaction(function () use ($staff, $token, $ticket): SupportTicket {
+        $record = DB::transaction(function () use ($staff, $token, $ticket, $audit, $request): SupportTicket {
             $record = SupportTicket::query()
                 ->whereKey($ticket)
                 ->where('assigned_staff_id', $staff->getKey())
@@ -180,6 +183,8 @@ final class StaffSupportTicketController extends Controller
                 'escalated_at' => now(),
                 'escalated_by_staff_id' => $staff->getKey(),
             ])->save();
+
+            $audit->record($staff, 'support.ticket.escalated', 'support_ticket', (int) $record->getKey(), $request->attributes->get('request_id'));
 
             return $record;
         });

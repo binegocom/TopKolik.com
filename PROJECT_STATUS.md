@@ -142,3 +142,9 @@
 - Conversation history is available only to the assigned support operator. No consumer ticket creation, real outbound messaging, finance/ads permissions or external notification has been added.
 - CI verified: 95 tests / 641 assertions on PostgreSQL/Redis, real Mailpit SMTP, 17 editorial policy tests, Composer audit: https://github.com/binegocom/TopKolik.com/actions/runs/41253330607
 - Implementation remains **partial** and P03-007 stays `in_progress` until editorial models, full staff-resource authorization and advertiser/finance role scopes are built.
+
+## P03-010 security audit ledger — under CI review
+
+- Forward-only PostgreSQL staff audit ledger, server-generated request correlation and DML append-only triggers. Privileged state changes write audit records in the same transaction; ticket reply replay does not duplicate events.
+- Covers staff invitation acceptance, MFA enrollment, operator activation, login, step-up, logout, ticket reply and escalation. No credential, MFA factor, token, email or ticket body is logged.
+- **in_review, not done:** PostgreSQL CI and independent operational audit controls remain pending. Database owner/superuser can bypass triggers; offsite append-only shipping, production role separation, failed-login coverage and retention policy are release prerequisites. No production readiness claim.
