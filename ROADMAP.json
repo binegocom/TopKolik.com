@@ -40,7 +40,7 @@
     {
       "id": "P03",
       "name": "Authentication, roles and privacy",
-      "status": "todo",
+      "status": "in_progress",
       "gate": "P03-GATE",
       "task_count": 11
     },
@@ -703,7 +703,7 @@
       "id": "P03-001",
       "phase": "P03",
       "title": "Implement consumer registration and email verification",
-      "status": "todo",
+      "status": "in_review",
       "priority": "P0",
       "depends_on": [
         "P02-GATE"
@@ -712,18 +712,27 @@
       "acceptance_criteria": [
         "Guest access persists; verification and abuse cases pass."
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "type": "test",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "Initial Sanctum integration: 12/12 Laravel tests, 47 assertions; 3 additional cases pending final PR CI",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41246732380"
+        }
+      ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": null,
-      "limitations": []
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/21",
+      "limitations": [
+        "Production SMTP delivery, actual iOS/Android client integration and staff MFA are outside this slice. P02 and P01 gates remain open."
+      ]
     },
     {
       "id": "P03-002",
       "phase": "P03",
       "title": "Implement consumer login, logout and sessions",
-      "status": "todo",
+      "status": "in_review",
       "priority": "P0",
       "depends_on": [
         "P02-GATE"
@@ -732,12 +741,21 @@
       "acceptance_criteria": [
         "Wrong credentials and expired sessions safely fail."
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "type": "test",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "Initial Sanctum integration: 12/12 Laravel tests, 47 assertions; 3 additional cases pending final PR CI",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41246732380"
+        }
+      ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": null,
-      "limitations": []
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/21",
+      "limitations": [
+        "Production SMTP delivery, actual iOS/Android client integration and staff MFA are outside this slice. P02 and P01 gates remain open."
+      ]
     },
     {
       "id": "P03-003",
