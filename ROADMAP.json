@@ -1012,7 +1012,7 @@
       "id": "P03-011",
       "phase": "P03",
       "title": "Implement supportable session/security controls",
-      "status": "todo",
+      "status": "in_review",
       "priority": "P0",
       "depends_on": [
         "P02-GATE"
@@ -1026,7 +1026,9 @@
       "owner": null,
       "issue_url": null,
       "pr_url": null,
-      "limitations": []
+      "limitations": [
+        "Feature regression tests and GitHub Actions verification pending; production reverse-proxy IP trust, shared Redis rate limiting, external penetration testing and deployment remain unverified."
+      ]
     },
     {
       "id": "P04-001",

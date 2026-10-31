@@ -22,8 +22,17 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for('reader-register', fn (Request $request) => Limit::perMinute(5)
             ->by('register:'.($request->ip() ?? 'unknown')));
 
-        RateLimiter::for('reader-login', fn (Request $request) => Limit::perMinute(10)
-            ->by('login:'.($request->ip() ?? 'unknown').':'.hash('sha256', mb_strtolower((string) $request->input('email', '')))));
+        // Separate dimensions prevent credential stuffing against one account
+        // from many IPs and spraying many accounts from a single IP.
+        RateLimiter::for('reader-login', function (Request $request): array {
+            $rawEmail = $request->input('email', '');
+            $email = is_string($rawEmail) ? mb_strtolower(trim($rawEmail)) : '';
+
+            return [
+                Limit::perMinute(20)->by('reader-login-ip:'.($request->ip() ?? 'unknown')),
+                Limit::perHour(12)->by('reader-login-account:'.hash('sha256', $email)),
+            ];
+        });
 
         RateLimiter::for('reader-verification', fn (Request $request) => Limit::perMinute(4)
             ->by('verify:'.($request->ip() ?? 'unknown').':'.hash('sha256', mb_strtolower((string) $request->input('email', '')))));
