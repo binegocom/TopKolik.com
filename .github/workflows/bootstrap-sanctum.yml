@@ -6,6 +6,7 @@ on:
       - feat/reader-auth-sanctum
     paths:
       - '.github/workflows/bootstrap-sanctum.yml'
+      - 'services/api/tests/Feature/ReaderAuthenticationTest.php'
 
 permissions:
   contents: write

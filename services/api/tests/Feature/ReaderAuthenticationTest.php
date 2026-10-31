@@ -89,6 +89,9 @@ final class ReaderAuthenticationTest extends TestCase
         $this->getJson('/api/v1/auth/me')->assertUnauthorized();
         $this->withHeaders($headers)->getJson('/api/v1/auth/me')->assertOk()->assertJsonPath('user.email', $user->email);
         $this->withHeaders($headers)->postJson('/api/v1/auth/logout')->assertOk();
+        $this->assertDatabaseCount('personal_access_tokens', 0);
+        // HTTP feature tests reuse one Laravel application; a new HTTP request boots a fresh guard.
+        app('auth')->forgetGuards();
         $this->withHeaders($headers)->getJson('/api/v1/auth/me')->assertUnauthorized();
     }
 
