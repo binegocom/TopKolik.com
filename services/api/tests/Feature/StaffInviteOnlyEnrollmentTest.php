@@ -137,21 +137,34 @@ final class StaffInviteOnlyEnrollmentTest extends TestCase
 
     public function test_staff_role_and_email_are_not_controlled_by_acceptance_payload(): void
     {
-        [$invite, $token] = $this->issue('support');
-
         foreach ([
             ['role' => 'admin'],
             ['email' => 'attacker@example.test'],
             ['is_active' => true],
             ['mfa_enrolled_at' => now()->toIso8601String()],
             ['user_id' => 1234],
-        ] as $payload) {
+        ] as $index => $payload) {
+            // A fresh invitation isolates forbidden fields from the independent
+            // per-invitation throttling policy, which has its own test below.
+            [$invite, $token] = $this->issue('support', 'role-check-'.$index.'@example.test');
             $field = array_key_first($payload);
             $this->postJson('/api/v1/staff/invitations/accept', $this->accept($invite, $token, $payload))
                 ->assertUnprocessable()
                 ->assertJsonValidationErrors($field);
         }
 
+        $this->assertDatabaseCount('staff_members', 0);
+    }
+
+    public function test_staff_invitation_redeem_attempts_are_limited_per_invitation(): void
+    {
+        [$invite, $token] = $this->issue();
+        $bad = $this->accept($invite, Str::random(64));
+
+        for ($i = 0; $i < 4; $i++) {
+            $this->postJson('/api/v1/staff/invitations/accept', $bad)->assertUnprocessable();
+        }
+        $this->postJson('/api/v1/staff/invitations/accept', $bad)->assertStatus(429);
         $this->assertDatabaseCount('staff_members', 0);
     }
 
