@@ -1,0 +1,27 @@
+name: Editorial guard checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: PHP editorial guard and roadmap integrity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Verify installed PHP runtime
+        run: php -v
+      - name: Run editorial guard tests
+        run: bash scripts/test-editorial-guard.sh
+      - name: Validate project tracking
+        run: |
+          python3 scripts/validate_blueprint.py
+          python3 scripts/status.py check
