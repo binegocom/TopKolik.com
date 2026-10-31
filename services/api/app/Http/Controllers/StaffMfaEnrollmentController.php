@@ -17,7 +17,7 @@ final class StaffMfaEnrollmentController extends Controller
     {
         $data = $request->validate(['setup_token' => ['required', 'string', 'size:64', 'regex:/^[a-f0-9]{64}$/']]);
 
-        $response = DB::transaction(static function () use ($data, $service, $audit, $request): ?array {
+        $response = DB::transaction(static function () use ($data, $service): ?array {
             $member = self::findLockedMember($data['setup_token']);
 
             if (! $member || $member->mfa_enrolled_at || $member->is_active) {
@@ -52,7 +52,7 @@ final class StaffMfaEnrollmentController extends Controller
             'code' => ['required', 'string', 'regex:/^[0-9]{6}$/'],
         ]);
 
-        $codes = DB::transaction(static function () use ($data, $service): ?array {
+        $codes = DB::transaction(static function () use ($data, $service, $audit, $request): ?array {
             $member = self::findLockedMember($data['setup_token']);
 
             if (! $member || $member->mfa_enrolled_at || ! $member->mfa_pending_secret
