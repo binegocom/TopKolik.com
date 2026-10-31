@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'services/api/**'
+      - 'ROADMAP.json'
+      - 'PROJECT_STATUS.md'
       - 'scripts/configure-local-api-env.py'
       - 'scripts/test-editorial-guard.sh'
       - '.github/workflows/laravel-api.yml'

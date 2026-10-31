@@ -4,7 +4,7 @@
 
 **As of:** 2026-10-31  
 **Release:** Not started  
-**Tracked tasks:** 147 | **Documentation tasks done:** 3 | **Implementation done:** 6
+**Tracked tasks:** 147 | **Documentation tasks done:** 3 | **Implementation done:** 7
 
 ## Phase status
 
@@ -87,6 +87,12 @@
 - Acceptance requires one-time emailed secret, verifies email, hashes password and creates inactive pending-MFA staff identity. No admin login, grant or session endpoints exist.
 - Verified on GitHub Actions: 54 Laravel tests (305 assertions), SMTP send + HTTP accept/replay denial, 17 editorial policy tests and Composer audit: https://github.com/binegocom/TopKolik.com/actions/runs/41249604897
 - This does **not** authorize staff access: mandatory MFA, admin login and RBAC remain open. PR #24: https://github.com/binegocom/TopKolik.com/pull/24
+
+## P03-011 reader authentication abuse controls — verified
+
+- **done (backend security controls):** Independent per-IP (20/minute) and normalized-account (12/hour) reader login throttles prevent both multi-account password spraying and distributed per-account brute force. Reset redemption retains independent IP/account throttles, single-use tokens and all-device revocation.
+- GitHub Actions run [41250002242](https://github.com/binegocom/TopKolik.com/actions/runs/41250002242) on commit `ad9e14b703400734fe2985beaf22729ea6e39a25`: **58 Laravel tests / 369 assertions passed** on disposable PostgreSQL and Redis; live HTTP and real Mailpit SMTP checks, Composer audit and 17 editorial guard cases passed. PR [#25](https://github.com/binegocom/TopKolik.com/pull/25).
+- Automated adversarial regression tests are not an independent penetration test. Production trusted-proxy configuration, Redis rate-limit topology, WAF and monitoring remain release checks; no production deployment is implied.
 
 ## Open blocking decisions
 
