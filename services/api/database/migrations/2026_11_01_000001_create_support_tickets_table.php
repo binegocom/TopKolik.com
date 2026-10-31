@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('assigned_staff_id')->nullable()
                 ->constrained('staff_members')->restrictOnDelete();
-            $table->string('subject', 180);
+            $table->text('subject');
             $table->text('message');
             $table->string('status', 24)->default('open');
             $table->timestampsTz();
