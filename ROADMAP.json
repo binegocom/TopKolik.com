@@ -527,7 +527,7 @@
       "id": "P02-005",
       "phase": "P02",
       "title": "Scaffold Laravel modular API",
-      "status": "todo",
+      "status": "in_review",
       "priority": "P0",
       "depends_on": [
         "P01-GATE"
@@ -536,12 +536,37 @@
       "acceptance_criteria": [
         "Composer lint/type/test and API health check pass."
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "type": "test",
+          "command": "composer validate --strict && composer install --prefer-dist --no-interaction && composer audit --no-interaction",
+          "result": "Successful, no advisories (PHP 8.4)",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41245895596"
+        },
+        {
+          "type": "test",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "Disposable PostgreSQL and Redis: 5 passed (15 assertions)",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41245895596"
+        },
+        {
+          "type": "test",
+          "command": "bash scripts/test-editorial-guard.sh",
+          "result": "17 original publication policy cases passed",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41245895596"
+        },
+        {
+          "type": "revision",
+          "value": "6ca1e22315b0e21f4efb3c866a8dd4b256352bcc"
+        }
+      ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
       "pr_url": null,
-      "limitations": []
+      "limitations": [
+        "Live HTTP curl smoke and pull-request CI still pending; production deployment, auth, sports data and third-party rights remain unimplemented."
+      ]
     },
     {
       "id": "P02-006",

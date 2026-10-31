@@ -1,6 +1,6 @@
 # Laravel 13 API foundation — implementation scope
 
-The project retains `services/api/app/Domain/Editorial` and its existing evidence-based safety guard. The independent Laravel skeleton is created from the official `laravel/laravel` 13.x Composer project, with a committed `composer.lock`. First bootstrap is performed on an isolated development branch; no framework migration or package installer should delete existing domain code.
+The project retains `services/api/app/Domain/Editorial` and its existing evidence-based safety guard. The independent Laravel skeleton is created from the official `laravel/laravel` 13.x Composer project, with a committed `composer.lock`. The initial non-destructive bootstrap was executed on a dedicated feature branch and the Composer dependency lock is committed. The one-time scaffolding workflow and duplicate source templates are intentionally removed after generation; do not reinitialize an existing API. The original editorial domain remains intact.
 
 ## Current contract
 
@@ -27,8 +27,8 @@ php artisan test
 
 ## Reproducible CI
 
-GitHub Actions checks PHP 8.4, required PHP extensions, `composer install` with committed lock, Laravel routes, PostgreSQL/Redis connectivity, migrations on disposable CI volumes, health feature tests, and the original standalone publication guard tests. Its bootstrap generation workflow is a one-shot operation for the dedicated feature branch and is **not** a deployment workflow.
+GitHub Actions checks PHP 8.4, required extensions, locked Composer dependencies, Laravel routes, PostgreSQL/Redis connectivity, migrations on disposable CI volumes, health feature tests, HTTP smoke and the standalone publication guard tests. The one-shot bootstrap generation was performed in run https://github.com/binegocom/TopKolik.com/actions/runs/41245895596 and its privileged workflow was removed from the target tree.
 
 ## Completion gate
 
-P02-005 remains **in_progress** until official Laravel framework code and lock are committed, `composer install`, health/ready tests, real DB/Redis integration and dependency audit pass in CI. The existence of this design document alone is not completion.
+P02-005 is **in_review** until pull-request and live HTTP smoke tests pass and the implementation is merged. Technical acceptance does not imply that the P01 licensing/publisher gate or production release gate is complete.

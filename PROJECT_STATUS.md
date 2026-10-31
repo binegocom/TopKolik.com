@@ -1,6 +1,6 @@
 # Topkolik — Project Status and Verification Log
 
-> **NOT A WORKING PRODUCT.** The project contains planning artifacts plus an isolated, PHP-only editorial guard with unit tests. Laravel/Next.js/Flutter apps, service integrations and deployments have not been built.
+> **NOT A WORKING PRODUCT.** A minimal Laravel API runtime now exists on the feature branch, but reader/web/mobile/admin services, sports data providers and deployment are not implemented.
 
 **As of:** 2026-10-31  
 **Release:** Not started  
@@ -47,6 +47,12 @@
 - `P02-004` local Compose stack is in progress; 7/7 static tests and GitHub Actions PostgreSQL, Redis and Mailpit live smoke checks passed: https://github.com/binegocom/TopKolik.com/actions/runs/41244912287
 - LocalStack 2026 S3 test requires an auth token, so this task is **not done**. No Laravel app was started.
 - GitHub development infrastructure PR: https://github.com/binegocom/TopKolik.com/pull/19
+
+## Laravel API foundation — awaiting PR review
+
+- `P02-005` is **in_review**: Laravel 13 skeleton, Composer lock, PostgreSQL/Redis connections, `/health` and `/ready`, request IDs, 5 feature tests (15 assertions), and 17 legacy guard scenarios confirmed: https://github.com/binegocom/TopKolik.com/actions/runs/41245895596
+- Live HTTP curl smoke must pass on the PR branch. No API users, authorization, data ingest, stories or production deployment yet.
+- Initial scaffold was created safely on an isolated GitHub feature branch, preserving the existing editorial code.
 
 ## Open blocking decisions
 
