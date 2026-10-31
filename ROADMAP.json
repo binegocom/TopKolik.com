@@ -33,7 +33,7 @@
     {
       "id": "P02",
       "name": "Repository and engineering foundation",
-      "status": "todo",
+      "status": "in_progress",
       "gate": "P02-GATE",
       "task_count": 11
     },
@@ -492,7 +492,7 @@
       "id": "P02-004",
       "phase": "P02",
       "title": "Create developer Docker environment",
-      "status": "todo",
+      "status": "in_progress",
       "priority": "P0",
       "depends_on": [
         "P01-GATE"
@@ -501,12 +501,27 @@
       "acceptance_criteria": [
         "Fresh local startup with compose validation and isolated volumes."
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "type": "test",
+          "command": "python3 -m unittest discover -s tests -p test_dev_infrastructure.py -v",
+          "result": "7/7 passed locally and in GitHub Actions",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41244912287"
+        },
+        {
+          "type": "test",
+          "command": "bash scripts/check-dev-infra.sh && bash scripts/check-dev-tools.sh",
+          "result": "PostgreSQL/Redis live health and Mailpit HTTP smoke passed on GitHub Actions",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41244912287"
+        }
+      ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
       "pr_url": null,
-      "limitations": []
+      "limitations": [
+        "LocalStack 2026 S3 integration not tested: valid LOCALSTACK_AUTH_TOKEN and a licensed account are required. Docker infrastructure is development-only; no Laravel application exists."
+      ]
     },
     {
       "id": "P02-005",

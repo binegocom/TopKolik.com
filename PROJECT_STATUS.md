@@ -12,7 +12,7 @@
 |---|---|---:|---|
 | `P00-GATE` | Project blueprint and governance | 4 | `in_progress` |
 | `P01-GATE` | Rights, provider discovery and legal foundations | 10 | `in_progress` |
-| `P02-GATE` | Repository and engineering foundation | 11 | `todo` |
+| `P02-GATE` | Repository and engineering foundation | 11 | `in_progress` |
 | `P03-GATE` | Authentication, roles and privacy | 11 | `todo` |
 | `P04-GATE` | Sports catalog and licensed ingestion | 10 | `todo` |
 | `P05-GATE` | Match center, discovery and search API | 8 | `todo` |
@@ -41,6 +41,12 @@
 - Local test: 5 PHP syntax checks and 17 unit scenarios passed on PHP 8.4.24 (2026-10-31).
 - Not connected to Laravel, live provider contracts, persistence or production publishing. Therefore **zero implementation tasks are marked done**.
 - `P01-003`: desk research documented; actual credentialed provider assessment still pending.
+
+## In-progress infrastructure verification
+
+- `P02-004` local Compose stack is in progress; 7/7 static tests and GitHub Actions PostgreSQL, Redis and Mailpit live smoke checks passed: https://github.com/binegocom/TopKolik.com/actions/runs/41244912287
+- LocalStack 2026 S3 test requires an auth token, so this task is **not done**. No Laravel app was started.
+- GitHub development infrastructure PR: https://github.com/binegocom/TopKolik.com/pull/19
 
 ## Open blocking decisions
 
