@@ -150,8 +150,8 @@
 - **Verified:** 106 Laravel tests / 724 assertions on PostgreSQL/Redis, real HTTP/SMTP and 17 editorial guard scenarios: https://github.com/binegocom/TopKolik.com/actions/runs/41253897269
 - This is a private-editorial backend slice only; external feed ingestion, publishing, finance/ads authorization, admin UI and full BOLA acceptance are still outstanding, so P03-007 stays `in_progress`.
 
-## P03-010 security audit ledger — under CI review
+## P03-010 security audit ledger — tested partial implementation
 
 - Forward-only PostgreSQL staff audit ledger, server-generated request correlation and DML append-only triggers. Privileged state changes write audit records in the same transaction; ticket reply replay does not duplicate events.
 - Covers staff invitation acceptance, MFA enrollment, operator activation, login, step-up, logout, ticket reply and escalation. No credential, MFA factor, token, email or ticket body is logged.
-- **in_review, not done:** PostgreSQL CI and independent operational audit controls remain pending. Database owner/superuser can bypass triggers; offsite append-only shipping, production role separation, failed-login coverage, authorized search and retention policy are release prerequisites. No production readiness claim.
+- **in_progress, not done:** GitHub Actions run [41254268444](https://github.com/binegocom/TopKolik.com/actions/runs/41254268444) passed 110 Laravel tests / 751 assertions, PostgreSQL/Redis, HTTP, SMTP, 17 editorial guard tests and Composer audit. Database owner/superuser can bypass triggers; offsite append-only shipping, production role separation, failed-login coverage, authorized search and retention policy are release prerequisites. No production readiness claim.
