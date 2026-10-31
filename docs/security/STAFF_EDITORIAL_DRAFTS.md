@@ -1,6 +1,6 @@
 # Editorial draft workflow — scoped P03-007 implementation
 
-**Status:** Implementation in review. The repository now has private, revisioned editorial draft persistence; publishing remains forbidden and P03-007 is still incomplete.
+**Status:** Backend slice verified by CI (106 tests / 724 assertions) https://github.com/binegocom/TopKolik.com/actions/runs/41253897269. The repository now has private, revisioned editorial draft persistence; publishing remains forbidden and P03-007 is still incomplete.
 
 ## API
 - `GET /api/v1/staff/editorial/drafts`: paginate at most 20 non-public drafts belonging to the authenticated editor, without body text in list.

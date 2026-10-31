@@ -147,4 +147,5 @@
 
 - Added editor-owned encrypted unpublished drafts; creates require active MFA editor; read/edit/submit require persisted owner SQL scope and fresh Laravel Gate permissions.
 - Optimistic revisions and row locks prevent stale concurrent updates; submit moves to `in_review` but cannot publish.
-- PostgreSQL authorization/IDOR/state tests pending; this is a partial role-enforcement slice only. No public editorial article records or provider content introduced.
+- **Verified:** 106 Laravel tests / 724 assertions on PostgreSQL/Redis, real HTTP/SMTP and 17 editorial guard scenarios: https://github.com/binegocom/TopKolik.com/actions/runs/41253897269
+- This is a private-editorial backend slice only; external feed ingestion, publishing, finance/ads authorization, admin UI and full BOLA acceptance are still outstanding, so P03-007 stays `in_progress`.
