@@ -68,6 +68,41 @@ final class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        RateLimiter::for('staff-mfa-setup', function (Request $request): array {
+            $token = $request->input('setup_token', '');
+
+            return [
+                Limit::perMinute(8)->by('staff-mfa-setup-ip:'.($request->ip() ?? 'unknown')),
+                Limit::perMinute(3)->by('staff-mfa-setup-token:'.hash('sha256', is_string($token) ? $token : '')),
+            ];
+        });
+
+        RateLimiter::for('staff-mfa-confirm', function (Request $request): array {
+            $token = $request->input('setup_token', '');
+
+            return [
+                Limit::perMinute(8)->by('staff-mfa-confirm-ip:'.($request->ip() ?? 'unknown')),
+                Limit::perMinute(5)->by('staff-mfa-confirm-token:'.hash('sha256', is_string($token) ? $token : '')),
+            ];
+        });
+
+        RateLimiter::for('staff-login', function (Request $request): array {
+            $email = $request->input('email', '');
+            $normalized = is_string($email) ? mb_strtolower(trim($email)) : '';
+
+            return [
+                Limit::perMinute(15)->by('staff-login-ip:'.($request->ip() ?? 'unknown')),
+                Limit::perHour(10)->by('staff-login-account:'.hash('sha256', $normalized)),
+            ];
+        });
+
+        RateLimiter::for('staff-step-up', function (Request $request): array {
+            return [
+                Limit::perMinute(8)->by('staff-step-up-ip:'.($request->ip() ?? 'unknown')),
+                Limit::perHour(6)->by('staff-step-up-user:'.($request->user()?->getAuthIdentifier() ?? 'anonymous')),
+            ];
+        });
+
         ResetPassword::createUrlUsing(function ($notifiable, string $token): string {
             $base = Config::get('auth.reader_password_reset_url');
 

@@ -912,7 +912,7 @@
       "id": "P03-006",
       "phase": "P03",
       "title": "Implement staff MFA and recovery",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P02-GATE"
@@ -921,12 +921,33 @@
       "acceptance_criteria": [
         "MFA bypass and recovery tests pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "verification",
+          "command": "composer validate --strict && composer install --prefer-dist --no-interaction && composer audit --no-interaction && php artisan migrate --force && php artisan test",
+          "result": "On isolated PostgreSQL/Redis: 67 Laravel tests, 486 assertions passed; audited dependency lock with no security advisories.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41250991386"
+        },
+        {
+          "type": "verification",
+          "command": "bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh",
+          "result": "Real HTTP readiness, Mailpit registration/reset/staff invitation, one-time invite denial and 17 original publication guard tests passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41250991386"
+        },
+        {
+          "type": "revision",
+          "value": "d4a32cd5551b4f4ab4cbcbc0adb26433f9ad2c3e",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/26"
+        }
+      ],
+      "verified_at": "2026-10-31",
       "owner": null,
       "issue_url": null,
-      "pr_url": null,
-      "limitations": []
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/26",
+      "limitations": [
+        "Pre-production MFA implementation on feature branch awaiting PostgreSQL test and security review; admin web BFF, staff authorization matrix and audit ledger are separate open tasks. No production activation.",
+        "MFA backend ready; no admin UI/BFF, role permissions, hardware passkeys, real production deployment or external mail credentials verified. P03-007 must establish default-deny policies before any staff administrative API."
+      ]
     },
     {
       "id": "P03-007",

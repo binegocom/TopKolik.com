@@ -74,3 +74,5 @@ The approved brand presentation reference is in the conversation's downloadable 
 ## GitHub execution
 
 - [Phase issues, PR and task status protocol](docs/product/GITHUB_TRACKING.md)
+
+Verified staff TOTP and recovery backend: docs/security/STAFF_MFA.md; admin role permissions remain blocked pending P03-007.
