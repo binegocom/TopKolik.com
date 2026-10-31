@@ -1,6 +1,6 @@
 # Topkolik — Autonomous Sports News Platform
 
-> **Not a working application.** This repository contains a project blueprint and the first isolated PHP publication-policy guard. Production backend, mobile/web apps, provider connections and deployment are **not** implemented or verified.
+> **Not a working public product.** The repository contains a tested Laravel 13 API foundation and an isolated editorial policy guard. User authentication, sports-data providers, AI publishing, public web/mobile apps, admin, advertising and production deployment are **not** implemented or verified.
 
 **Mission:** Build an original, legally sourced, AI-assisted, largely autonomous sports-news publication for web, iOS and Android, with particular emphasis on Turkish sports competitions across all accessible disciplines.
 
@@ -13,7 +13,7 @@
 | Mobile | Flutter / Dart; iOS HIG and Android Material 3 adaptive navigation |
 | Consumer web | Next.js App Router, React, TypeScript, server-rendered news pages |
 | Admin web | Separate Next.js App Router application, private, roles + MFA |
-| API and automation | Laravel 13 modular monolith; PHP 8.3+; version locked on implementation |
+| API and automation | Laravel 13 modular monolith; PHP 8.4 CI; Composer lock committed |
 | Main database | PostgreSQL; durable relational constraints and provenance |
 | Cache & jobs | Redis; Laravel queues, Horizon and Scheduler |
 | Storage | S3-compatible object storage; Cloudflare R2 preferred, subject to tests |

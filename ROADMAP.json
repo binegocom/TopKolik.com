@@ -527,7 +527,7 @@
       "id": "P02-005",
       "phase": "P02",
       "title": "Scaffold Laravel modular API",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P01-GATE"
@@ -536,12 +536,48 @@
       "acceptance_criteria": [
         "Composer lint/type/test and API health check pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "test",
+          "command": "composer validate --strict && composer install --prefer-dist --no-interaction && composer audit --no-interaction",
+          "result": "Successful, no advisories (PHP 8.4)",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41245895596"
+        },
+        {
+          "type": "test",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "Disposable PostgreSQL and Redis: 5 passed (15 assertions)",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41245895596"
+        },
+        {
+          "type": "test",
+          "command": "bash scripts/test-editorial-guard.sh",
+          "result": "17 original publication policy cases passed",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41245895596"
+        },
+        {
+          "type": "revision",
+          "value": "6ca1e22315b0e21f4efb3c866a8dd4b256352bcc"
+        },
+        {
+          "type": "verification",
+          "command": "composer validate --strict; composer install; composer audit; php artisan migrate --force; php artisan test; bash scripts/check-api-http.sh; bash scripts/test-editorial-guard.sh",
+          "result": "GitHub Actions run 41246075824 PASS: 5 Laravel tests (15 assertions), live HTTP /health /ready /api/v1/status, 17 policy guard cases, composer audit no advisories",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41246075824"
+        },
+        {
+          "type": "revision",
+          "value": "abdb86b96cee03cfac7ca69ade882bec6b3128fd",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/20"
+        }
+      ],
+      "verified_at": "2026-10-31",
       "owner": null,
       "issue_url": null,
-      "pr_url": null,
-      "limitations": []
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/20",
+      "limitations": [
+        "P01-GATE remains open. Foundation readiness does not authorize third-party data acquisition, automated publication, advertising or production launch."
+      ]
     },
     {
       "id": "P02-006",
