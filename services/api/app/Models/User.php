@@ -20,6 +20,22 @@ class User extends Authenticatable implements MustVerifyEmail
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
+
+    public function readerPreference(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ReaderPreference::class);
+    }
+
+    public function favoriteSports(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Sport::class, 'reader_favorite_sports')->withTimestamps();
+    }
+
+    public function favoriteTeams(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Team::class, 'reader_favorite_teams')->withTimestamps();
+    }
+
     protected function casts(): array
     {
         return [

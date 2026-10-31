@@ -52,7 +52,7 @@ final class ReaderAuthController extends Controller
         }
 
         // Mobile API tokens are never intended for storage in browser localStorage.
-        $token = $user->createToken('reader-mobile', ['reader:read'], now()->addDays(30));
+        $token = $user->createToken('reader-mobile', ['reader:read', 'reader:write'], now()->addDays(30));
 
         return response()->json([
             'token_type' => 'Bearer',

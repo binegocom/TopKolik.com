@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\ReaderAuthController;
 use App\Http\Controllers\ReaderEmailVerificationController;
 use App\Http\Controllers\ReaderPasswordResetController;
+use App\Http\Controllers\ReaderProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/status', fn () => response()->json(['service' => 'topkolik-api', 'status' => 'operational']))
@@ -28,5 +29,21 @@ Route::prefix('auth')->group(function (): void {
     Route::middleware(['auth:sanctum', 'ability:reader:read'])->group(function (): void {
         Route::get('/me', [ReaderAuthController::class, 'me']);
         Route::post('/logout', [ReaderAuthController::class, 'logout']);
+    });
+});
+
+
+// Reader-only account resources: never accept a client-selected user ID.
+Route::middleware('auth:sanctum')->prefix('me')->group(function (): void {
+    Route::middleware('ability:reader:read')->group(function (): void {
+        Route::get('/', [ReaderProfileController::class, 'show']);
+        Route::get('/preferences', [ReaderProfileController::class, 'preferences']);
+        Route::get('/favorites', [ReaderProfileController::class, 'favorites']);
+    });
+
+    Route::middleware('ability:reader:write')->group(function (): void {
+        Route::patch('/', [ReaderProfileController::class, 'update']);
+        Route::patch('/preferences', [ReaderProfileController::class, 'updatePreferences']);
+        Route::put('/favorites', [ReaderProfileController::class, 'replaceFavorites']);
     });
 });
