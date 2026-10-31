@@ -4,7 +4,7 @@
 
 **As of:** 2026-10-31  
 **Release:** Not started  
-**Tracked tasks:** 147 | **Documentation tasks done:** 3 | **Implementation done:** 1
+**Tracked tasks:** 147 | **Documentation tasks done:** 3 | **Implementation done:** 3
 
 ## Phase status
 
@@ -13,7 +13,7 @@
 | `P00-GATE` | Project blueprint and governance | 4 | `in_progress` |
 | `P01-GATE` | Rights, provider discovery and legal foundations | 10 | `in_progress` |
 | `P02-GATE` | Repository and engineering foundation | 11 | `in_progress` |
-| `P03-GATE` | Authentication, roles and privacy | 11 | `todo` |
+| `P03-GATE` | Authentication, roles and privacy | 11 | `in_progress` |
 | `P04-GATE` | Sports catalog and licensed ingestion | 10 | `todo` |
 | `P05-GATE` | Match center, discovery and search API | 8 | `todo` |
 | `P06-GATE` | Autonomous editorial and fact validation | 12 | `todo` |
@@ -53,6 +53,14 @@
 - `P02-005` is **done**:  Laravel 13 skeleton, Composer lock, PostgreSQL/Redis connections, `/health` and `/ready`, request IDs, 5 feature tests (15 assertions), and 17 legacy guard scenarios confirmed: https://github.com/binegocom/TopKolik.com/actions/runs/41245895596 and https://github.com/binegocom/TopKolik.com/actions/runs/41246075824
 - Live HTTP smoke **passed** on the feature branch. PR #20: https://github.com/binegocom/TopKolik.com/pull/20. No API users, authorization, data ingest, stories or production deployment yet.
 - Initial scaffold was created safely on an isolated GitHub feature branch, preserving the existing editorial code.
+
+## Reader authentication — awaiting PR verification
+
+- `P03-001` registration and signed email verification: **done**. Real Mailpit SMTP delivery tested in Actions run 41247084594. Polished client confirmation screen and production email configuration remain pending.
+- `P03-002` verified mobile reader sign-in and token revocation: **done**, PR #21 / Actions run 41246890524 (15 Laravel tests, 52 assertions). Scoped, time-limited Sanctum bearer tokens, `/me`, `/logout`, expiry and wrong-scope denials verified.
+- Latest GitHub Actions run passed 15 Laravel tests (52 assertions) and 17 editorial checks: https://github.com/binegocom/TopKolik.com/actions/runs/41246890524
+- Production email provider setup, password reset, web cookie+CSRF auth, staff RBAC/MFA and reader UI are **not complete**.
+- P03-001 and P03-002 are backend-complete with recorded tests; P03-GATE is **not complete** (password reset, staff MFA/RBAC, browser session, privacy operations pending).
 
 ## Open blocking decisions
 

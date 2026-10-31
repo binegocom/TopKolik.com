@@ -1,6 +1,6 @@
 # Topkolik — Autonomous Sports News Platform
 
-> **Not a working public product.** The repository contains a tested Laravel 13 API foundation and an isolated editorial policy guard. User authentication, sports-data providers, AI publishing, public web/mobile apps, admin, advertising and production deployment are **not** implemented or verified.
+> **Not a working public product.** The repository contains a tested Laravel 13 API foundation, a limited reader-only Sanctum mobile authentication slice and an isolated editorial policy guard. Password reset, admin MFA, staff authorization, browser sessions, sports-data providers, AI publishing, public web/mobile apps, advertising and production deployment are **not** implemented or verified.
 
 **Mission:** Build an original, legally sourced, AI-assisted, largely autonomous sports-news publication for web, iOS and Android, with particular emphasis on Turkish sports competitions across all accessible disciplines.
 
