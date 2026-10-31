@@ -142,3 +142,9 @@
 - Conversation history is available only to the assigned support operator. No consumer ticket creation, real outbound messaging, finance/ads permissions or external notification has been added.
 - CI verified: 95 tests / 641 assertions on PostgreSQL/Redis, real Mailpit SMTP, 17 editorial policy tests, Composer audit: https://github.com/binegocom/TopKolik.com/actions/runs/41253330607
 - Implementation remains **partial** and P03-007 stays `in_progress` until editorial models, full staff-resource authorization and advertiser/finance role scopes are built.
+
+## P03-007 persisted editorial draft workflow — PR review
+
+- Added editor-owned encrypted unpublished drafts; creates require active MFA editor; read/edit/submit require persisted owner SQL scope and fresh Laravel Gate permissions.
+- Optimistic revisions and row locks prevent stale concurrent updates; submit moves to `in_review` but cannot publish.
+- PostgreSQL authorization/IDOR/state tests pending; this is a partial role-enforcement slice only. No public editorial article records or provider content introduced.
