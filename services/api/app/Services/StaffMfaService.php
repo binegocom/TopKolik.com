@@ -33,6 +33,17 @@ final class StaffMfaService
             ], '', '&', PHP_QUERY_RFC3986);
     }
 
+    public function verifyPendingCode(StaffMember $member, string $code): int|false
+    {
+        if (! $member->mfa_pending_secret || ! preg_match('/^[0-9]{6}$/D', $code)) {
+            return false;
+        }
+
+        $step = $this->totp->verifyKeyNewer($member->mfa_pending_secret, $code, null, 1);
+
+        return $step === false ? false : (int) $step;
+    }
+
     // Must be called with the staff row locked in a database transaction.
     public function consumeTotp(StaffMember $member, string $code): bool
     {

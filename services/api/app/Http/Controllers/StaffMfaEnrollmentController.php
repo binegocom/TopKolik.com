@@ -55,7 +55,12 @@ final class StaffMfaEnrollmentController extends Controller
             $member = self::findLockedMember($data['setup_token']);
 
             if (! $member || $member->mfa_enrolled_at || ! $member->mfa_pending_secret
-                || $member->is_active || ! $service->confirmPendingCode($member, $data['code'])) {
+                || $member->is_active) {
+                return null;
+            }
+
+            $step = $service->verifyPendingCode($member, $data['code']);
+            if ($step === false) {
                 return null;
             }
 
@@ -65,7 +70,7 @@ final class StaffMfaEnrollmentController extends Controller
                 'mfa_setup_token_hash' => null,
                 'mfa_setup_expires_at' => null,
                 'mfa_enrolled_at' => now(),
-                'mfa_last_step' => $service->lastVerifiedStep(),
+                'mfa_last_step' => $step,
             ])->save();
 
             return $service->issueRecoveryCodes($member);
