@@ -51,6 +51,8 @@ jobs:
           php artisan test
       - name: Verify live Laravel HTTP endpoints
         run: bash scripts/check-api-http.sh
+      - name: Verify real SMTP verification email delivery
+        run: bash scripts/check-reader-email-delivery.sh
       - name: Verify standalone publication gate
         run: bash scripts/test-editorial-guard.sh
       - name: Stop isolated development containers
