@@ -91,7 +91,7 @@ final class ReaderPasswordResetController extends Controller
         if (! is_array($parts) || ! isset($parts['scheme'], $parts['host'], $parts['path'])) {
             return false;
         }
-        if (isset($parts['user'], $parts['pass']) || isset($parts['query']) || isset($parts['fragment'])) {
+        if (isset($parts['user']) || isset($parts['pass']) || isset($parts['query']) || isset($parts['fragment'])) {
             return false;
         }
         if (($parts['path'] ?? '/') === '/') {
