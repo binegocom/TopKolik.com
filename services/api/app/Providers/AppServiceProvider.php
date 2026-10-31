@@ -24,6 +24,13 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Gate::define('staff-create-draft', function (
+            Authenticatable $principal,
+            PersonalAccessToken $token,
+        ): bool {
+            return app(StaffAuthorizationPolicy::class)->canCreateDraft($principal, $token);
+        });
+
         Gate::define('staff-resource', function (
             Authenticatable $principal,
             string $action,

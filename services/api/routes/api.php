@@ -10,6 +10,7 @@ use App\Http\Controllers\StaffInvitationAcceptanceController;
 use App\Http\Controllers\StaffMfaEnrollmentController;
 use App\Http\Controllers\StaffAuthController;
 use App\Http\Controllers\StaffSupportTicketController;
+use App\Http\Controllers\StaffEditorialDraftController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/status', fn () => response()->json(['service' => 'topkolik-api', 'status' => 'operational']))
@@ -70,6 +71,17 @@ Route::prefix('staff')->group(function (): void {
         Route::post('/auth/logout', [StaffAuthController::class, 'logout']);
         Route::post('/auth/step-up', [StaffAuthController::class, 'stepUp'])
             ->middleware('throttle:staff-step-up');
+
+        // Private editor drafts, revisioned and unpublishable at this stage.
+        Route::get('/editorial/drafts', [StaffEditorialDraftController::class, 'index']);
+        Route::post('/editorial/drafts', [StaffEditorialDraftController::class, 'store'])
+            ->middleware('throttle:20,1');
+        Route::get('/editorial/drafts/{draft}', [StaffEditorialDraftController::class, 'show'])
+            ->whereNumber('draft');
+        Route::patch('/editorial/drafts/{draft}', [StaffEditorialDraftController::class, 'update'])
+            ->whereNumber('draft')->middleware('throttle:40,1');
+        Route::post('/editorial/drafts/{draft}/submit', [StaffEditorialDraftController::class, 'submit'])
+            ->whereNumber('draft')->middleware('throttle:10,1');
 
         // No public ticket discovery: SQL assignment scope and Gate both enforce access.
         Route::get('/support/tickets/{ticket}', [StaffSupportTicketController::class, 'show'])
