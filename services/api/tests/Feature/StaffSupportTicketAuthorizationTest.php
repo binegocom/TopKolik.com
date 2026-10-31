@@ -8,6 +8,7 @@ use App\Models\StaffMember;
 use App\Models\SupportTicket;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 final class StaffSupportTicketAuthorizationTest extends TestCase
@@ -55,6 +56,9 @@ final class StaffSupportTicketAuthorizationTest extends TestCase
     {
         $staff = $this->staff();
         $ticket = $this->ticket($staff);
+        $raw = DB::table('support_tickets')->where('id', $ticket->id)->first();
+        $this->assertNotSame($ticket->subject, $raw->subject);
+        $this->assertNotSame($ticket->message, $raw->message);
 
         $response = $this->withToken($this->token($staff))
             ->getJson('/api/v1/staff/support/tickets/'.$ticket->id)
