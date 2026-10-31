@@ -1,0 +1,35 @@
+name: Implementation task
+description: Tracked Topkolik engineering task with evidence-backed completion
+body:
+  - type: input
+    id: task_id
+    attributes:
+      label: Roadmap Task ID
+      description: Must match a ROADMAP.json ID
+      placeholder: P03-001
+    validations:
+      required: true
+  - type: textarea
+    id: current_state
+    attributes:
+      label: Existing code/current state analysis
+    validations:
+      required: true
+  - type: textarea
+    id: implementation
+    attributes:
+      label: Minimal implementation plan
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria, security and licensing risks
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Test commands, results, PR/commit and limitations
+    validations:
+      required: false
