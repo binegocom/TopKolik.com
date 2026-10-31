@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('email', 254)->unique();
             $table->string('password');
             $table->string('role', 32);
-            $table->timestampTz('email_verified_at');
+            $table->timestampTz('email_verified_at')->nullable();
             $table->boolean('is_active')->default(false);
             $table->timestampTz('mfa_enrolled_at')->nullable();
             $table->timestampsTz();
