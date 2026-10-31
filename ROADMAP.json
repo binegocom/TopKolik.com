@@ -527,7 +527,7 @@
       "id": "P02-005",
       "phase": "P02",
       "title": "Scaffold Laravel modular API",
-      "status": "in_review",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P01-GATE"
@@ -558,14 +558,25 @@
         {
           "type": "revision",
           "value": "6ca1e22315b0e21f4efb3c866a8dd4b256352bcc"
+        },
+        {
+          "type": "verification",
+          "command": "composer validate --strict; composer install; composer audit; php artisan migrate --force; php artisan test; bash scripts/check-api-http.sh; bash scripts/test-editorial-guard.sh",
+          "result": "GitHub Actions run 41246075824 PASS: 5 Laravel tests (15 assertions), live HTTP /health /ready /api/v1/status, 17 policy guard cases, composer audit no advisories",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41246075824"
+        },
+        {
+          "type": "revision",
+          "value": "abdb86b96cee03cfac7ca69ade882bec6b3128fd",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/20"
         }
       ],
-      "verified_at": null,
+      "verified_at": "2026-10-31",
       "owner": null,
       "issue_url": null,
-      "pr_url": null,
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/20",
       "limitations": [
-        "Live HTTP curl smoke and pull-request CI still pending; production deployment, auth, sports data and third-party rights remain unimplemented."
+        "P01-GATE remains open. Foundation readiness does not authorize third-party data acquisition, automated publication, advertising or production launch."
       ]
     },
     {

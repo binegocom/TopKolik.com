@@ -31,4 +31,4 @@ GitHub Actions checks PHP 8.4, required extensions, locked Composer dependencies
 
 ## Completion gate
 
-P02-005 is **in_review** until pull-request and live HTTP smoke tests pass and the implementation is merged. Technical acceptance does not imply that the P01 licensing/publisher gate or production release gate is complete.
+P02-005 implementation is **done** with evidence from PR #20 and GitHub Actions run https://github.com/binegocom/TopKolik.com/actions/runs/41246075824; final merge is a repository governance step. Five Laravel tests (15 assertions), real DB/Redis and live HTTP probes, 17 standalone editorial tests, and Composer audit passed. Technical acceptance does not imply that the P01 licensing/publisher gate or production release gate is complete.
