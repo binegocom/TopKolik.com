@@ -35,8 +35,13 @@ final class StaffMfaTest extends TestCase
     {
         $mail = app(\App\Services\StaffInvitationService::class)
             ->issue('editor@example.test', 'editor', 'operator');
-        $sent = Mail::assertSent(\App\Mail\StaffInvitationMail::class);
-        parse_str((string) parse_url($sent->first()->acceptUrl, PHP_URL_QUERY), $params);
+        $url = null;
+        Mail::assertSent(\App\Mail\StaffInvitationMail::class, function (\App\Mail\StaffInvitationMail $mail) use (&$url): bool {
+            $url = $mail->acceptUrl;
+
+            return true;
+        });
+        parse_str((string) parse_url((string) $url, PHP_URL_QUERY), $params);
 
         $response = $this->postJson('/api/v1/staff/invitations/accept', [
             'invitation' => $mail->id,
