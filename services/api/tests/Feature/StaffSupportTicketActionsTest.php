@@ -211,6 +211,9 @@ final class StaffSupportTicketActionsTest extends TestCase
 
     public function test_mutation_payloads_cannot_choose_ticket_owner_or_state(): void
     {
+        // Keep this validation test independent from legitimate cross-test
+        // IP-based support escalation rate limits, verified elsewhere.
+        $this->withServerVariables(['REMOTE_ADDR' => '198.51.100.53']);
         $support = $this->staff();
         $ticket = $this->ticket($support);
         $this->withToken($this->token($support, true));
