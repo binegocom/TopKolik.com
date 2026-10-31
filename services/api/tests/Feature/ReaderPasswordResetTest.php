@@ -172,7 +172,6 @@ final class ReaderPasswordResetTest extends TestCase
     public function test_untrusted_url_or_insecure_external_http_url_is_rejected(): void
     {
         Notification::fake();
-        $user = User::factory()->create();
 
         foreach ([
             'http://evil.example.test/reset-password',
@@ -180,6 +179,9 @@ final class ReaderPasswordResetTest extends TestCase
             'https://example.test/reset-password?redirect=evil',
             'https://example.test/',
         ] as $url) {
+            // Each test case gets its own account to avoid triggering the separate
+            // per-account forgot-password abuse limiter (which is tested elsewhere).
+            $user = User::factory()->create();
             config()->set('auth.reader_password_reset_url', $url);
             $this->postJson('/api/v1/auth/password/forgot', ['email' => $user->email])
                 ->assertStatus(503);
