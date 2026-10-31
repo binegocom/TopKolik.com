@@ -71,3 +71,6 @@ The approved brand presentation reference is in the conversation's downloadable 
 - [Testing and release gates](docs/qa/TEST_AND_RELEASE_PLAN.md)
 - [Infrastructure and monitoring](docs/operations/INFRASTRUCTURE.md)
 - [Official sources reviewed](docs/research/OFFICIAL_REFERENCES.md)
+## GitHub execution
+
+- [Phase issues, PR and task status protocol](docs/product/GITHUB_TRACKING.md)
