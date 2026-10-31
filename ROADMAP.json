@@ -953,7 +953,7 @@
       "id": "P03-007",
       "phase": "P03",
       "title": "Implement RBAC permissions and policy enforcement",
-      "status": "todo",
+      "status": "in_progress",
       "priority": "P0",
       "depends_on": [
         "P02-GATE"
@@ -967,7 +967,9 @@
       "owner": null,
       "issue_url": null,
       "pr_url": null,
-      "limitations": []
+      "limitations": [
+        "This policy foundation is not full P03-007 completion. Real article/ticket records, scoped controllers, advertiser/finance tenancy and BOLA integration are pending; no admin route grants yet."
+      ]
     },
     {
       "id": "P03-008",

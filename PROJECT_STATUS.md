@@ -101,6 +101,12 @@
 - **done:** CI 67 Laravel tests / 486 assertions, Composer audit and real HTTP/SMTP smoke; editorial guard 17/17. https://github.com/binegocom/TopKolik.com/actions/runs/41250991386
 - TOTP replay and staff token revocation/deactivation were additionally hardened based on failed adversarial tests. The mandatory RBAC and admin UI are not implemented; no administrative privilege is exposed by MFA.
 
+## P03-007 staff authorization — foundation under review
+
+- Laravel Gate `staff-resource` default-deny role matrix implemented for owner-bound editorial drafts and assigned support tickets.
+- No publication, finance, advertising, superadmin or cross-advertiser access is granted by this foundational policy. Real resource API integration and BOLA tests remain required before P03-007 done.
+- PHPUnit PostgreSQL acceptance pending. No staff admin page or staff resource mutation endpoint was introduced.
+
 ## Open blocking decisions
 
 - [x] Repository created: https://github.com/binegocom/TopKolik.com — baseline planning PR #1 merged; engineering code remains on an independent review PR.
