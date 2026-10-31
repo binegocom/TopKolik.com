@@ -18,14 +18,22 @@ No editor action authorizes publication; publication must separately satisfy lic
 
 ## Resource data integrity
 
-`StaffResourceContext` is a typed internal context and must be constructed from a verified, repository-scoped persisted resource after loading it by authorized scope. **Never build it from API caller-provided IDs, state or owner attributes alone.** Actual articles/tickets/ads/invoices are not implemented in this repository, so no resource mutation API is exposed by this PR.
+`StaffResourceContext` is a typed internal context and must be constructed from a verified, repository-scoped persisted resource after loading it by authorized scope. **Never build it from API caller-provided IDs, state or owner attributes alone.** A minimal persisted support-ticket model and assigned-ticket read endpoint now exist; articles, advertiser resources and invoices are not implemented. No support ticket mutation API is exposed.
 
 ## Pending before P03-007 completion
 
-- Actual article/ticket database models and backend policies with ownership checks after scoped SQL loads.
+- Actual editorial article records and authorization after scoped SQL loads; support ticket read now uses assignment-scoped SQL and Gate, but reply/escalation remain unimplemented.
 - Persistent advertiser team memberships/tenant isolation (P03-008), finance reconciliation approvals and four-eyes controls.
-- Authenticated staff controller endpoints calling the defined Gate; BOLA/IDOR tests against real records and state transitions.
+- Extend authenticated Gate enforcement to draft editing and ticket state-changing actions, with BOLA/IDOR tests against real persisted records and transitions.
 - Audit logging for authorization decisions and sensitive transitions (P03-010).
 - No web/admin UI and no production rights transfer completed. Maintain P03-GATE open.
 
 Policy unit/feature tests use isolated PostgreSQL test records and internal typed resource snapshots only, not fake production records.
+
+## P03-007 support-ticket read slice
+
+- A forward-only migration creates empty `support_tickets` storage with FK assignment to `staff_members`, an indexed assignment/status lookup, and a PostgreSQL status check. No runtime tickets are fabricated or seeded.
+- `GET /api/v1/staff/support/tickets/{ticket}` requires a valid short-lived staff bearer session, verified MFA and an active staff member. The query filters `assigned_staff_id` **before** authorization; another operator's or unassigned ticket yields 404. The Gate additionally checks the persisted support role and allowed status.
+- Responses contain only the assigned ticket's content and status, and are marked `Cache-Control: no-store, private`. There is no ticket list, create, reply, reassignment, export, or public API yet.
+- Feature tests cover assignment IDOR, role changes, deactivation, expired sessions, reader tokens and non-cacheability against disposable PostgreSQL in CI.
+- This is a partial P03-007 deliverable, not RBAC completion. No claim of production readiness, legal retention approval or P03-GATE closure.
