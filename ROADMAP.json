@@ -1001,15 +1001,33 @@
           "type": "revision",
           "value": "1baf6e95668f2da6bbf6127cf4f7a9df0e7a87ff",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/28"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit && php artisan migrate --force && php artisan test",
+          "result": "95 Laravel tests passed, 641 assertions, real disposable PostgreSQL and Redis, no Composer security advisories; support writes/role ownership/idempotency/step-up and regression suite verified.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41253330607"
+        },
+        {
+          "type": "verification",
+          "command": "bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh",
+          "result": "Real HTTP/SMTP smoke, staff email invitation/replay and 17 editorial publication guard tests passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41253330607"
+        },
+        {
+          "type": "revision",
+          "value": "85b24f646e1d62eba2c78f4227b2c7f5b128db3d",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/30"
         }
       ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/28",
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/30",
       "limitations": [
         "This policy foundation is not full P03-007 completion. Real article/ticket records, scoped controllers, advertiser/finance tenancy and BOLA integration are pending; no admin route grants yet.",
-        "Support ticket read is an incremental slice only; editorial draft models, support reply/escalation, advertiser and finance scopes, security audit and full BOLA matrix remain open."
+        "Support ticket read is an incremental slice only; editorial draft models, support reply/escalation, advertiser and finance scopes, security audit and full BOLA matrix remain open.",
+        "Support reply/escalation controller slice implemented and in CI review; P03-007 remains in_progress until editorial resource APIs, complete BOLA matrix, support ticket lifecycle and advertiser/finance scopes are verified."
       ]
     },
     {
