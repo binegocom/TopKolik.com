@@ -1,6 +1,6 @@
 # Topkolik — Project Status and Verification Log
 
-> **NOT A WORKING PRODUCT.** This is a documentation-only blueprint. The GitHub repository has been initialized; service integrations, builds and deployments are not yet available.
+> **NOT A WORKING PRODUCT.** The project contains planning artifacts plus an isolated, PHP-only editorial guard with unit tests. Laravel/Next.js/Flutter apps, service integrations and deployments have not been built.
 
 **As of:** 2026-10-31  
 **Release:** Not started  
@@ -11,7 +11,7 @@
 | Gate | Phase | Tasks | Status |
 |---|---|---:|---|
 | `P00-GATE` | Project blueprint and governance | 4 | `in_progress` |
-| `P01-GATE` | Rights, provider discovery and legal foundations | 10 | `todo` |
+| `P01-GATE` | Rights, provider discovery and legal foundations | 10 | `in_progress` |
 | `P02-GATE` | Repository and engineering foundation | 11 | `todo` |
 | `P03-GATE` | Authentication, roles and privacy | 11 | `todo` |
 | `P04-GATE` | Sports catalog and licensed ingestion | 10 | `todo` |
@@ -27,7 +27,7 @@
 | `P14-GATE` | Security, performance, accessibility and compliance | 10 | `todo` |
 | `P15-GATE` | Release and operation | 8 | `todo` |
 
-## Verified work (documentation only)
+## Verified work (planning only)
 
 | Task | Evidence | Verification |
 |---|---|---|
@@ -35,9 +35,16 @@
 | `P00-002` | `docs/architecture/ARCHITECTURE.md` | File existence + blueprint integrity validation; no application tests |
 | `P00-003` | `docs/qa/TEST_AND_RELEASE_PLAN.md` | File existence + blueprint integrity validation; no application tests |
 
+## Implementation spike — tested locally, NOT roadmap-complete
+
+- PHP preliminary publication guard in `services/api/app/Domain/Editorial/`.
+- Local test: 5 PHP syntax checks and 17 unit scenarios passed on PHP 8.4.24 (2026-10-31).
+- Not connected to Laravel, live provider contracts, persistence or production publishing. Therefore **zero implementation tasks are marked done**.
+- `P01-003`: desk research documented; actual credentialed provider assessment still pending.
+
 ## Open blocking decisions
 
-- [x] Repository created: https://github.com/binegocom/TopKolik.com — planning branch and PR verification required.
+- [x] Repository created: https://github.com/binegocom/TopKolik.com — baseline planning PR #1 merged; engineering code remains on an independent review PR.
 - [ ] Trademark/domain/app identifiers and publisher details.
 - [ ] Explicit Turkey-first UI locale decision (`tr` not silently added).
 - [ ] Commercial sports-data license and real provider coverage matrix.

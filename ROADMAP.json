@@ -26,7 +26,7 @@
     {
       "id": "P01",
       "name": "Rights, provider discovery and legal foundations",
-      "status": "todo",
+      "status": "in_progress",
       "gate": "P01-GATE",
       "task_count": 10
     },
@@ -264,7 +264,7 @@
       "id": "P01-003",
       "phase": "P01",
       "title": "Evaluate sports data providers and feature coverage",
-      "status": "todo",
+      "status": "in_progress",
       "priority": "P0",
       "depends_on": [
         "P00-GATE"
@@ -273,12 +273,20 @@
       "acceptance_criteria": [
         "Provider probe results from legitimate credentials and exact coverage recorded."
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "type": "file",
+          "path": "docs/research/SPORTS_DATA_PROVIDER_ASSESSMENT.md",
+          "validation": "Desk research only; provider credentials, licensing, sport coverage and costs not yet validated"
+        }
+      ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
       "pr_url": null,
-      "limitations": []
+      "limitations": [
+        "No actual provider account, permitted data probe, commercial license, visual asset rights or league coverage contract confirmed."
+      ]
     },
     {
       "id": "P01-004",

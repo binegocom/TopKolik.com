@@ -1,6 +1,6 @@
 # Topkolik — Autonomous Sports News Platform
 
-> **Planning blueprint — NOT a working application.** This repository package is documentation and project tracking only. Production backend, mobile/web applications, credentials, providers and deployment have **not** been implemented or verified.
+> **Not a working application.** This repository contains a project blueprint and the first isolated PHP publication-policy guard. Production backend, mobile/web apps, provider connections and deployment are **not** implemented or verified.
 
 **Mission:** Build an original, legally sourced, AI-assisted, largely autonomous sports-news publication for web, iOS and Android, with particular emphasis on Turkish sports competitions across all accessible disciplines.
 
