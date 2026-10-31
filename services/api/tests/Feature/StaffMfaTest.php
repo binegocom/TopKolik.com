@@ -209,6 +209,9 @@ final class StaffMfaTest extends TestCase
         $this->assertDatabaseCount('staff_recovery_codes', 8);
 
         $this->withToken($token)->postJson('/api/v1/staff/auth/logout')->assertOk();
+        $this->assertDatabaseMissing('personal_access_tokens', [
+            'token' => hash('sha256', explode('|', $token, 2)[1]),
+        ]);
         app('auth')->forgetGuards();
         $this->withToken($token)->getJson('/api/v1/staff/auth/me')->assertUnauthorized();
     }
@@ -232,7 +235,8 @@ final class StaffMfaTest extends TestCase
             'recovery_code' => $codes[0],
         ])->assertOk()->json('access_token');
 
-        $staff->forceFill(['is_active' => false])->save();
+        StaffMember::query()->whereKey($staff->getKey())->update(['is_active' => false]);
+        $this->assertFalse(StaffMember::query()->findOrFail($staff->getKey())->is_active);
         app('auth')->forgetGuards();
         $this->withToken($token)->getJson('/api/v1/staff/auth/me')->assertForbidden();
     }

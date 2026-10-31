@@ -55,7 +55,7 @@ final class StaffAuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         /** @var StaffMember $staff */
-        $staff = $request->user();
+        $staff = StaffMember::query()->findOrFail($request->user()->getKey());
 
         return response()->json([
             'staff' => [
@@ -70,8 +70,12 @@ final class StaffAuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $token = $request->user()?->currentAccessToken();
-        if (! $token instanceof PersonalAccessToken) {
+        // The guard may cache the previous request's currentAccessToken in
+        // long-lived workers and tests. Revoke the *presented* token only.
+        $presented = $request->bearerToken();
+        $token = $presented ? PersonalAccessToken::findToken($presented) : null;
+        if (! $token || $token->tokenable_type !== $request->user()?->getMorphClass()
+            || (string) $token->tokenable_id !== (string) $request->user()?->getKey()) {
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 
