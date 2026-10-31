@@ -139,12 +139,20 @@ final class SecurityAuditEventsTest extends TestCase
             'idempotency_key' => $key, 'message' => 'A confidential reply.',
         ])->assertOk()->assertJsonPath('replayed', true);
 
+        // Escalation intentionally requires an OPEN ticket. A reply moves
+        // the first ticket to pending; never weaken the existing RBAC policy.
+        $escalationTicket = SupportTicket::create([
+            'assigned_staff_id' => $staff->id,
+            'subject' => 'Separate escalation',
+            'message' => 'Please escalate',
+            'status' => 'open',
+        ]);
         app('auth')->forgetGuards();
         $stepUp = $staff->createToken(
             'staff-step-up', ['staff:session', 'staff:step-up'], now()->addMinutes(5),
         )->plainTextToken;
         $this->withToken($stepUp)
-            ->postJson('/api/v1/staff/support/tickets/'.$ticket->id.'/escalate')
+            ->postJson('/api/v1/staff/support/tickets/'.$escalationTicket->id.'/escalate')
             ->assertOk();
 
         $this->assertDatabaseCount('security_audit_events', 2);
@@ -157,7 +165,7 @@ final class SecurityAuditEventsTest extends TestCase
         $this->assertDatabaseHas('security_audit_events', [
             'staff_member_id' => $staff->id,
             'action' => 'support.ticket.escalated',
-            'subject_id' => $ticket->id,
+            'subject_id' => $escalationTicket->id,
         ]);
         $serialized = json_encode(DB::table('security_audit_events')->get()->all());
         $this->assertStringNotContainsString('A confidential reply.', $serialized);
