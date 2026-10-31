@@ -979,6 +979,11 @@
           "type": "revision",
           "value": "b3ba3683cf63db744ac73dc171021b6f305def7e",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/27"
+        },
+        {
+          "type": "reference",
+          "value": "https://github.com/binegocom/TopKolik.com/pull/28",
+          "validation": "Persisted support ticket assignment-scoped read, encryption and BOLA tests; pending latest-commit CI, not task completion"
         }
       ],
       "verified_at": null,
@@ -986,7 +991,8 @@
       "issue_url": null,
       "pr_url": "https://github.com/binegocom/TopKolik.com/pull/27",
       "limitations": [
-        "This policy foundation is not full P03-007 completion. Real article/ticket records, scoped controllers, advertiser/finance tenancy and BOLA integration are pending; no admin route grants yet."
+        "This policy foundation is not full P03-007 completion. Real article/ticket records, scoped controllers, advertiser/finance tenancy and BOLA integration are pending; no admin route grants yet.",
+        "Support ticket read is an incremental slice only; editorial draft models, support reply/escalation, advertiser and finance scopes, security audit and full BOLA matrix remain open."
       ]
     },
     {
