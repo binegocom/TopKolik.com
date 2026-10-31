@@ -68,6 +68,12 @@
 - CI evidence: https://github.com/binegocom/TopKolik.com/actions/runs/41247766322 — 26 passing Laravel tests (99 assertions), 17 editorial guard tests, real Mailpit SMTP reset message, successful Composer audit.
 - UI confirmation form, production SMTP and device flows remain separate unresolved release requirements. A trusted reset URL must be configured; default is fail closed.
 
+## Reader profile/favorites — in progress
+
+- P03-004: reader profile, 4-language locale preference, privacy defaults and referential favorites implemented on a feature branch; PostgreSQL/CI acceptance **pending**.
+- Empty sports/teams base tables are only a structural prerequisite for favorites. No providers, real catalog contents or synthetic runtime data have been added.
+- Reader mobile bearer tokens add a `reader:write` ability for mutations. Old read-only tokens must reauthenticate.
+
 ## Open blocking decisions
 
 - [x] Repository created: https://github.com/binegocom/TopKolik.com — baseline planning PR #1 merged; engineering code remains on an independent review PR.

@@ -831,7 +831,7 @@
       "id": "P03-004",
       "phase": "P03",
       "title": "Implement reader profile and preferences",
-      "status": "todo",
+      "status": "in_progress",
       "priority": "P0",
       "depends_on": [
         "P02-GATE"
@@ -840,12 +840,20 @@
       "acceptance_criteria": [
         "Authorization and data persistence tests pass."
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "type": "file",
+          "path": "docs/security/READER_PROFILE_PREFERENCES.md",
+          "validation": "Architecture/contract recorded; CI tests pending."
+        }
+      ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
       "pr_url": null,
-      "limitations": []
+      "limitations": [
+        "Canonical sports/teams lookup tables are initially empty. P04 provider mapping, live data and reader web/mobile UI remain pending."
+      ]
     },
     {
       "id": "P03-005",
