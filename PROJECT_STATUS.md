@@ -105,7 +105,8 @@
 
 - Laravel Gate `staff-resource` default-deny role matrix implemented for owner-bound editorial drafts and assigned support tickets.
 - No publication, finance, advertising, superadmin or cross-advertiser access is granted by this foundational policy. Real resource API integration and BOLA tests remain required before P03-007 done.
-- PHPUnit PostgreSQL acceptance pending. No staff admin page or staff resource mutation endpoint was introduced.
+- **Validated policy foundation:** https://github.com/binegocom/TopKolik.com/actions/runs/41251472836 — 79 Laravel tests / 552 assertions, PostgreSQL/Redis, real Mailpit and editorial safety passed.
+- P03-007 remains **in_progress** until real resource models/controllers and authenticated end-to-end BOLA checks exist. No admin route grants are introduced.
 
 ## Open blocking decisions
 

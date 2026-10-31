@@ -962,11 +962,29 @@
       "acceptance_criteria": [
         "Full role matrix + BOLA tests pass."
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "79 tests / 552 assertions passed in CI, including 12 new role and scoped-resource policy cases using disposable PostgreSQL.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41251472836"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh",
+          "result": "Dependency audit, real HTTP/SMTP and 17 licensed-publication policy tests passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41251472836"
+        },
+        {
+          "type": "revision",
+          "value": "b3ba3683cf63db744ac73dc171021b6f305def7e",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/27"
+        }
+      ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": null,
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/27",
       "limitations": [
         "This policy foundation is not full P03-007 completion. Real article/ticket records, scoped controllers, advertiser/finance tenancy and BOLA integration are pending; no admin route grants yet."
       ]
