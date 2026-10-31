@@ -718,6 +718,12 @@
           "command": "php artisan migrate --force && php artisan test",
           "result": "Initial Sanctum integration: 12/12 Laravel tests, 47 assertions; 3 additional cases pending final PR CI",
           "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41246732380"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test --filter=ReaderAuthenticationTest",
+          "result": "API registration and signed verification tests pass in PR CI; actual SMTP delivery remains untested",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41246890524"
         }
       ],
       "verified_at": null,
@@ -725,14 +731,15 @@
       "issue_url": null,
       "pr_url": "https://github.com/binegocom/TopKolik.com/pull/21",
       "limitations": [
-        "Production SMTP delivery, actual iOS/Android client integration and staff MFA are outside this slice. P02 and P01 gates remain open."
+        "Production SMTP delivery, actual iOS/Android client integration and staff MFA are outside this slice. P02 and P01 gates remain open.",
+        "P03-001 remains in_review until Mailpit SMTP delivery and verification-link receipt are tested against a running Laravel API, and public client link handling is implemented."
       ]
     },
     {
       "id": "P03-002",
       "phase": "P03",
       "title": "Implement consumer login, logout and sessions",
-      "status": "in_review",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P02-GATE"
@@ -747,9 +754,20 @@
           "command": "php artisan migrate --force && php artisan test",
           "result": "Initial Sanctum integration: 12/12 Laravel tests, 47 assertions; 3 additional cases pending final PR CI",
           "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41246732380"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test && bash scripts/check-api-http.sh",
+          "result": "15 Laravel tests, 52 assertions, including token revocation, expiry and wrong-scope denials; live HTTP health checks PASS",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41246890524"
+        },
+        {
+          "type": "revision",
+          "value": "c15b753540940a843b1ab45c6c130207d5a560f2",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/21"
         }
       ],
-      "verified_at": null,
+      "verified_at": "2026-10-31",
       "owner": null,
       "issue_url": null,
       "pr_url": "https://github.com/binegocom/TopKolik.com/pull/21",

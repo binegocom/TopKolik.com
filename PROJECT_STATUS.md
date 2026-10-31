@@ -4,7 +4,7 @@
 
 **As of:** 2026-10-31  
 **Release:** Not started  
-**Tracked tasks:** 147 | **Documentation tasks done:** 3 | **Implementation done:** 1
+**Tracked tasks:** 147 | **Documentation tasks done:** 3 | **Implementation done:** 2
 
 ## Phase status
 
@@ -56,11 +56,11 @@
 
 ## Reader authentication — awaiting PR verification
 
-- `P03-001` registration and signed email verification: **in_review**. Reader-only accounts, generic responses, password policy and resend throttles implemented.
-- `P03-002` verified mobile reader sign-in and token revocation: **in_review**. Scoped, time-limited Sanctum bearer tokens, `/me`, `/logout`, negative authorization tests.
-- Initial GitHub Actions Sanctum run passed 12 Laravel tests (47 assertions) and 17 editorial checks: https://github.com/binegocom/TopKolik.com/actions/runs/41246732380
+- `P03-001` registration and signed email verification: **in_review**. Reader-only accounts, generic responses, password policy and resend throttles implemented; actual SMTP delivery and client link handling pending.
+- `P03-002` verified mobile reader sign-in and token revocation: **done**, PR #21 / Actions run 41246890524 (15 Laravel tests, 52 assertions). Scoped, time-limited Sanctum bearer tokens, `/me`, `/logout`, expiry and wrong-scope denials verified.
+- Latest GitHub Actions run passed 15 Laravel tests (52 assertions) and 17 editorial checks: https://github.com/binegocom/TopKolik.com/actions/runs/41246890524
 - Production SMTP delivery, password reset, web cookie+CSRF auth, staff RBAC/MFA and reader UI are **not complete**.
-- PR review and expanded final-head CI still required; do not mark either task done prematurely.
+- P03-001 remains in review; P03-GATE is not complete. Only tested mobile bearer login/logout slice was marked done.
 
 ## Open blocking decisions
 
