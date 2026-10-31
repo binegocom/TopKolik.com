@@ -39,9 +39,11 @@ final class StaffMfaService
             return false;
         }
 
-        $step = $this->totp->verifyKeyNewer($member->mfa_pending_secret, $code, null, 1);
+        // Passing a null previous step returns a boolean in Google2FA; 0 forces
+        // an actual TOTP time counter for later replay prevention.
+        $step = $this->totp->verifyKeyNewer($member->mfa_pending_secret, $code, 0, 1);
 
-        return $step === false ? false : (int) $step;
+        return $step === false || ! is_int($step) || $step <= 0 ? false : $step;
     }
 
     // Must be called with the staff row locked in a database transaction.
@@ -58,7 +60,8 @@ final class StaffMfaService
             1,
         );
 
-        if ($step === false) {
+        if ($step === false || ! is_int($step)
+            || $step <= (int) ($member->mfa_last_step ?? 0)) {
             return false;
         }
 

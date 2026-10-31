@@ -105,6 +105,7 @@ final class StaffMfaTest extends TestCase
         $this->assertCount(10, array_unique($codes));
         $this->assertMatchesRegularExpression('/^[A-F0-9]{32}$/', $codes[0]);
         $this->assertNotNull($staff->mfa_enrolled_at);
+        $this->assertGreaterThan(1, $staff->mfa_last_step);
         $this->assertFalse($staff->is_active);
         $this->assertSame($secret, $staff->mfa_secret);
         $this->assertNull($staff->mfa_pending_secret);
