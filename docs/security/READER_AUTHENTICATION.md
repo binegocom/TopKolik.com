@@ -9,7 +9,8 @@ This slice implements an anonymous-first mobile reader API via Laravel Sanctum 4
 - Tokens are valid for up to 30 days and are stored hashed by Sanctum; the raw bearer token is delivered only at login.
 - No staff, editor, administrator, advertiser or billing privileges are attached to reader enrollment. This is a **separate staff-auth and MFA feature**.
 - Email verification link is short-lived, signed and sent to the registered email; it does not sign in a reader.
-- Resend and registration use generic replies for registered/unknown email; registration and login are throttled.
+- Resend and registration use generic replies for registered/unknown email. Reader login enforces independent per-IP (20/minute) and normalized-account (12/hour) limits, including failed attempts for nonexistent accounts, to resist both password spraying and distributed brute force. Limits count successful logins as well; they do not grant bypass to trusted client headers.
+- Password-reset requests and redemption have separate IP and account limits; redemption remains single-use and invalidates all issued reader tokens and database sessions.
 - All authorization is enforced by middleware, not UI visibility.
 
 ## Browser and mobile security
@@ -31,3 +32,7 @@ CI evidence: https://github.com/binegocom/TopKolik.com/actions/runs/41246890524 
 
 
 See `services/api/tests/Feature/ReaderAuthenticationTest.php`. CI must confirm actual PostgreSQL-backed migrations and Sanctum token persistence, email notification intent, signed URL protection, wrong credentials, logout revocation, anonymous access, and weak password rejection.
+
+## P03-011 security regression checks
+
+The API feature suite verifies per-IP password spraying, cross-IP account brute force, reset-token guess throttling, single-use redemption, revocation of existing device tokens and denial of expired tokens. These are automated adversarial feature tests, not an external penetration-test certification. Rate limiting relies on a shared production cache (Redis); production WAF, reverse-proxy trusted-IP configuration and operational alerting still require deployment review.

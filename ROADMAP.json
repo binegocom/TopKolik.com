@@ -1012,7 +1012,7 @@
       "id": "P03-011",
       "phase": "P03",
       "title": "Implement supportable session/security controls",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P02-GATE"
@@ -1021,12 +1021,33 @@
       "acceptance_criteria": [
         "Pen tests for brute-force, reset and revocation pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "GitHub Actions: 58 Laravel tests passed (369 assertions) against disposable PostgreSQL and Redis; includes 4 new adversarial reader security scenarios (distributed account attacks, IP spraying, reset-token guessing, revocation).",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41250002242"
+        },
+        {
+          "type": "verification",
+          "command": "composer validate --strict && composer install && composer audit && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh",
+          "result": "GitHub Actions passed: Composer audit, live HTTP readiness, real Mailpit SMTP flows and 17 editorial guard checks.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41250002242"
+        },
+        {
+          "type": "revision",
+          "value": "ad9e14b703400734fe2985beaf22729ea6e39a25",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/25"
+        }
+      ],
+      "verified_at": "2026-10-31",
       "owner": null,
       "issue_url": null,
-      "pr_url": null,
-      "limitations": []
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/25",
+      "limitations": [
+        "Automated security regression tests cover the backend attack cases; no independent external penetration test or deployed production environment was verified.",
+        "Production trusted-proxy IP handling, shared Redis rate limiting, WAF policy and monitoring require deployment validation. P03-GATE remains open."
+      ]
     },
     {
       "id": "P04-001",
