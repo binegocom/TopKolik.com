@@ -1,0 +1,44 @@
+name: Development infrastructure
+
+on:
+  pull_request:
+    paths:
+      - 'infrastructure/**'
+      - 'scripts/dev-env.py'
+      - 'scripts/check-dev-infra.sh'
+      - 'scripts/check-dev-tools.sh'
+      - 'tests/test_dev_infrastructure.py'
+      - '.github/workflows/dev-infrastructure.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install YAML test-only dependency
+        run: python3 -m pip install --user PyYAML==6.0.3
+      - name: Verify static safety and secret generation
+        run: |
+          python3 -m unittest discover -s tests -p test_dev_infrastructure.py -v
+          bash -n scripts/check-dev-infra.sh scripts/check-dev-tools.sh
+          python3 -m py_compile scripts/dev-env.py
+      - name: Generate isolated development credentials
+        run: python3 scripts/dev-env.py init
+      - name: Verify Compose resolves
+        run: docker compose --env-file infrastructure/.env -f infrastructure/compose.dev.yaml config --quiet
+      - name: PostgreSQL and Redis live health checks
+        run: bash scripts/check-dev-infra.sh
+      - name: Mailpit live HTTP health check
+        run: bash scripts/check-dev-tools.sh
+      - name: Stop containers without deleting volumes
+        if: always()
+        run: |
+          if [[ -f infrastructure/.env ]]; then
+            docker compose --env-file infrastructure/.env -f infrastructure/compose.dev.yaml --profile tools down || true
+          fi
