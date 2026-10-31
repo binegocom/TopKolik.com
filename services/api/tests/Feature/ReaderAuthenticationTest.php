@@ -105,6 +105,34 @@ final class ReaderAuthenticationTest extends TestCase
         Notification::assertSentTo($user, VerifyEmail::class);
     }
 
+
+    public function test_expired_reader_token_does_not_authorize_api_requests(): void
+    {
+        $user = User::factory()->create();
+        $expired = $user->createToken('expired-mobile', ['reader:read'], now()->subMinute())->plainTextToken;
+        $this->withHeader('Authorization', 'Bearer '.$expired)
+            ->getJson('/api/v1/auth/me')->assertUnauthorized();
+    }
+
+    public function test_token_without_reader_scope_cannot_access_reader_profile(): void
+    {
+        $user = User::factory()->create();
+        $other = $user->createToken('other-scope', ['other:read'], now()->addDay())->plainTextToken;
+        $this->withHeader('Authorization', 'Bearer '.$other)
+            ->getJson('/api/v1/auth/me')->assertForbidden();
+    }
+
+    public function test_invalid_or_missing_signed_verification_url_is_denied(): void
+    {
+        $user = User::factory()->unverified()->create();
+        $url = URL::temporarySignedRoute('verification.verify', now()->addMinutes(30), [
+            'id' => $user->getKey(), 'hash' => sha1('invalid@email.test'),
+        ]);
+        $this->getJson($url)->assertForbidden();
+        $this->getJson('/api/v1/auth/email/verify/'.$user->getKey().'/wrong')->assertForbidden();
+        $this->assertFalse($user->fresh()->hasVerifiedEmail());
+    }
+
     public function test_register_input_validation_rejects_weak_password(): void
     {
         $this->postJson('/api/v1/auth/register', [
