@@ -135,3 +135,9 @@
 - Assigned support staff can read only their own persisted ticket at `GET /api/v1/staff/support/tickets/{ticket}` after MFA session validation, SQL assignment scoping and a fresh persisted Laravel Gate role check. Other staff assignments return 404; reader and wrong-role tokens cannot read ticket data. Sensitive responses use `Cache-Control: no-store, private`.
 - Feature regression cases cover assignment BOLA, missing/expired/reader sessions, role changes, deactivation and encryption at rest. **Verified and merged:** PR [#28](https://github.com/binegocom/TopKolik.com/pull/28), merge `1baf6e95668f2da6bbf6127cf4f7a9df0e7a87ff`. [Laravel CI](https://github.com/binegocom/TopKolik.com/actions/runs/41251992725): 85 passing tests / 573 assertions on PostgreSQL and Redis, real HTTP and SMTP, Composer audit clean. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41251992728): PASS.
 - P03-007 is **not done**. Editorial draft controllers, ticket reply/escalation, advertiser/finance scoping, audit ledger, complete permission matrix and deployment verification remain open.
+
+## P03-007 support replies and MFA escalation — PR review
+
+- Added encrypted, idempotent staff replies and recorded step-up escalation; both operations use locked, assignment-scoped persisted tickets and fresh role policy.
+- Conversation history is available only to the assigned support operator. No consumer ticket creation, real outbound messaging, finance/ads permissions or external notification has been added.
+- PostgreSQL/HTTP/security acceptance tests are pending on the feature branch; do not mark P03-007 done from this slice alone.
