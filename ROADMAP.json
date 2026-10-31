@@ -831,7 +831,7 @@
       "id": "P03-004",
       "phase": "P03",
       "title": "Implement reader profile and preferences",
-      "status": "in_progress",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P02-GATE"
@@ -845,14 +845,32 @@
           "type": "file",
           "path": "docs/security/READER_PROFILE_PREFERENCES.md",
           "validation": "Architecture/contract recorded; CI tests pending."
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "39 Laravel tests (212 assertions) passed against disposable PostgreSQL; 13 new feature scenarios cover own account permissions, localization, referential favorites, privacy and consent defaults, atomic replacement, negative IDOR cases.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41248701254"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh",
+          "result": "Composer audit no advisories; live HTTP and real Mailpit SMTP smoke passed; all 17 editorial guard tests passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41248701254"
+        },
+        {
+          "type": "revision",
+          "value": "98f56c02b55748e23a07743bba222c7bed54f9d3",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/23"
         }
       ],
-      "verified_at": null,
+      "verified_at": "2026-10-31",
       "owner": null,
       "issue_url": null,
-      "pr_url": null,
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/23",
       "limitations": [
-        "Canonical sports/teams lookup tables are initially empty. P04 provider mapping, live data and reader web/mobile UI remain pending."
+        "Canonical sports/teams lookup tables are initially empty. P04 provider mapping, live data and reader web/mobile UI remain pending.",
+        "Favorites API functions against empty catalog schema; no licensed teams or sports records, personalization delivery engine, web/mobile UI, production deployment or localization decision for Turkish yet."
       ]
     },
     {

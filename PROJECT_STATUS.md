@@ -1,10 +1,10 @@
 # Topkolik — Project Status and Verification Log
 
-> **NOT A WORKING PRODUCT.** A minimal Laravel API runtime now exists on the feature branch, but reader/web/mobile/admin services, sports data providers and deployment are not implemented.
+> **NOT A WORKING PUBLIC PRODUCT.** The Laravel 13 API, verified reader auth and reader preferences/favorites are implemented; consumer web/mobile/admin, live sports data, AI publishing and production deployment are not.
 
 **As of:** 2026-10-31  
 **Release:** Not started  
-**Tracked tasks:** 147 | **Documentation tasks done:** 3 | **Implementation done:** 4
+**Tracked tasks:** 147 | **Documentation tasks done:** 3 | **Implementation done:** 5
 
 ## Phase status
 
@@ -51,16 +51,16 @@
 ## Verified Laravel API foundation
 
 - `P02-005` is **done**:  Laravel 13 skeleton, Composer lock, PostgreSQL/Redis connections, `/health` and `/ready`, request IDs, 5 feature tests (15 assertions), and 17 legacy guard scenarios confirmed: https://github.com/binegocom/TopKolik.com/actions/runs/41245895596 and https://github.com/binegocom/TopKolik.com/actions/runs/41246075824
-- Live HTTP smoke **passed** on the feature branch. PR #20: https://github.com/binegocom/TopKolik.com/pull/20. No API users, authorization, data ingest, stories or production deployment yet.
+- Live HTTP smoke **passed** on the feature branch. PR #20: https://github.com/binegocom/TopKolik.com/pull/20. No sports data ingestion, staff authorization, stories or production deployment yet.
 - Initial scaffold was created safely on an isolated GitHub feature branch, preserving the existing editorial code.
 
-## Reader authentication — awaiting PR verification
+## Reader authentication — backend verified
 
 - `P03-001` registration and signed email verification: **done**. Real Mailpit SMTP delivery tested in Actions run 41247084594. Polished client confirmation screen and production email configuration remain pending.
 - `P03-002` verified mobile reader sign-in and token revocation: **done**, PR #21 / Actions run 41246890524 (15 Laravel tests, 52 assertions). Scoped, time-limited Sanctum bearer tokens, `/me`, `/logout`, expiry and wrong-scope denials verified.
 - Latest GitHub Actions run passed 15 Laravel tests (52 assertions) and 17 editorial checks: https://github.com/binegocom/TopKolik.com/actions/runs/41246890524
-- Production email provider setup, password reset, web cookie+CSRF auth, staff RBAC/MFA and reader UI are **not complete**.
-- P03-001 and P03-002 are backend-complete with recorded tests; P03-GATE is **not complete** (password reset, staff MFA/RBAC, browser session, privacy operations pending).
+- Production email provider setup, web cookie+CSRF auth, staff RBAC/MFA and reader UI are **not complete**.
+- P03-001 and P03-002 are backend-complete with recorded tests; P03-GATE is **not complete** (staff MFA/RBAC, browser session, privacy export/delete and security controls pending).
 
 ## P03-003 password reset backend — verified
 
@@ -73,6 +73,13 @@
 - P03-004: reader profile, 4-language locale preference, privacy defaults and referential favorites implemented on a feature branch; PostgreSQL/CI acceptance **pending**.
 - Empty sports/teams base tables are only a structural prerequisite for favorites. No providers, real catalog contents or synthetic runtime data have been added.
 - Reader mobile bearer tokens add a `reader:write` ability for mutations. Old read-only tokens must reauthenticate.
+
+## Reader profile, locale and favorites — verified P03-004
+
+- **done:** owned reader profile updates, supported language preferences and en fallback, privacy-default flags, no reading history collection and FK-constrained sports/teams favorites.
+- Test evidence: https://github.com/binegocom/TopKolik.com/actions/runs/41248701254 — 39 Laravel tests (212 assertions), real PostgreSQL and Redis, HTTP and Mailpit SMTP checks; 17 publication guard tests.
+- The sports/teams tables are **empty placeholders for future licensed catalog ingestion**; no fabricated runtime fixtures, news personalization engine, client screens or production data.
+- CI-green does not imply P04 taxonomy/club ingestion is complete; both P04 tasks remain TODO. PR #23: https://github.com/binegocom/TopKolik.com/pull/23
 
 ## Open blocking decisions
 
