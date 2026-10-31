@@ -6,6 +6,7 @@ use App\Http\Controllers\ReaderAuthController;
 use App\Http\Controllers\ReaderEmailVerificationController;
 use App\Http\Controllers\ReaderPasswordResetController;
 use App\Http\Controllers\ReaderProfileController;
+use App\Http\Controllers\StaffInvitationAcceptanceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/status', fn () => response()->json(['service' => 'topkolik-api', 'status' => 'operational']))
@@ -47,3 +48,7 @@ Route::middleware('auth:sanctum')->prefix('me')->group(function (): void {
         Route::put('/favorites', [ReaderProfileController::class, 'replaceFavorites']);
     });
 });
+
+// Public acceptance only; never expose invitation issuance, staff login or role mutation.
+Route::post('/staff/invitations/accept', StaffInvitationAcceptanceController::class)
+    ->middleware('throttle:staff-invite-accept');

@@ -872,7 +872,7 @@
       "id": "P03-005",
       "phase": "P03",
       "title": "Implement staff invite-only enrollment",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P02-GATE"
@@ -881,12 +881,32 @@
       "acceptance_criteria": [
         "No reader can self-assign any staff role."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "54 Laravel tests (305 assertions) successful, including one-time invitation, expired token, reader isolation, forbidden staff roles, active/MFA flags, rate limits and test fixtures on disposable PostgreSQL.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41249604897"
+        },
+        {
+          "type": "verification",
+          "command": "bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && composer audit --no-interaction",
+          "result": "Actual Mailpit SMTP invitation sent; HTTP acceptance 202; replay 422; 17 editorial tests and Composer audit passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41249604897"
+        },
+        {
+          "type": "revision",
+          "value": "50c9c1c55d77169169c08866b13c84299347ac30",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/24"
+        }
+      ],
+      "verified_at": "2026-10-31",
       "owner": null,
       "issue_url": null,
-      "pr_url": null,
-      "limitations": []
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/24",
+      "limitations": [
+        "Invite-only backend slice pending PostgreSQL + SMTP CI acceptance. Staff login is deliberately disabled pending mandatory MFA (P03-006) and RBAC (P03-007); trusted onboarding frontend and production SMTP still pending."
+      ]
     },
     {
       "id": "P03-006",

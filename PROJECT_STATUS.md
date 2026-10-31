@@ -4,7 +4,7 @@
 
 **As of:** 2026-10-31  
 **Release:** Not started  
-**Tracked tasks:** 147 | **Documentation tasks done:** 3 | **Implementation done:** 5
+**Tracked tasks:** 147 | **Documentation tasks done:** 3 | **Implementation done:** 6
 
 ## Phase status
 
@@ -80,6 +80,13 @@
 - Test evidence: https://github.com/binegocom/TopKolik.com/actions/runs/41248701254 — 39 Laravel tests (212 assertions), real PostgreSQL and Redis, HTTP and Mailpit SMTP checks; 17 publication guard tests.
 - The sports/teams tables are **empty placeholders for future licensed catalog ingestion**; no fabricated runtime fixtures, news personalization engine, client screens or production data.
 - CI-green does not imply P04 taxonomy/club ingestion is complete; both P04 tasks remain TODO. PR #23: https://github.com/binegocom/TopKolik.com/pull/23
+
+## P03-005 invite-only staff enrollment — tested
+
+- **done:** Separate `staff_members` and `staff_invitations` tables. Invitations originate from a privileged server command, not a public HTTP endpoint. Roles are restricted by PostgreSQL check constraints.
+- Acceptance requires one-time emailed secret, verifies email, hashes password and creates inactive pending-MFA staff identity. No admin login, grant or session endpoints exist.
+- Verified on GitHub Actions: 54 Laravel tests (305 assertions), SMTP send + HTTP accept/replay denial, 17 editorial policy tests and Composer audit: https://github.com/binegocom/TopKolik.com/actions/runs/41249604897
+- This does **not** authorize staff access: mandatory MFA, admin login and RBAC remain open. PR #24: https://github.com/binegocom/TopKolik.com/pull/24
 
 ## Open blocking decisions
 

@@ -49,6 +49,16 @@ final class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        RateLimiter::for('staff-invite-accept', function (Request $request): array {
+            $inviteId = $request->input('invitation', '');
+            $key = is_string($inviteId) ? hash('sha256', $inviteId) : 'invalid';
+
+            return [
+                Limit::perMinute(6)->by('staff-accept-ip:'.($request->ip() ?? 'unknown')),
+                Limit::perMinute(4)->by('staff-accept-invite:'.$key),
+            ];
+        });
+
         ResetPassword::createUrlUsing(function ($notifiable, string $token): string {
             $base = Config::get('auth.reader_password_reset_url');
 
