@@ -14,6 +14,7 @@ use App\Http\Controllers\StaffAuthController;
 use App\Http\Controllers\StaffSecurityAuditController;
 use App\Http\Controllers\StaffAdvertiserReviewController;
 use App\Http\Controllers\StaffAdsAssignmentController;
+use App\Http\Controllers\StaffAdsAssignmentApprovalController;
 use App\Http\Controllers\StaffSupportTicketController;
 use App\Http\Controllers\StaffEditorialDraftController;
 use Illuminate\Support\Facades\Route;
@@ -83,6 +84,21 @@ Route::prefix('staff')->group(function (): void {
             ->middleware('throttle:30,1');
         Route::get('/security/authentication-failures', [StaffSecurityAuditController::class, 'authenticationFailures'])
             ->middleware('throttle:30,1');
+
+        // Dedicated security-administration grant + short-lived MFA step-up.
+        // Distinct initiating and deciding staff must authorize activation.
+        Route::get('/security/ads/assignment-approvals',
+            [StaffAdsAssignmentApprovalController::class, 'index'])
+            ->middleware('throttle:20,1');
+        Route::post('/security/ads/assignment-approvals',
+            [StaffAdsAssignmentApprovalController::class, 'store'])
+            ->middleware('throttle:6,1');
+        Route::post('/security/ads/assignment-approvals/{approval}/approve',
+            [StaffAdsAssignmentApprovalController::class, 'approve'])
+            ->whereNumber('approval')->middleware('throttle:6,1');
+        Route::post('/security/ads/assignment-approvals/{approval}/reject',
+            [StaffAdsAssignmentApprovalController::class, 'reject'])
+            ->whereNumber('approval')->middleware('throttle:6,1');
 
         // Staff may inspect only their own current assignments and relinquish
         // access after a fresh MFA step-up. No grant/reactivation route exists.

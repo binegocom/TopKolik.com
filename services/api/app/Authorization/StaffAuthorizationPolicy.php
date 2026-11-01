@@ -162,6 +162,35 @@ final class StaffAuthorizationPolicy
     }
 
     /**
+     * Explicit out-of-band authorization record, separate from existing roles.
+     * Two distinct currently authorized operators are required to grant ads
+     * review assignments. No action authorizes security-admin self-enrollment.
+     */
+    public function canManageAdsAssignments(
+        Authenticatable $principal,
+        ?PersonalAccessToken $token,
+    ): bool {
+        if (! $principal instanceof StaffMember || ! $token
+            || $token->expires_at === null || $token->expires_at->isPast()
+            || ! $token->can('staff:session') || ! $token->can('staff:step-up')
+            || $token->tokenable_type !== $principal->getMorphClass()
+            || (string) $token->tokenable_id !== (string) $principal->getKey()) {
+            return false;
+        }
+
+        $staff = StaffMember::query()->find($principal->getKey());
+        if (! $staff || ! $staff->is_active || ! $staff->email_verified_at
+            || ! $staff->mfa_enrolled_at || $staff->role === 'ads') {
+            return false;
+        }
+
+        return DB::table('staff_security_admin_grants')
+            ->where('staff_member_id', $staff->getKey())
+            ->where('is_active', true)
+            ->exists();
+    }
+
+    /**
      * Staff can inspect only their own security metadata after a fresh MFA
      * step-up. This is not a global audit administration grant.
      */

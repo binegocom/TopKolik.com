@@ -19,6 +19,9 @@ final class SecurityAuditRecorder
         'staff.session.stepped_up',
         'staff.session.ended',
         'staff.advertiser_assignment.relinquished',
+        'staff.advertiser_assignment.requested',
+        'staff.advertiser_assignment.approved',
+        'staff.advertiser_assignment.rejected',
         'support.ticket.replied',
         'support.ticket.escalated',
     ];
