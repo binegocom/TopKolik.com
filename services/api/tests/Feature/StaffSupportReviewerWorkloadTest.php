@@ -63,4 +63,72 @@ final class StaffSupportReviewerWorkloadTest extends TestCase
 
         $this->assertSame($staff['free']->id, $ticket->fresh()->escalation_reviewer_staff_id);
     }
+
+    private function eligibleStaff(string $role = 'support'): StaffMember
+    {
+        $staff = StaffMember::create([
+            'name' => 'Reviewer',
+            'email' => Str::uuid().'@example.test',
+            'password' => 'Staff!SecurePassword2026',
+            'role' => $role,
+        ]);
+        $staff->forceFill([
+            'is_active' => true,
+            'email_verified_at' => now(),
+            'mfa_enrolled_at' => now(),
+        ])->save();
+
+        return $staff;
+    }
+
+    private function supportTicket(StaffMember $assignee, ?StaffMember $reviewer = null): SupportTicket
+    {
+        $ticket = SupportTicket::create([
+            'assigned_staff_id' => $assignee->id,
+            'subject' => 'Private support case',
+            'message' => 'Restricted content',
+            'status' => 'open',
+        ]);
+        if ($reviewer !== null) {
+            $ticket->forceFill([
+                'status' => 'pending',
+                'escalated_at' => now(),
+                'escalated_by_staff_id' => $assignee->id,
+                'escalation_reviewer_staff_id' => $reviewer->id,
+            ])->save();
+        }
+
+        return $ticket;
+    }
+
+    private function staffToken(StaffMember $staff): string
+    {
+        return $staff->createToken(
+            'staff-session',
+            ['staff:session', 'staff:step-up'],
+            now()->addMinutes(5),
+        )->plainTextToken;
+    }
+
+    public function test_relinquishment_chooses_unloaded_independent_reviewer(): void
+    {
+        $assignee = $this->eligibleStaff();
+        $current = $this->eligibleStaff();
+        $busy = $this->eligibleStaff();
+        $free = $this->eligibleStaff();
+        $ticket = $this->supportTicket($assignee, $current);
+        $this->supportTicket($assignee, $busy);
+
+        $this->withToken($this->staffToken($current))
+            ->postJson('/api/v1/staff/support/escalations/'.$ticket->id.'/relinquish')
+            ->assertOk()
+            ->assertJsonPath('ticket.reviewer_assigned', true);
+
+        $this->assertSame($free->id, $ticket->fresh()->escalation_reviewer_staff_id);
+        $this->assertDatabaseHas('security_audit_events', [
+            'action' => 'support.ticket.escalation_reviewer_relinquished',
+            'subject_id' => $ticket->id,
+        ]);
+    }
+
 }
