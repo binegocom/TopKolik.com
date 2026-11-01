@@ -129,4 +129,6 @@ Route::middleware(['auth:sanctum', 'advertiser.session'])
             ->whereNumber('organization')->whereNumber('campaign');
         Route::patch('/organizations/{organization}/campaigns/{campaign}', [AdvertiserCampaignController::class, 'update'])
             ->whereNumber('organization')->whereNumber('campaign')->middleware('throttle:40,1');
+        Route::post('/organizations/{organization}/campaigns/{campaign}/submit', [AdvertiserCampaignController::class, 'submit'])
+            ->whereNumber('organization')->whereNumber('campaign')->middleware('throttle:10,1');
     });
