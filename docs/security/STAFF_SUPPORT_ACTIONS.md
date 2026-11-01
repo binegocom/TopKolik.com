@@ -21,3 +21,12 @@ Verification: CI uses isolated PostgreSQL, Redis, Laravel tests, actual HTTP/SMT
 - Each item contains ID, decrypted subject, status and timestamps. Ticket message, reply history, staff assignment IDs and escalation actor are excluded. All responses are `no-store, private` with `Pragma: no-cache`. The existing assigned-only detail route remains the sole conversation reader.
 - No ticket assignment, creation, resolution, external notification, privilege grant, schema migration or production data mutation is introduced. Database feature tests cover cross-operator isolation, empty-inbox role denial, revoked staff permissions, expired MFA sessions, encrypted subjects, pagination and forbidden query selectors.
 - This is not complete P03-007 RBAC acceptance; support lifecycle, finance dual-control, production authorization and other staff resources remain open.
+
+
+## MFA-protected ticket resolution (P03-007 incremental slice)
+
+- `POST /api/v1/staff/support/tickets/{ticket}/resolve` accepts only `resolution_note` (1–2000 characters). The ticket must be `pending`, assigned to the authenticated active `support` operator and not escalated. A fresh `staff:step-up` MFA bearer token is mandatory. Unassigned and foreign ticket IDs remain indistinguishable from missing records (404).
+- An additive, forward-only migration stores `resolved_at`, `resolved_by_staff_id` and an encrypted `resolution_note`. The state transition and allowlisted `support.ticket.resolved` audit record share one locked PostgreSQL transaction. Responses contain only ID, resolved status and timestamp, with private no-store caching.
+- Already resolved or still open tickets are not eligible; an escalated pending ticket returns 409 and remains pending for a separately authorized escalation review. There is no public resolution route, staff reassignment, outbound notification or mass-assignment override.
+- Feature tests cover encryption at rest, actor/audit linkage, MFA, BOLA, roles, revocation, state guards, escalation hold, invalid input and expired sessions. Full CI evidence must be attached before this slice is considered verified.
+- P03-007 remains `in_progress`: the complete staff role matrix, finance controls, escalation review and production authorization validation are not finished.
