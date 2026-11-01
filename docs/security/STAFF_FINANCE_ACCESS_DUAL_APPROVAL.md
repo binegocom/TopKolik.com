@@ -47,3 +47,12 @@ Test scenarios cover inactive default, two independent administrators, current M
 A transaction locks and revalidates the administrator grant, then the target staff row and entitlement using the same target-lock order as the finance approval workflow. A metadata-only `staff.finance_access.revoked` audit event must commit atomically. Replays and unknown/inactive entitlements fail closed. The operator may revoke an entitlement remaining after a staff role downgrade or deactivation.
 
 Verified on [PR #66](https://github.com/binegocom/TopKolik.com/pull/66) code commit `bed8e31b3501f7c338456cec699e81fcc81b93c6`: [Laravel CI](https://github.com/binegocom/TopKolik.com/actions/runs/41328512689) 306 passing tests / 2,598 assertions, plus [editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41328512691). This is an isolated backend control, not an independently approved incident-response procedure or a production finance release.
+
+
+## Emergency finance staff deactivation (P03-007 partial)
+
+`POST /api/v1/staff/security/finance/staff/{staff}/deactivate` is a one-way emergency offboarding action for an **active finance-role** staff member. A different, independently provisioned security administrator with a fresh MFA step-up is required. This is **not** a role-change, reactivation or entitlement-approval endpoint.
+
+The transaction locks the acting administrator grant and target staff row before the finance entitlement. It atomically deactivates the target account, disables any existing finance entitlement, revokes latent security-administrator and advertiser assignments, deletes all target Sanctum sessions, and writes an actor-attributed, request-correlated `staff.finance_access.staff_deactivated` audit event. Failure of the audit insert rolls back all changes, including token deletion. Unknown, non-finance or already-inactive targets fail closed. Pending finance approvals remain pending but cannot approve an inactive target; operational staff must separately review stale requests.
+
+No finance role is silently reassigned, no financial data is mutated, and there is no reactivation API. This control is distinct from entitlement-only emergency revocation. The feature tests cover stale tokens, cross-principal isolation, MFA, self-targeting, replay, inactive/other-role targets, audit rollback and pending approval denial. Production IAM and multi-worker stress validation remain open.
