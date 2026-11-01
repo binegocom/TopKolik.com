@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AdvertiserAccount;
 use App\Models\AdvertiserCampaign;
+use App\Models\AdvertiserCampaignReviewFeedback;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -165,6 +166,45 @@ final class AdvertiserCampaignController extends Controller
 
         // This endpoint never approves, publishes, bills or serves advertising.
         return $this->privateResponse(['campaign' => $this->payload($record)]);
+    }
+
+    public function reviewFeedback(Request $request, int $organization, int $campaign): JsonResponse
+    {
+        $account = $this->account($request);
+        $this->membership($account, $organization, true);
+        $this->scopedCampaign($organization, $campaign);
+
+        $data = $request->validate([
+            'limit' => ['sometimes', 'integer', 'between:1,50'],
+            'before_id' => ['sometimes', 'integer', 'min:1'],
+            'advertiser_organization_id' => ['missing'],
+            'advertiser_account_id' => ['missing'],
+            'staff_member_id' => ['missing'],
+        ]);
+
+        $limit = (int) ($data['limit'] ?? 20);
+        $query = AdvertiserCampaignReviewFeedback::query()
+            ->where('advertiser_organization_id', $organization)
+            ->where('advertiser_campaign_id', $campaign);
+        if (array_key_exists('before_id', $data)) {
+            $query->where('id', '<', (int) $data['before_id']);
+        }
+
+        $rows = $query->orderByDesc('id')->limit($limit + 1)->get();
+        $hasMore = $rows->count() > $limit;
+        $events = $rows->take($limit)->map(static fn (AdvertiserCampaignReviewFeedback $event): array => [
+            'id' => $event->getKey(),
+            'action' => $event->action,
+            'feedback' => $event->feedback,
+            'from_revision' => $event->from_revision,
+            'to_revision' => $event->to_revision,
+            'created_at' => $event->created_at?->toIso8601String(),
+        ])->values()->all();
+
+        return $this->privateResponse([
+            'events' => $events,
+            'next_before_id' => $hasMore ? $events[count($events) - 1]['id'] : null,
+        ]);
     }
 
     private function account(Request $request): AdvertiserAccount

@@ -6,6 +6,8 @@ namespace App\Http\Controllers;
 
 use App\Authorization\StaffResourceContext;
 use App\Models\AdvertiserCampaign;
+use App\Models\AdvertiserCampaignReviewFeedback;
+use Illuminate\Support\Facades\DB;
 use App\Models\StaffMember;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -84,6 +86,88 @@ final class StaffAdvertiserReviewController extends Controller
             'status' => $record->status,
             'revision' => $record->revision,
         ]]);
+    }
+
+    public function requestChanges(Request $request, int $organization, int $campaign): JsonResponse
+    {
+        [$staff, $token] = $this->staffSession($request);
+        $this->assertReviewAssignment($staff, $token, $organization);
+
+        $data = $request->validate([
+            'revision' => ['required', 'integer', 'min:1', 'max:2147483646'],
+            'feedback' => ['required', 'string', 'min:15', 'max:2000', 'not_regex:/[<>]/'],
+            'status' => ['missing'],
+            'advertiser_organization_id' => ['missing'],
+            'advertiser_account_id' => ['missing'],
+            'staff_member_id' => ['missing'],
+            'approved_by' => ['missing'],
+            'id' => ['missing'],
+        ]);
+
+        $result = DB::transaction(function () use ($request, $staff, $token, $organization, $campaign, $data): array {
+            // Lock the persisted assignment before the campaign. Revocation
+            // must not slip between authorization and the state mutation.
+            $assignment = DB::table('staff_advertiser_assignments')
+                ->where('staff_member_id', $staff->getKey())
+                ->where('advertiser_organization_id', $organization)
+                ->where('is_active', true)
+                ->lockForUpdate()->first();
+            if (! $assignment) {
+                abort(404);
+            }
+
+            $record = AdvertiserCampaign::query()
+                ->where('advertiser_organization_id', $organization)
+                ->where('status', 'in_review')
+                ->whereKey($campaign)->lockForUpdate()->firstOrFail();
+
+            Gate::forUser($staff)->authorize('staff-resource', [
+                'advertising.campaign.request_changes',
+                new StaffResourceContext(
+                    (int) $record->getKey(), 'advertiser_campaign', $record->status,
+                    advertiserId: (int) $record->advertiser_organization_id,
+                ),
+                $token,
+            ]);
+
+            if ((int) $record->revision !== (int) $data['revision']) {
+                abort(409, 'Campaign revision conflict.');
+            }
+
+            $nextRevision = (int) $record->revision + 1;
+            $changed = AdvertiserCampaign::query()
+                ->whereKey($record->getKey())
+                ->where('advertiser_organization_id', $organization)
+                ->where('status', 'in_review')
+                ->where('revision', $data['revision'])
+                ->update(['status' => 'draft', 'revision' => $nextRevision, 'updated_at' => now()]);
+            if ($changed !== 1) {
+                abort(409, 'Campaign revision conflict.');
+            }
+
+            // The encrypted feedback and state transition commit atomically.
+            // Reviewer identity is retained only in the append-only ledger.
+            $feedback = AdvertiserCampaignReviewFeedback::query()->create([
+                'advertiser_organization_id' => $organization,
+                'advertiser_campaign_id' => $record->getKey(),
+                'staff_member_id' => $staff->getKey(),
+                'action' => 'changes_requested',
+                'feedback' => $data['feedback'],
+                'from_revision' => (int) $data['revision'],
+                'to_revision' => $nextRevision,
+                'request_id' => $request->attributes->get('request_id'),
+                'created_at' => now(),
+            ]);
+
+            return ['campaign' => [
+                'id' => $record->getKey(),
+                'status' => 'draft',
+                'revision' => $nextRevision,
+            ], 'feedback_id' => $feedback->getKey()];
+        });
+
+        // Requesting changes is not approval, delivery or publication.
+        return $this->privateResponse($result);
     }
 
     private function assertReviewAssignment(StaffMember $staff, PersonalAccessToken $token, int $organization): void

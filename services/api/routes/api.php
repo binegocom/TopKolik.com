@@ -90,6 +90,10 @@ Route::prefix('staff')->group(function (): void {
             [StaffAdvertiserReviewController::class, 'show'])
             ->whereNumber('organization')->whereNumber('campaign')
             ->middleware('throttle:20,1');
+        Route::post('/ads/organizations/{organization}/campaigns/{campaign}/request-changes',
+            [StaffAdvertiserReviewController::class, 'requestChanges'])
+            ->whereNumber('organization')->whereNumber('campaign')
+            ->middleware('throttle:10,1');
 
         Route::post('/auth/logout', [StaffAuthController::class, 'logout']);
         Route::post('/auth/step-up', [StaffAuthController::class, 'stepUp'])
@@ -131,4 +135,8 @@ Route::middleware(['auth:sanctum', 'advertiser.session'])
             ->whereNumber('organization')->whereNumber('campaign')->middleware('throttle:40,1');
         Route::post('/organizations/{organization}/campaigns/{campaign}/submit', [AdvertiserCampaignController::class, 'submit'])
             ->whereNumber('organization')->whereNumber('campaign')->middleware('throttle:10,1');
+        Route::get('/organizations/{organization}/campaigns/{campaign}/review-feedback',
+            [AdvertiserCampaignController::class, 'reviewFeedback'])
+            ->whereNumber('organization')->whereNumber('campaign')
+            ->middleware('throttle:30,1');
     });
