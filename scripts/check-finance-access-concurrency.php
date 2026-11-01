@@ -298,7 +298,87 @@ try {
         throw new RuntimeException('Previously issued finance MFA token retained access after revocation.');
     }
 
-    echo "PASS: four-worker finance approval/revocation race, stale MFA denial, audit and replay.\n";
+
+    // Race two approvals against one-way staff deactivation using real workers.
+    $second = $postTogether([[$path, $tokens['requester'], [
+        'target_staff_member_id' => $finance->getKey(),
+    ]]]);
+    if ($second[0]['code'] !== 201 || ! isset($second[0]['json']['request']['id'])) {
+        throw new RuntimeException('Pre-offboarding finance request setup failed: '.json_encode($second));
+    }
+    $secondId = (int) $second[0]['json']['request']['id'];
+    $deactivatePath = '/api/v1/staff/security/finance/staff/'.$finance->getKey().'/deactivate';
+    $offboarding = $postTogether([
+        [$path.'/'.$secondId.'/approve', $tokens['approver'], []],
+        [$path.'/'.$secondId.'/approve', $tokens['approver'], []],
+        [$deactivatePath, $tokens['revoker'], []],
+    ]);
+    $offboardingApprovals = [$offboarding[0]['code'], $offboarding[1]['code']];
+    sort($offboardingApprovals);
+    if ($offboarding[2]['code'] !== 200
+        || ! in_array($offboardingApprovals, [[200, 409], [409, 409]], true)) {
+        throw new RuntimeException('Finance approval/offboarding race violated serial outcomes: '.json_encode($offboarding));
+    }
+
+    DB::disconnect();
+    $finance->refresh();
+    $secondDecision = DB::table('staff_finance_access_requests')->where('id', $secondId)->first();
+    $approvedBeforeDeactivation = $offboardingApprovals === [200, 409];
+    if ($finance->is_active || ! $secondDecision
+        || $secondDecision->status !== ($approvedBeforeDeactivation ? 'approved' : 'pending')
+        || (bool) DB::table('staff_finance_entitlements')
+            ->where('staff_member_id', $finance->getKey())->value('is_active')
+        || DB::table('personal_access_tokens')
+            ->where('tokenable_type', $finance->getMorphClass())
+            ->where('tokenable_id', $finance->getKey())->exists()
+        || DB::table('staff_security_admin_grants')
+            ->where('staff_member_id', $finance->getKey())->where('is_active', true)->exists()
+        || DB::table('staff_advertiser_assignments')
+            ->where('staff_member_id', $finance->getKey())->where('is_active', true)->exists()) {
+        throw new RuntimeException('Finance offboarding race left an active account, entitlement or token.');
+    }
+
+    $offboardingEvents = DB::table('security_audit_events')
+        ->where('subject_type', 'staff_member')
+        ->where('subject_id', $finance->getKey())
+        ->whereIn('action', [
+            'staff.finance_access.requested',
+            'staff.finance_access.approved',
+            'staff.finance_access.revoked',
+            'staff.finance_access.staff_deactivated',
+        ])->get(['action', 'staff_member_id', 'request_id']);
+    $expectedCounts = [
+        'staff.finance_access.requested' => 2,
+        'staff.finance_access.approved' => $approvedBeforeDeactivation ? 2 : 1,
+        'staff.finance_access.revoked' => 1,
+        'staff.finance_access.staff_deactivated' => 1,
+    ];
+    $actualCounts = $offboardingEvents->countBy('action')->all();
+    // PostgreSQL does not guarantee audit event arrival order across workers.
+    // Compare counts by action, not associative insertion order.
+    ksort($actualCounts);
+    ksort($expectedCounts);
+    if ($actualCounts !== $expectedCounts
+        || $offboardingEvents->pluck('request_id')->filter()->unique()->count() !== $offboardingEvents->count()
+        || $offboardingEvents->contains(static fn ($event): bool =>
+            (int) $event->staff_member_id !== (
+                $event->action === 'staff.finance_access.requested' ? (int) $requester->getKey()
+                : ($event->action === 'staff.finance_access.approved' ? (int) $approver->getKey()
+                : (int) $revoker->getKey())
+            ))) {
+        throw new RuntimeException('Finance offboarding race audit was duplicated or misattributed: '.json_encode($actualCounts));
+    }
+
+    $deactivationReplay = $postTogether([[$deactivatePath, $tokens['revoker'], []]]);
+    if ($deactivationReplay[0]['code'] !== 404
+        || DB::table('security_audit_events')
+            ->where('action', 'staff.finance_access.staff_deactivated')
+            ->where('subject_id', $finance->getKey())->count() !== 1
+        || $getFinanceAccess() !== 401) {
+        throw new RuntimeException('Offboarding replay or stale finance session was not denied.');
+    }
+
+    echo "PASS: four-worker finance approval/revocation and approval/offboarding races, stale MFA denial, audit and replay.\n";
 } catch (Throwable $exception) {
     fwrite(STDERR, 'FAIL: finance HTTP concurrency: '.$exception->getMessage()."\n");
     $exit = 1;

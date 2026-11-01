@@ -431,3 +431,27 @@
 - Six new PostgreSQL feature tests cover independent admin authorization, wrong principal types, stale bearer invalidation, self-targeting, replay, pending approval denial and audit rollback. No production data, migration, sports-data provider or locale changes.
 - **Code commit:** `6adf654a18bca8c021c27f7d15469051d2938229`, [PR #70](https://github.com/binegocom/TopKolik.com/pull/70). [Laravel CI 41343543588](https://github.com/binegocom/TopKolik.com/actions/runs/41343543588) passed **313 tests / 2,674 assertions**, isolated PostgreSQL/Redis, existing four-worker support/finance races, real HTTP/SMTP, Composer audit and 17 editorial guard cases. [Editorial/roadmap CI 41343543529](https://github.com/binegocom/TopKolik.com/actions/runs/41343543529) passed. Final evidence-commit CI and merge require separate verification.
 - **P03-007 remains in_progress.** No general role mutation/re-activation API, real concurrent offboarding-vs-approval test, complete staff/finance resource RBAC, approved production security-admin provisioning, offsite audit anchoring, commercial sports data rights or production deployment is established.
+
+
+## P03-007 — finance approval versus emergency staff offboarding regression
+
+- The isolated CI harness now races two finance approvals against one independently
+  authorized emergency staff deactivation through four real HTTP workers.
+  Both valid serial orders are checked; no active staff account, entitlement,
+  residual grant or stale bearer may survive offboarding.
+- Checks persisted approval state, single deactivation audit, unique request IDs,
+  actor attribution, replay denial and stale bearer HTTP 401.
+- [PR #71](https://github.com/binegocom/TopKolik.com/pull/71)
+  code/docs commit `d22b3ad4e661a105c251094d3aef5ea956c51281` passed
+  [Laravel CI 41348900691](https://github.com/binegocom/TopKolik.com/actions/runs/41348900691)
+  (PostgreSQL/Redis, four-worker finance and support races, HTTP/SMTP,
+  Composer audit) and [editorial CI 41348900676](https://github.com/binegocom/TopKolik.com/actions/runs/41348900676).
+  Final evidence-commit CI must also pass before merge.
+- P03-007 stays `in_progress`; no `done` task, production privilege,
+  migration, provider access or release is claimed.
+
+- Final evidence-commit CI run [41349025206](https://github.com/binegocom/TopKolik.com/actions/runs/41349025206)
+  found an order-sensitive audit-count assertion: PostgreSQL returned the
+  correct per-action totals in a different row order. The test now sorts
+  action keys before strict comparison. This is a test assertion correction,
+  not a change to authorization behavior; replacement commit CI is required.
