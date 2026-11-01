@@ -168,4 +168,26 @@ final class StaffSupportReviewerWorkloadTest extends TestCase
         ]);
     }
 
+
+    public function test_reviewed_escalations_do_not_inflate_pending_workload(): void
+    {
+        $assignee = $this->eligibleStaff();
+        $first = $this->eligibleStaff();
+        $this->eligibleStaff();
+        $reviewed = $this->supportTicket($assignee, $first);
+        $reviewed->forceFill([
+            'escalation_reviewed_at' => now(),
+            'escalation_reviewed_by_staff_id' => $first->id,
+            'escalation_review_note' => 'Independent review completed.',
+        ])->save();
+
+        $ticket = $this->supportTicket($assignee);
+        $this->withToken($this->staffToken($assignee))
+            ->postJson('/api/v1/staff/support/tickets/'.$ticket->id.'/escalate')
+            ->assertOk();
+
+        // Both reviewers have zero pending cases; the lower ID wins.
+        $this->assertSame($first->id, $ticket->fresh()->escalation_reviewer_staff_id);
+    }
+
 }
