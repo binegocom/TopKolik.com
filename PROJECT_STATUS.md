@@ -399,3 +399,20 @@
   security-administrator provisioning, offsite audit, commercial sports
   data rights, legal finance rules and production deployment remain open.
   No production migration, runtime sports fixtures or locale changes.
+
+## PR #67 merged — finance HTTP concurrency coverage
+
+- [PR #67](https://github.com/binegocom/TopKolik.com/pull/67) merged to
+  `main` as `df4affbdf8d003b49a687c680f78f515e60b5455`.
+- The **final PR head** `98e8816955981086c2c0cc378383437550f2a86e`
+  passed [Laravel CI 41333825271](https://github.com/binegocom/TopKolik.com/actions/runs/41333825271)
+  (306 tests / 2,598 assertions; four-worker finance and support races,
+  PostgreSQL/Redis, real HTTP/SMTP, Composer audit) and
+  [editorial/roadmap CI 41333825289](https://github.com/binegocom/TopKolik.com/actions/runs/41333825289).
+  [Merge editorial CI 41333962593](https://github.com/binegocom/TopKolik.com/actions/runs/41333962593)
+  also passed. The prior `push` path filter did not trigger Laravel CI
+  on this scripts-only merge; a follow-up workflow change aligns `push`
+  coverage with the `pull_request` paths.
+- `P03-007` remains `in_progress`; no new `done` task is claimed.
+  Real production authorization, operator provisioning, legal finance
+  policy and provider rights are still unverified.
