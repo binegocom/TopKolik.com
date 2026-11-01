@@ -34,3 +34,10 @@ php artisan test
 ```
 
 GitHub Actions runs Laravel against isolated PostgreSQL and Redis. Feature cases cover separate staff principal and target, audit reference, replay, active requester revocation blocking pending approvals, role/token/MFA/expiry denials, disabled target cleanup, forbidden self-revocation and no grant/role mass-assignment.
+
+## Verified merge evidence
+
+- [PR #57](https://github.com/binegocom/TopKolik.com/pull/57) merged after conflict-free rebase onto PR #56's independent support escalation review: `00b66a4f4643bbd453adfd5865751b19529d141e`.
+- [Final `main` Laravel API CI](https://github.com/binegocom/TopKolik.com/actions/runs/41299720644): 267 passing tests, 2,166 assertions, isolated PostgreSQL/Redis, HTTP/SMTP smoke and clean Composer audit.
+- [Final `main` editorial and roadmap integrity](https://github.com/binegocom/TopKolik.com/actions/runs/41299720703): passed.
+- This verifies code and integration behavior, **not** production administrator eligibility, paid sports data rights, finance approval or deployment.
