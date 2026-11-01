@@ -1351,6 +1351,23 @@
           "command": "php artisan migrate --force && php artisan test; TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-finance-access-concurrency.php; bash scripts/check-api-http.sh; bash scripts/check-reader-email-delivery.sh; bash scripts/test-editorial-guard.sh; composer audit --no-interaction; python3 scripts/status.py check",
           "result": "PR #71 code+documentation commit d22b3ad4: GitHub Actions Laravel API and editorial/roadmap checks passed on isolated PostgreSQL/Redis; four-worker finance approval/offboarding race, support concurrency, real HTTP/SMTP and audit checks succeeded. Final evidence-commit CI must also pass.",
           "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41348900691"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test && TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-finance-access-concurrency.php && php scripts/check-support-reviewer-concurrency.php",
+          "result": "PR #72 code/docs commit 6805fe51: 313 Laravel tests / 2,674 assertions and both four-worker HTTP race harnesses passed on disposable PostgreSQL/Redis; real HTTP/SMTP, Composer audit, 17 editorial guard cases passed. Final evidence-commit CI still required.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41353972644"
+        },
+        {
+          "type": "verification",
+          "command": "python3 scripts/validate_blueprint.py && python3 scripts/status.py check && bash scripts/test-editorial-guard.sh",
+          "result": "PR #72 code/docs commit 6805fe51: editorial/roadmap GitHub Actions passed; final evidence-commit CI pending.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41353972632"
+        },
+        {
+          "type": "reference",
+          "value": "https://github.com/binegocom/TopKolik.com/pull/72",
+          "validation": "Residual-grant/offboarding four-worker regression; task remains in_progress"
         }
       ],
       "verified_at": null,
