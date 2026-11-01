@@ -1288,6 +1288,17 @@
           "type": "revision",
           "value": "c2945c523dd1235193de1af694fea41d58f88bc7",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/64"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test && php scripts/check-support-reviewer-concurrency.php (GitHub Actions, four PHP HTTP workers, disposable PostgreSQL/Redis)",
+          "result": "PR #65 code SHA 7175b931: 300 Laravel tests / 2,550 assertions passed; simultaneous same-ticket reviewer relinquishment and held-case recovery each committed once with rejected replay, independent assignment and exactly one audit event per transition. HTTP/SMTP, Composer audit and 17 editorial guard cases passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41323167960"
+        },
+        {
+          "type": "revision",
+          "value": "7175b931680d05845bc736b229b6bcaf2de096fb",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/65"
         }
       ],
       "verified_at": null,
@@ -1317,7 +1328,8 @@
         "PR #61 adds a pending-only support escalation reviewer inbox with current MFA step-up, persisted role checks, reviewer-scoped SQL, bounded keyset pagination and metadata-only output. Code commit 21f9345 passed 285 Laravel tests / 2,373 assertions, PostgreSQL/Redis, real HTTP/SMTP, Composer audit and 17 editorial guard cases (CI 41308544607, 41308544664). Full staff/finance RBAC, independent concurrent HTTP-worker tests, fair reviewer scheduling and production verification remain open; P03-007 is not done.",
         "PR #62 adds PostgreSQL advisory-lock-serialized least-loaded independent reviewer selection across three existing routes. Multi-process simultaneous HTTP worker contention, end-to-end finance RBAC and production validation remain unverified; P03-007 stays in_progress.",
         "PR #63 verifies a five-request multi-worker HTTP contention and duplicate escalation race in isolated CI; sustained load, reviewer relinquishment/recovery under simultaneous workers, full finance/staff RBAC, production operator approval and deployment remain unverified. P03-007 is not done.",
-        "Finance staff access entitlement (inactive by default) with distinct MFA-confirmed security administrator request+approval, self-relinquishment and immutable PostgreSQL decisions is under CI review. This only manages access eligibility and implements no financial transaction, invoice, reconciliation, policy-complete finance approval, production security-admin bootstrap or production data access."
+        "Finance staff access entitlement (inactive by default) with distinct MFA-confirmed security administrator request+approval, self-relinquishment and immutable PostgreSQL decisions is under CI review. This only manages access eligibility and implements no financial transaction, invoice, reconciliation, policy-complete finance approval, production security-admin bootstrap or production data access.",
+        "PR #65 adds isolated four-worker HTTP regression for concurrent reviewer relinquishment and held escalation recovery, verified on code SHA 7175b931. Sustained load, full finance/resource-level staff RBAC, operational approvals and production deployment remain unverified; P03-007 stays in_progress."
       ]
     },
     {
