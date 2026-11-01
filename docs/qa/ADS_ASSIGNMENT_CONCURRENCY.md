@@ -49,3 +49,13 @@ test. Commercial advertiser agreements, approved operator provisioning,
 full finance resource permissions, external sports-data licenses, real
 production environment isolation and deployment remain unverified.
 `P03-007` remains `in_progress` until its complete RBAC matrix is accepted.
+
+## Verification evidence
+
+[PR #73](https://github.com/binegocom/TopKolik.com/pull/73)
+code SHA `489d40945f3a4bca96c73d0228881a26ed081a85`:
+[Laravel API CI 41359323946](https://github.com/binegocom/TopKolik.com/actions/runs/41359323946)
+passed 314 tests / 2,685 assertions, including the real four-worker ads
+approval/revocation harness, PostgreSQL/Redis, HTTP/SMTP, Composer audit and
+17 editorial guard checks. [Editorial/roadmap CI 41359323964](https://github.com/binegocom/TopKolik.com/actions/runs/41359323964)
+passed. Final evidence commit CI is required before merge.
