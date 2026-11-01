@@ -75,4 +75,72 @@ final class StaffSecurityAuditController extends Controller
             'Pragma' => 'no-cache',
         ]);
     }
+
+    /**
+     * Authentication failure metadata is visible only to the affected,
+     * currently authenticated staff member after a fresh MFA step-up.
+     * Unknown-identity attempts have no staff principal and are deliberately
+     * excluded; only a separately authorized security role may review those.
+     */
+    public function authenticationFailures(Request $request): JsonResponse
+    {
+        /** @var StaffMember $staff */
+        $staff = $request->user();
+        $bearer = $request->bearerToken();
+        $token = $bearer ? PersonalAccessToken::findToken($bearer) : null;
+        if (! $token) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        // Do not accept an actor, email, or fingerprint from the client.
+        // Never use the HMAC fingerprint as a public search key.
+        $data = $request->validate([
+            'staff_member_id' => ['missing'],
+            'actor_id' => ['missing'],
+            'email' => ['missing'],
+            'identity' => ['missing'],
+            'identity_fingerprint' => ['missing'],
+            'limit' => ['sometimes', 'integer', 'between:1,50'],
+            'before_id' => ['sometimes', 'integer', 'min:1'],
+            'action' => ['sometimes', 'string', Rule::in([
+                'staff.login.failed',
+                'staff.step_up.failed',
+            ])],
+            'request_id' => ['sometimes', 'uuid'],
+        ]);
+
+        Gate::forUser($staff)->authorize('staff-audit-self', [$token]);
+
+        $limit = (int) ($data['limit'] ?? 20);
+        $query = DB::table('security_auth_failures')
+            ->where('staff_member_id', $staff->getKey());
+
+        foreach (['action', 'request_id'] as $field) {
+            if (array_key_exists($field, $data)) {
+                $query->where($field, $data[$field]);
+            }
+        }
+        if (array_key_exists('before_id', $data)) {
+            $query->where('id', '<', (int) $data['before_id']);
+        }
+
+        $rows = $query->orderByDesc('id')->limit($limit + 1)
+            ->get(['id', 'action', 'request_id', 'created_at']);
+        $hasMore = $rows->count() > $limit;
+        $page = $rows->take($limit)->map(static fn (object $event): array => [
+            'id' => (int) $event->id,
+            'action' => $event->action,
+            'request_id' => $event->request_id,
+            'created_at' => $event->created_at,
+        ])->values()->all();
+
+        return response()->json([
+            'failures' => $page,
+            'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
+        ])->withHeaders([
+            'Cache-Control' => 'no-store, private',
+            'Pragma' => 'no-cache',
+        ]);
+    }
+
 }

@@ -80,6 +80,8 @@ Route::prefix('staff')->group(function (): void {
         // Self-only security metadata, gated on an unexpired MFA step-up.
         Route::get('/security/audit-events', [StaffSecurityAuditController::class, 'index'])
             ->middleware('throttle:30,1');
+        Route::get('/security/authentication-failures', [StaffSecurityAuditController::class, 'authenticationFailures'])
+            ->middleware('throttle:30,1');
 
         // Ads operations can inspect only explicitly assigned, active
         // advertiser organizations and only campaigns in review.
