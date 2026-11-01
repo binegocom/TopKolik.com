@@ -12,6 +12,7 @@ use App\Http\Controllers\StaffInvitationAcceptanceController;
 use App\Http\Controllers\StaffMfaEnrollmentController;
 use App\Http\Controllers\StaffAuthController;
 use App\Http\Controllers\StaffSecurityAuditController;
+use App\Http\Controllers\StaffAdvertiserReviewController;
 use App\Http\Controllers\StaffSupportTicketController;
 use App\Http\Controllers\StaffEditorialDraftController;
 use Illuminate\Support\Facades\Route;
@@ -79,6 +80,16 @@ Route::prefix('staff')->group(function (): void {
         // Self-only security metadata, gated on an unexpired MFA step-up.
         Route::get('/security/audit-events', [StaffSecurityAuditController::class, 'index'])
             ->middleware('throttle:30,1');
+
+        // Ads operations can inspect only explicitly assigned, active
+        // advertiser organizations and only campaigns in review.
+        Route::get('/ads/organizations/{organization}/campaigns',
+            [StaffAdvertiserReviewController::class, 'index'])
+            ->whereNumber('organization')->middleware('throttle:30,1');
+        Route::get('/ads/organizations/{organization}/campaigns/{campaign}',
+            [StaffAdvertiserReviewController::class, 'show'])
+            ->whereNumber('organization')->whereNumber('campaign')
+            ->middleware('throttle:20,1');
 
         Route::post('/auth/logout', [StaffAuthController::class, 'logout']);
         Route::post('/auth/step-up', [StaffAuthController::class, 'stepUp'])

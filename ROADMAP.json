@@ -1038,17 +1038,35 @@
           "type": "revision",
           "value": "a1a0ff57c8377ba52406020fbf05bb6cfbd6ea89",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/31"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "156 Laravel tests passed, 1,133 assertions using isolated PostgreSQL/Redis; 10 new ads staff assignment and cross-advertiser BOLA tests cover role isolation, draft privacy, current MFA step-up, revocation and default-deny write actions.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41259764571"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && python3 scripts/status.py check",
+          "result": "Composer audit no advisories, real API/SMTP smoke and 17 editorial publication guard scenarios passed; editorial/roadmap CI successful.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41259764572"
+        },
+        {
+          "type": "revision",
+          "value": "1833d938129561e3faa9071bed7a0821c2821e33",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/38"
         }
       ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/31",
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/38",
       "limitations": [
         "This policy foundation is not full P03-007 completion. Real article/ticket records, scoped controllers, advertiser/finance tenancy and BOLA integration are pending; no admin route grants yet.",
         "Support ticket read is an incremental slice only; editorial draft models, support reply/escalation, advertiser and finance scopes, security audit and full BOLA matrix remain open.",
         "Support reply/escalation controller slice implemented and in CI review; P03-007 remains in_progress until editorial resource APIs, complete BOLA matrix, support ticket lifecycle and advertiser/finance scopes are verified.",
-        "Encrypted editorial draft creation/read/update/submit API is under test; no publication endpoint, licensed provider-backed evidence or full editorial workflow exists. P03-007 still in_progress."
+        "Encrypted editorial draft creation/read/update/submit API is under test; no publication endpoint, licensed provider-backed evidence or full editorial workflow exists. P03-007 still in_progress.",
+        "Scoped ads staff read-only access to active explicitly assigned advertiser organizations and in-review campaigns is under PR CI review. Fresh MFA step-up required for creative details. Assignment creation, ads approval, publication, finance dual-control and complete role matrix remain unimplemented; no privileged action was granted."
       ]
     },
     {
