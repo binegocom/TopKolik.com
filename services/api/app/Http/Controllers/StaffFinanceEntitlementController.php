@@ -95,7 +95,7 @@ final class StaffFinanceEntitlementController extends Controller
             // Approval locks the target staff row before the entitlement.
             // Preserve that order to serialize activation and revocation.
             $target = StaffMember::query()->whereKey($staff)->lockForUpdate()->first();
-            if (! $target || $target->role !== 'finance') {
+            if (! $target) {
                 abort(404);
             }
             $entitlement = DB::table('staff_finance_entitlements')
