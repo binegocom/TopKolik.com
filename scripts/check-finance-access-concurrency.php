@@ -354,6 +354,10 @@ try {
         'staff.finance_access.staff_deactivated' => 1,
     ];
     $actualCounts = $offboardingEvents->countBy('action')->all();
+    // PostgreSQL does not guarantee audit event arrival order across workers.
+    // Compare counts by action, not associative insertion order.
+    ksort($actualCounts);
+    ksort($expectedCounts);
     if ($actualCounts !== $expectedCounts
         || $offboardingEvents->pluck('request_id')->filter()->unique()->count() !== $offboardingEvents->count()
         || $offboardingEvents->contains(static fn ($event): bool =>
