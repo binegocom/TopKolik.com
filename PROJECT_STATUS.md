@@ -289,8 +289,8 @@
 
 ## P03-007 — support reply/escalation transaction atomicity (PR #53)
 
-- **Status:** in_progress; PR under CI review, not a completed roadmap task.
+- **Status:** in_progress; PR #53 merged at `866c35e5777db58c75038d4fa8e0bdc0fa66521c` after final-head CI, not a completed roadmap task.
 - Reply and escalation mutations now retry PostgreSQL deadlocks (up to three transaction attempts), re-locking the scoped ticket and re-evaluating staff authorization on each attempt.
 - New PostgreSQL feature cases exercise reply and escalation audit-insert failure rollback, duplicate escalation rejection and reply idempotency/audit deduplication.
-- **Verification:** Pending final-head GitHub Actions Laravel API and editorial/roadmap checks. PR: https://github.com/binegocom/TopKolik.com/pull/53
+- **Verification:** Final PR head `42f2c0f0b817b1e4fe8e1e798f517c565a86c04c`: 251 Laravel tests / 2,036 assertions on PostgreSQL/Redis, real HTTP/SMTP, 17 editorial guard cases and roadmap checks passed. Laravel CI: https://github.com/binegocom/TopKolik.com/actions/runs/41294844246 ; Editorial CI: https://github.com/binegocom/TopKolik.com/actions/runs/41294844283 ; PR: https://github.com/binegocom/TopKolik.com/pull/53
 - **Still missing:** independent concurrent HTTP-worker load verification, a separately authorized escalation-review workflow, complete staff/finance RBAC and production release evidence. No migration, production data deletion, provider entitlement or locale change.
