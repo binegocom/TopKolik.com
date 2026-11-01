@@ -294,3 +294,10 @@
 - New PostgreSQL feature cases exercise reply and escalation audit-insert failure rollback, duplicate escalation rejection and reply idempotency/audit deduplication.
 - **Verification:** Final PR head `42f2c0f0b817b1e4fe8e1e798f517c565a86c04c`: 251 Laravel tests / 2,036 assertions on PostgreSQL/Redis, real HTTP/SMTP, 17 editorial guard cases and roadmap checks passed. Laravel CI: https://github.com/binegocom/TopKolik.com/actions/runs/41294844246 ; Editorial CI: https://github.com/binegocom/TopKolik.com/actions/runs/41294844283 ; PR: https://github.com/binegocom/TopKolik.com/pull/53
 - **Still missing:** independent concurrent HTTP-worker load verification, a separately authorized escalation-review workflow, complete staff/finance RBAC and production release evidence. No migration, production data deletion, provider entitlement or locale change.
+
+## P03-007 — emergency revocation of an independently authorized security administrator
+
+- Added `POST /api/v1/staff/security/admin-grants/{staff}/revoke`: only active separately granted staff security administrators with fresh MFA step-up may deactivate **another** administrator grant. Caller and target grant rows are locked, refreshed authorization is enforced and the audit is committed atomically.
+- No self-revocation through the other-principal endpoint, no grant creation or reactivation, no staff role mutation, no advertiser or finance permission increase. Revoked requesters lose access to subsequent ads assignment approvals.
+- Added feature coverage for replay, wrong token principals, MFA/role/expired sessions, denied mass assignment, disabled target cleanup, active target isolation and security audit linkage.
+- **in_progress:** awaiting CI; privileged production grant provisioning, on-call designation, finance dual control, offsite audit and production deployment remain open.

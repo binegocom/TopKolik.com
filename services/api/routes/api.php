@@ -92,6 +92,12 @@ Route::prefix('staff')->group(function (): void {
             [StaffSecurityAdminGrantController::class, 'relinquish'])
             ->middleware('throttle:6,1');
 
+        // Only an independently authorized, MFA-stepped-up administrator can
+        // revoke another administrator's existing grant; no grant route exists.
+        Route::post('/security/admin-grants/{staff}/revoke',
+            [StaffSecurityAdminGrantController::class, 'revokeOther'])
+            ->whereNumber('staff')->middleware('throttle:6,1');
+
         // Dedicated security-administration grant + short-lived MFA step-up.
         // Distinct initiating and deciding staff must authorize activation.
         Route::get('/security/ads/assignment-approvals',

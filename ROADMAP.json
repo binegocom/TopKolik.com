@@ -1200,7 +1200,8 @@
         "Assigned-only support inbox with private subject-only metadata and bounded keyset pagination was tested in PR #50. P03-007 remains in_progress: complete staff RBAC/BOLA matrix, ticket lifecycle, finance dual-control, operations review and production verification are not complete.",
         "MFA-gated support resolution from pending to resolved (excluding escalated tickets) verified on PR #51; P03-007 remains in_progress pending full staff/finance RBAC, escalated-ticket review, operational controls and production verification. No external notifications or live sports-provider data.",
         "PR #52 adds bounded PostgreSQL deadlock retries and rollback/replay regression coverage. True simultaneous HTTP-worker contention, complete staff/finance role matrix, escalation review and production authorization remain unverified; P03-007 is not done.",
-        "PR #53 extends retry and audit rollback coverage to support reply/escalation. Independent concurrent HTTP-worker load, escalation-review authorization, complete RBAC/finance scopes and production verification remain outstanding; P03-007 remains in_progress."
+        "PR #53 extends retry and audit rollback coverage to support reply/escalation. Independent concurrent HTTP-worker load, escalation-review authorization, complete RBAC/finance scopes and production verification remain outstanding; P03-007 remains in_progress.",
+        "Security-admin emergency revocation of another already-active grant, with MFA, per-actor DB lock and same-transaction append-only audit, is in PR review. Production incident operator designation/first grant provisioning, broader staff/finance policies, offsite audit anchoring and live deployment remain unverified."
       ]
     },
     {
