@@ -1052,7 +1052,7 @@
       "id": "P03-008",
       "phase": "P03",
       "title": "Implement advertiser organization scoping",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P02-GATE"
@@ -1061,12 +1061,33 @@
       "acceptance_criteria": [
         "Cross-advertiser IDOR tests pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "121 Laravel feature/unit tests, 828 assertions passed against isolated real PostgreSQL/Redis; 11 advertiser isolation cases cover cross-tenant BOLA, active memberships and role changes, token confusion, encrypted drafts, revision conflicts, database constraints.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41257177847"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh",
+          "result": "Composer audit clean, real HTTP and SMTP smoke passed, 17 editorial policy guard scenarios successful; roadmap/editorial CI passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41257177819"
+        },
+        {
+          "type": "revision",
+          "value": "a676b7ed8a77efcdd050e37074d09db9fe45103d",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/33"
+        }
+      ],
+      "verified_at": "2026-11-01",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
-      "limitations": []
+      "limitations": [
+        "Advertiser organization membership and encrypted private draft BOLA are backend-complete. Production onboarding, login/token issuance, commercial approvals, campaign publication/serving, media, billing, cache/queue/object tenancy and external deployment are NOT implemented and remain phase/release prerequisites.",
+        "Tenant boundaries are enforced at the application SQL and authorization layers, not by PostgreSQL RLS. Database-role separation and production authorization testing remain mandatory."
+      ]
     },
     {
       "id": "P03-009",

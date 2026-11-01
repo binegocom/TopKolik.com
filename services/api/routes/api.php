@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\ReaderAuthController;
+use App\Http\Controllers\AdvertiserCampaignController;
 use App\Http\Controllers\ReaderEmailVerificationController;
 use App\Http\Controllers\ReaderPasswordResetController;
 use App\Http\Controllers\ReaderProfileController;
@@ -92,3 +93,18 @@ Route::prefix('staff')->group(function (): void {
             ->whereNumber('ticket')->middleware('throttle:6,1');
     });
 });
+
+// Advertiser principals are isolated from staff and reader identities.
+// No public account provisioning or campaign publication is exposed.
+Route::middleware(['auth:sanctum', 'advertiser.session'])
+    ->prefix('advertiser')->group(function (): void {
+        Route::get('/organizations', [AdvertiserCampaignController::class, 'organizations']);
+        Route::get('/organizations/{organization}/campaigns', [AdvertiserCampaignController::class, 'index'])
+            ->whereNumber('organization');
+        Route::post('/organizations/{organization}/campaigns', [AdvertiserCampaignController::class, 'store'])
+            ->whereNumber('organization')->middleware('throttle:20,1');
+        Route::get('/organizations/{organization}/campaigns/{campaign}', [AdvertiserCampaignController::class, 'show'])
+            ->whereNumber('organization')->whereNumber('campaign');
+        Route::patch('/organizations/{organization}/campaigns/{campaign}', [AdvertiserCampaignController::class, 'update'])
+            ->whereNumber('organization')->whereNumber('campaign')->middleware('throttle:40,1');
+    });
