@@ -216,3 +216,10 @@
 - Response exposes no staff ID, identity fingerprint, email, token or MFA factor. Unknown-principal login attempts remain append-only in PostgreSQL but are excluded from this self-service endpoint. Reader and advertiser tokens, revoked/inactive sessions and missing MFA are denied.
 - **in_progress, verified backend slice:** [PR #41](https://github.com/binegocom/TopKolik.com/pull/41), code/docs SHA `76600fccbe54ffd89fc3306804dd144d66f029ec`. [Laravel CI](https://github.com/binegocom/TopKolik.com/actions/runs/41262734530): **184 tests / 1,390 assertions** passed on isolated PostgreSQL/Redis; Composer audit, HTTP and real SMTP passed. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41262734534): 17 editorial guards and roadmap integrity passed.
 - `P03-010` remains **in_progress**: no global incident-analyst search, offsite immutable archival, production DB role separation, approved retention, or complete throttled/malformed/middleware denial capture. No production release or sports-provider access is claimed.
+
+## P03-007 advertising reviewer self-assignment control — CI review
+
+- Staff in current `ads` role can list only their own active assignments to active organizations, without actor-ID selectors. The server applies authenticated staff ID to all SQL queries and bounds keyset pagination.
+- An ads reviewer may relinquish only their own existing active assignment using a short-lived MFA step-up. A transactional row lock, fresh authorization and conditional update deactivate the assignment; an allowlisted staff security audit record commits in the same transaction. No self-grant, reactivation or staff role mutation is available.
+- New negative PostgreSQL integration tests cover cross-tenant/cross-staff IDOR, expired/revoked/wrong tokens, role/MFA changes, replay, metadata-only responses, and forbidden privilege elevation.
+- **in_progress:** awaiting CI and review; no assignment provisioning, finance dual approval, campaign publishing, external security audit anchoring or production release verification.

@@ -1102,7 +1102,8 @@
         "Encrypted editorial draft creation/read/update/submit API is under test; no publication endpoint, licensed provider-backed evidence or full editorial workflow exists. P03-007 still in_progress.",
         "Scoped ads staff read-only access to active explicitly assigned advertiser organizations and in-review campaigns is under PR CI review. Fresh MFA step-up required for creative details. Assignment creation, ads approval, publication, finance dual-control and complete role matrix remain unimplemented; no privileged action was granted.",
         "Owner/editor advertiser draft submission, revision-guarded transaction and append-only tenant-scoped review audit implemented on feature branch, pending PostgreSQL CI. This only moves draft to in_review; no ad approval, publication, delivery, finance approvals, automatic membership enrollment or commercial rights are authorized.",
-        "MFA-protected assigned staff request-changes transaction and encrypted feedback retrieval for advertiser owner/editor are undergoing CI review. Only in_review → draft; no advertising approval/publishing, billing dual control, staff assignment provisioning or external immutable archiving."
+        "MFA-protected assigned staff request-changes transaction and encrypted feedback retrieval for advertiser owner/editor are undergoing CI review. Only in_review → draft; no advertising approval/publishing, billing dual control, staff assignment provisioning or external immutable archiving.",
+        "A narrowly scoped ads-staff self-assignment listing and MFA-protected relinquishment, atomically audited without granting or reactivating access, is under CI review. Assignment provisioning, admin delegation, finance dual-control, campaign publishing, and production security compliance remain missing."
       ]
     },
     {

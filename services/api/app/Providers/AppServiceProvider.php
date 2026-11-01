@@ -47,6 +47,13 @@ final class AppServiceProvider extends ServiceProvider
             return app(StaffAuthorizationPolicy::class)->canViewOwnAudit($principal, $token);
         });
 
+        Gate::define('staff-ads-assignments-self', function (
+            Authenticatable $principal,
+            PersonalAccessToken $token,
+        ): bool {
+            return app(StaffAuthorizationPolicy::class)->canListOwnAdvertiserAssignments($principal, $token);
+        });
+
         RateLimiter::for('reader-register', fn (Request $request) => Limit::perMinute(5)
             ->by('register:'.($request->ip() ?? 'unknown')));
 
