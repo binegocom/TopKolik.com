@@ -441,5 +441,11 @@
   residual grant or stale bearer may survive offboarding.
 - Checks persisted approval state, single deactivation audit, unique request IDs,
   actor attribution, replay denial and stale bearer HTTP 401.
-- **Pending final-commit CI.** P03-007 stays `in_progress`; no `done` task,
-  production privilege, migration, provider access or release is claimed.
+- [PR #71](https://github.com/binegocom/TopKolik.com/pull/71)
+  code/docs commit `d22b3ad4e661a105c251094d3aef5ea956c51281` passed
+  [Laravel CI 41348900691](https://github.com/binegocom/TopKolik.com/actions/runs/41348900691)
+  (PostgreSQL/Redis, four-worker finance and support races, HTTP/SMTP,
+  Composer audit) and [editorial CI 41348900676](https://github.com/binegocom/TopKolik.com/actions/runs/41348900676).
+  Final evidence-commit CI must also pass before merge.
+- P03-007 stays `in_progress`; no `done` task, production privilege,
+  migration, provider access or release is claimed.
