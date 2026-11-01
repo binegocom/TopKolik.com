@@ -1219,12 +1219,29 @@
           "type": "revision",
           "value": "dfeafe4abc44b9ef456a8fab1f0284e6aba27d71",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/59"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "280 Laravel tests passed, 2,310 assertions against isolated PostgreSQL/Redis. Eight new held escalation reviewer recovery tests cover full support lifecycle, independent reviewer selection, no-candidate hold, replay, MFA/grant revocation, wrong principals, malicious payloads and audit rollback.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41307626284"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && python3 scripts/status.py check",
+          "result": "Composer audit clean, real HTTP/SMTP smoke and editorial/roadmap checks all passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41307626247"
+        },
+        {
+          "type": "revision",
+          "value": "44314b89ee275a86bfce0dc9f7051f3faec0eb13",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/60"
         }
       ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/57",
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/60",
       "limitations": [
         "This policy foundation is not full P03-007 completion. Real article/ticket records, scoped controllers, advertiser/finance tenancy and BOLA integration are pending; no admin route grants yet.",
         "Support ticket read is an incremental slice only; editorial draft models, support reply/escalation, advertiser and finance scopes, security audit and full BOLA matrix remain open.",
