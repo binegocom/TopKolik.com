@@ -30,7 +30,7 @@ The existing staff login and MFA step-up rate limits retain both their IP and ac
 - MFA step-up: only an authenticated `StaffMember` principal can be recorded; reader and anonymous principals do not become staff audit actors.
 - Each 429 is recorded once in the existing append-only failure ledger with the request UUID. No IP address, submitted password, email, bearer token or MFA factor is stored.
 - The current action values remain `staff.login.failed` and `staff.step_up.failed`. The audit ledger cannot yet distinguish a throttled rejection from a credential failure by action alone. Missing/malformed email values are deliberately not fingerprinted. Middleware authorization denials and independent tamper-evident archival are still outside this slice.
-- PostgreSQL feature tests exercise account and IP exhaustion, malformed identifier rejection, step-up principal scoping, reader isolation, response headers and no token issuance. Final CI evidence must be attached before treating this slice as verified.
+- PostgreSQL feature tests exercise account and IP exhaustion, malformed identifier rejection, step-up principal scoping, reader isolation, response headers and no token issuance. [Laravel CI run 41270870736](https://github.com/binegocom/TopKolik.com/actions/runs/41270870736) passed 223 tests / 1,838 assertions on code commit `95a45c84f419acd687a12e3c66d7399f417776a4`; [editorial/roadmap CI 41270870749](https://github.com/binegocom/TopKolik.com/actions/runs/41270870749) passed. The documentation-only follow-up still requires final CI.
 
 ## Remaining release constraints
 
