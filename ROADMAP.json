@@ -1333,6 +1333,12 @@
           "type": "revision",
           "value": "8b956bf78f51dfea313758016e40694a07bb1d90",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/48"
+        },
+        {
+          "type": "test",
+          "command": "php artisan test && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh",
+          "result": "229 tests / 1,876 assertions, PostgreSQL/Redis, live HTTP/SMTP and 17 guard tests passed on code commit 054e3367967242f74e030bfa111e30043ee087e6",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41278505352"
         }
       ],
       "verified_at": null,
@@ -1347,7 +1353,7 @@
         "Malformed staff login/MFA validation audit verified on PR #44 in Laravel CI run 41267032971 (209 tests / 1,688 assertions) and editorial/roadmap run 41267032961. Only valid login email identifiers and authenticated step-up principals are fingerprinted. Middleware, throttled and missing/invalid-email rejections remain outside this slice; no offsite anchoring, privileged DB role separation, retention approval or production verification. P03-010 remains in_progress.",
         "PR #47 staff login/MFA step-up 429 audit passed PostgreSQL/Redis CI (223 tests / 1,838 assertions, run 41270870736) on code commit 95a45c8; final documentation commit CI still required. Existing action codes do not distinguish 429 cause; missing/malformed email, middleware denials, offsite anchoring, privileged DB separation, approved retention and global analyst access remain open. P03-010 stays in_progress.",
         "PR #48 isolates staff MFA principal throttling from reader IDs that collide across separate tables; 224 tests / 1,849 assertions passed on code commit 8b956bf (Laravel run 41274750485; editorial run 41274750571). Final documentation commit CI is pending. P03-010 remains in_progress: middleware-denial coverage, offsite anchoring, DB role separation and approved retention are outstanding.",
-        "PR #49 adds middleware-denied MFA step-up failure auditing for authenticated staff with persisted matching bearer tokens (inactive/unverified/MFA-removed/missing session ability); regression tests cover reader ID collision, invalid/revoked tokens, secret redaction and no unrelated-route events. CI on the final PR commit is pending. P03-010 remains in_progress: unauthenticated middleware denials cannot be safely attributed to staff, and independent offsite anchoring, production DB role separation, approved retention and authorized global analyst access remain unverified."
+        "PR #49 adds middleware-denied MFA step-up failure auditing for authenticated staff with persisted matching bearer tokens (inactive/MFA-removed/missing session ability); regression tests cover reader ID collision, invalid/revoked tokens, secret redaction and unrelated-route denial. Code SHA 054e3367967242f74e030bfa111e30043ee087e6 passed 229 Laravel tests / 1,876 assertions in CI run 41278505352, including PostgreSQL/Redis, real HTTP/SMTP and 17 editorial guard tests; editorial/roadmap CI run 41278505354 passed. Final documentation commit CI must also pass before merge. P03-010 remains in_progress: unauthenticated middleware denials cannot safely be attributed to staff, and independent offsite anchoring, production DB role separation, approved retention and authorized global analyst access remain unverified."
       ]
     },
     {
