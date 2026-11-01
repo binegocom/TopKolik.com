@@ -22,9 +22,19 @@ The Laravel API writes allowlisted staff authentication, MFA, activation and sup
 - The response contains `failures` with `id`, `action`, `request_id`, `created_at`, plus `next_before_id`. It never includes the staff ID, email or HMAC fingerprint; responses are non-cacheable and rate-limited to 30/minute.
 - Queries do not modify the audit ledger. The endpoint is a narrow investigative aid, not a complete incident-response console.
 
+## Named authentication throttling audit (PR #47)
+
+The existing staff login and MFA step-up rate limits retain both their IP and account/principal dimensions. Their named Laravel `Limit::response` callbacks now record a failure when the request is rejected with HTTP 429, before the controller executes. The callback preserves `Retry-After` and rate-limit headers and sends a generic, non-cacheable response. It does not weaken or reset throttling.
+
+- Login: only syntactically valid, bounded email identifiers are HMAC-pseudonymized. Unknown staff identities do not create fake staff records, and the callback never queries account existence.
+- MFA step-up: only an authenticated `StaffMember` principal can be recorded; reader and anonymous principals do not become staff audit actors.
+- Each 429 is recorded once in the existing append-only failure ledger with the request UUID. No IP address, submitted password, email, bearer token or MFA factor is stored.
+- The current action values remain `staff.login.failed` and `staff.step_up.failed`. The audit ledger cannot yet distinguish a throttled rejection from a credential failure by action alone. Missing/malformed email values are deliberately not fingerprinted. Middleware authorization denials and independent tamper-evident archival are still outside this slice.
+- PostgreSQL feature tests exercise account and IP exhaustion, malformed identifier rejection, step-up principal scoping, reader isolation, response headers and no token issuance. Final CI evidence must be attached before treating this slice as verified.
+
 ## Remaining release constraints
 
-This ledger is **DML append-only**, not independently immutable against privileged PostgreSQL users. A database owner or superuser can bypass triggers. Before production: separate DB roles, independent append-only offsite export/anchoring, verified restoration and retention policy, authorized global security oversight with approved role model, and comprehensive coverage for malformed, throttled and middleware-rejected attempts. Known/unknown well-formed staff login failures are recorded, but unknown identities are intentionally excluded from self-search. Those remaining features are not claimed as finished. `P03-010` remains `in_progress` until the complete security and release acceptance gates pass.
+This ledger is **DML append-only**, not independently immutable against privileged PostgreSQL users. A database owner or superuser can bypass triggers. Before production: separate DB roles, independent append-only offsite export/anchoring, verified restoration and retention policy, authorized global security oversight with approved role model, and comprehensive coverage for invalid/missing identifiers and middleware-rejected attempts. Named staff login and MFA step-up 429 rejections are captured when a valid login email or an authenticated staff principal is available, but the existing ledger action does not separately encode the 429 cause. Known/unknown well-formed staff login failures are recorded, but unknown identities are intentionally excluded from self-search. Those remaining features are not claimed as finished. `P03-010` remains `in_progress` until the complete security and release acceptance gates pass.
 
 ## Verification
 
@@ -33,6 +43,7 @@ cd services/api
 php artisan migrate --force
 php artisan test --filter=StaffSecurityAuditSearchTest
 php artisan test --filter=StaffAuthenticationFailureSearchTest
+php artisan test --filter=StaffAuthenticationThrottleAuditTest
 php artisan test
 ```
 
