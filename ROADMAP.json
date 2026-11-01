@@ -1173,12 +1173,29 @@
           "type": "revision",
           "value": "5203da02f57ef4e0647e570d7dd2f1d2c856ae3a",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/34"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "146 Laravel tests passed (1054 assertions) on real disposable PostgreSQL/Redis; 8 new staff failed-authentication tests verify unknown/known principal parity, HMAC pseudonyms, MFA/recovery replay, legitimate success, step-up rejection, no raw credential material, DML append-only constraints.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41259116353"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh",
+          "result": "Composer audit clean, HTTP/SMTP smoke successful and 17 editorial policy scenarios passed; separate editorial/roadmap integrity CI successful.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41259116332"
+        },
+        {
+          "type": "revision",
+          "value": "1d43da1208eae4b57471c35b669b0002f1ad0cb8",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/37"
         }
       ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/34",
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/37",
       "limitations": [
         "Staff-only insert-only audit ledger under CI review; privileged PostgreSQL owners can bypass DML triggers. Independent offsite anchoring, retention controls, authorized audit search and failed-attempt coverage remain release prerequisites.",
         "Self-only audit metadata search with MFA step-up, validated allowlist filters, actor-scoped SQL and keyset pagination is in PR review. Cross-staff oversight, failed-login capture, independent tamper-evident offsite shipping and retention/privileged DB separation remain unresolved.",
