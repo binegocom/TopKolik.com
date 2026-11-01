@@ -374,3 +374,28 @@
 - Only metadata is written to the append-only `staff.finance_access.revoked` security audit record in the same transaction. Audit insertion failure rolls back the entitlement change. Replay, cross-principal access, MFA and role changes, forbidden client fields and missing entitlements are covered by six PostgreSQL feature tests.
 - **Verified code commit:** `bed8e31b3501f7c338456cec699e81fcc81b93c6`, [PR #66](https://github.com/binegocom/TopKolik.com/pull/66). [Laravel CI 41328512689](https://github.com/binegocom/TopKolik.com/actions/runs/41328512689) passed **306 tests / 2,598 assertions** on isolated PostgreSQL/Redis, multi-worker support contention, live HTTP/SMTP, Composer audit and 17 editorial guard cases. [Editorial/roadmap CI 41328512691](https://github.com/binegocom/TopKolik.com/actions/runs/41328512691) passed. The final evidence commit requires fresh CI before merge.
 - **Still in_progress:** full resource-level finance/staff RBAC, security-administrator bootstrap approval, sustained concurrent finance activation/revocation verification, external audit anchoring, provider rights and production deployment remain unverified. No destructive migration, runtime sports fixtures or locale change.
+
+## P03-007 — real finance activation/revocation HTTP race (PR #67)
+
+- Added a fail-closed CI-only four-worker PHP/Laravel HTTP harness. It uses
+  disposable loopback PostgreSQL/Redis and four distinct test identities:
+  finance target, security request initiator, independent approver and
+  independent emergency revoker. It does not reset or delete tables.
+- Two simultaneous approval requests compete on the same pending decision
+  while an emergency revocation competes with activation. Exactly one
+  approval commits. Revocation may be rejected before activation (404) or
+  commit after activation (200); persisted entitlement and append-only
+  audit must match the actual serial order. A rejected early revocation
+  requires a new explicit request. Replays must not add audit events.
+- **Code CI verified:** [PR #67](https://github.com/binegocom/TopKolik.com/pull/67),
+  code SHA `eac6f5aa2fe2c6d2197041bfad0b4f651ce70966`.
+  [Laravel CI run 41333684141](https://github.com/binegocom/TopKolik.com/actions/runs/41333684141)
+  passed **306 tests / 2,598 assertions**, support and finance real
+  four-worker HTTP races, PostgreSQL/Redis, live HTTP/SMTP, Composer audit
+  and 17 editorial guard tests. [Editorial/roadmap CI run 41333684071](https://github.com/binegocom/TopKolik.com/actions/runs/41333684071)
+  passed. Final evidence-commit CI and PR merge remain required.
+- **Still in_progress:** this is a race regression, not a sustained load
+  test or complete finance resource-level authorization. Approved live
+  security-administrator provisioning, offsite audit, commercial sports
+  data rights, legal finance rules and production deployment remain open.
+  No production migration, runtime sports fixtures or locale changes.

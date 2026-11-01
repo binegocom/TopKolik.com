@@ -1316,6 +1316,23 @@
           "type": "revision",
           "value": "bed8e31b3501f7c338456cec699e81fcc81b93c6",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/66"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test && php scripts/check-support-reviewer-concurrency.php && php scripts/check-finance-access-concurrency.php && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh",
+          "result": "PR #67 code SHA eac6f5aa: 306 Laravel tests / 2,598 assertions passed on disposable PostgreSQL/Redis; four-worker support and finance approval/revocation HTTP races, real HTTP/SMTP, Composer audit and 17 editorial guard tests passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41333684141"
+        },
+        {
+          "type": "verification",
+          "command": "python3 scripts/validate_blueprint.py && python3 scripts/status.py check",
+          "result": "PR #67 code SHA eac6f5aa editorial guard and roadmap integrity workflow passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41333684071"
+        },
+        {
+          "type": "revision",
+          "value": "eac6f5aa2fe2c6d2197041bfad0b4f651ce70966",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/67"
         }
       ],
       "verified_at": null,
@@ -1347,7 +1364,8 @@
         "PR #63 verifies a five-request multi-worker HTTP contention and duplicate escalation race in isolated CI; sustained load, reviewer relinquishment/recovery under simultaneous workers, full finance/staff RBAC, production operator approval and deployment remain unverified. P03-007 is not done.",
         "Finance staff access entitlement (inactive by default) with distinct MFA-confirmed security administrator request+approval, self-relinquishment and immutable PostgreSQL decisions is under CI review. This only manages access eligibility and implements no financial transaction, invoice, reconciliation, policy-complete finance approval, production security-admin bootstrap or production data access.",
         "PR #65 adds isolated four-worker HTTP regression for concurrent reviewer relinquishment and held escalation recovery, verified on code SHA 7175b931. Sustained load, full finance/resource-level staff RBAC, operational approvals and production deployment remain unverified; P03-007 stays in_progress.",
-        "PR #66 adds independently authorized MFA emergency revocation for already-active finance entitlements; code CI passed (306 tests / 2,598 assertions) but final documentation-commit CI and merge are pending. No financial resource authorization, production security-admin bootstrap, sustained finance activation/revocation concurrency test, offsite audit anchoring or production release is verified; P03-007 remains in_progress."
+        "PR #66 adds independently authorized MFA emergency revocation for already-active finance entitlements; code CI passed (306 tests / 2,598 assertions) but final documentation-commit CI and merge are pending. No financial resource authorization, production security-admin bootstrap, sustained finance activation/revocation concurrency test, offsite audit anchoring or production release is verified; P03-007 remains in_progress.",
+        "PR #67 adds a CI-only real four-worker HTTP race for finance approval versus emergency revocation. It validates serial states, exactly-once audit and rejected replay; code CI passed on eac6f5aa, but final evidence-commit CI and merge are still required. Sustained contention, full finance resource RBAC, independently approved operator bootstrap, offsite audit and production release remain unverified."
       ]
     },
     {

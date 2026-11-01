@@ -9,6 +9,7 @@ on:
       - 'scripts/configure-local-api-env.py'
       - 'scripts/test-editorial-guard.sh'
       - 'scripts/check-support-reviewer-concurrency.php'
+      - 'scripts/check-finance-access-concurrency.php'
       - '.github/workflows/laravel-api.yml'
   push:
     branches:
@@ -56,6 +57,10 @@ jobs:
         env:
           TOPKOLIK_CONCURRENCY_TEST: '1'
         run: php scripts/check-support-reviewer-concurrency.php
+      - name: Verify multi-worker finance approval and revocation races
+        env:
+          TOPKOLIK_CONCURRENCY_TEST: '1'
+        run: php scripts/check-finance-access-concurrency.php
       - name: Verify live Laravel HTTP endpoints
         run: bash scripts/check-api-http.sh
       - name: Verify real SMTP verification email delivery
