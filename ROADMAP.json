@@ -1072,12 +1072,29 @@
           "type": "revision",
           "value": "88b3c56d435ab7d025d0219e1f46e2c22d8f6be6",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/39"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "176 Laravel tests, 1,307 assertions passed against isolated PostgreSQL/Redis, including 10 new review-feedback security cases: staff MFA and current assignment, cross-tenant BOLA, viewer isolation, optimistic revisions, replay rejection, encrypted append-only feedback, re-edit/resubmit and wrong principal tokens.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41261596280"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && python3 scripts/status.py check",
+          "result": "Composer audit no advisories; HTTP/SMTP smoke, editorial policy and roadmap integrity GitHub Actions checks succeeded.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41261596232"
+        },
+        {
+          "type": "revision",
+          "value": "a32d9ea68f8ef21932ce21e31ac315a50b16eca1",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/40"
         }
       ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/39",
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/40",
       "limitations": [
         "This policy foundation is not full P03-007 completion. Real article/ticket records, scoped controllers, advertiser/finance tenancy and BOLA integration are pending; no admin route grants yet.",
         "Support ticket read is an incremental slice only; editorial draft models, support reply/escalation, advertiser and finance scopes, security audit and full BOLA matrix remain open.",
