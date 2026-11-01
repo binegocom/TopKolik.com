@@ -236,3 +236,10 @@
 - The existing staff login and MFA step-up validation contracts remain unchanged (422 for malformed input). A malformed login with a syntactically valid email is recorded as an HMAC-only unknown-principal failure; malformed authenticated step-up records the persisted staff identity. No raw email, password, bearer token or MFA factor is written.
 - New PostgreSQL feature tests cover malformed login/step-up inputs, token non-issuance, secret redaction, absent/array email and unauthenticated step-up denial.
 - **in_progress, backend slice CI-verified:** [PR #44](https://github.com/binegocom/TopKolik.com/pull/44) / [Laravel CI run 41267032971](https://github.com/binegocom/TopKolik.com/actions/runs/41267032971): 209 tests, 1,688 assertions with disposable PostgreSQL/Redis, live HTTP, SMTP, Composer audit clean and 17 editorial guard cases. [Editorial/roadmap CI 41267032961](https://github.com/binegocom/TopKolik.com/actions/runs/41267032961) passed. Missing/invalid-email attempts, middleware and rate-limit denials, offsite tamper-evident archival, approved retention and production DB role separation remain open. No production deployment or live sports-provider access is claimed.
+
+## P03-007 security administrator voluntary revocation — feature review
+
+- Added self-only MFA step-up authenticated `POST /api/v1/staff/security/admin-grant/relinquish`. A current verified security administrator may deactivate only their own independently provisioned grant; grant deactivation and an allowlisted append-only security audit record commit atomically under a PostgreSQL row lock.
+- Existing ad assignment approval requests and decisions now acquire and revalidate the current administrator grant under a row lock inside their transaction, preventing stale permissions from being reused after revocation.
+- Negative feature coverage for cross-principal types, stale role/MFA, expired/revoked tokens, pending requester/approver privilege loss, client mass-assignment overrides and replay.
+- **in_progress:** PR CI pending. No operational admin grant bootstrap, emergency external revocation, finance controls, publishing or production deployment.

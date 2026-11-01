@@ -15,6 +15,7 @@ use App\Http\Controllers\StaffSecurityAuditController;
 use App\Http\Controllers\StaffAdvertiserReviewController;
 use App\Http\Controllers\StaffAdsAssignmentController;
 use App\Http\Controllers\StaffAdsAssignmentApprovalController;
+use App\Http\Controllers\StaffSecurityAdminGrantController;
 use App\Http\Controllers\StaffSupportTicketController;
 use App\Http\Controllers\StaffEditorialDraftController;
 use Illuminate\Support\Facades\Route;
@@ -84,6 +85,12 @@ Route::prefix('staff')->group(function (): void {
             ->middleware('throttle:30,1');
         Route::get('/security/authentication-failures', [StaffSecurityAuditController::class, 'authenticationFailures'])
             ->middleware('throttle:30,1');
+
+        // Revocation may affect only the authenticated administrator's own
+        // independently issued grant; short-lived MFA step-up is required.
+        Route::post('/security/admin-grant/relinquish',
+            [StaffSecurityAdminGrantController::class, 'relinquish'])
+            ->middleware('throttle:6,1');
 
         // Dedicated security-administration grant + short-lived MFA step-up.
         // Distinct initiating and deciding staff must authorize activation.

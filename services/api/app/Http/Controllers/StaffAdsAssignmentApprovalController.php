@@ -70,6 +70,7 @@ final class StaffAdsAssignmentApprovalController extends Controller
         }
 
         $id = DB::transaction(function () use ($request, $audit, $admin, $targetId, $orgId): int {
+            $this->assertCurrentAdminGrantLocked($request, $admin);
             $target = StaffMember::query()->whereKey($targetId)->lockForUpdate()->first();
             $organization = DB::table('advertiser_organizations')
                 ->where('id', $orgId)->lockForUpdate()->first();
@@ -143,6 +144,7 @@ final class StaffAdsAssignmentApprovalController extends Controller
         ]);
 
         $decision = DB::transaction(function () use ($request, $admin, $approval, $audit, $grant): array {
+            $this->assertCurrentAdminGrantLocked($request, $admin);
             $pending = DB::table('staff_ads_assignment_approvals')
                 ->where('id', $approval)->lockForUpdate()->first();
             if (! $pending) {
@@ -228,6 +230,26 @@ final class StaffAdsAssignmentApprovalController extends Controller
         }, attempts: 3);
 
         return $this->privateResponse(['request' => $decision]);
+    }
+
+    private function assertCurrentAdminGrantLocked(Request $request, StaffMember $admin): void
+    {
+        // A grant revoked while the request was waiting must not authorize a
+        // new approval or request. Share the lock with self-revocation.
+        $grant = DB::table('staff_security_admin_grants')
+            ->where('staff_member_id', $admin->getKey())
+            ->lockForUpdate()->first();
+
+        if (! $grant || ! $grant->is_active) {
+            abort(403);
+        }
+
+        $raw = $request->bearerToken();
+        $token = $raw ? PersonalAccessToken::findToken($raw) : null;
+        if (! $token) {
+            abort(403);
+        }
+        Gate::forUser($admin)->authorize('staff-ads-assignments-admin', [$token]);
     }
 
     private function admin(Request $request): StaffMember
