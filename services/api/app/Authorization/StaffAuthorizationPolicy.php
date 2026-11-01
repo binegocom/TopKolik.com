@@ -136,6 +136,31 @@ final class StaffAuthorizationPolicy
     }
 
     /**
+     * List access is a separate permission: an empty inbox must not let
+     * non-support staff discover whether support records exist.
+     */
+    public function canListOwnSupportTickets(
+        Authenticatable $principal,
+        ?PersonalAccessToken $token,
+    ): bool {
+        if (! $principal instanceof StaffMember || ! $token
+            || $token->expires_at === null || $token->expires_at->isPast()
+            || ! $token->can('staff:session')
+            || $token->tokenable_type !== $principal->getMorphClass()
+            || (string) $token->tokenable_id !== (string) $principal->getKey()) {
+            return false;
+        }
+
+        $staff = StaffMember::query()->find($principal->getKey());
+
+        return $staff !== null
+            && $staff->role === 'support'
+            && $staff->is_active
+            && $staff->email_verified_at !== null
+            && $staff->mfa_enrolled_at !== null;
+    }
+
+    /**
      * Only ads staff with current MFA-enrolled identity and a real expiring
      * staff session can discover their own advertiser review assignments.
      * This does not grant permission to provision or activate assignments.
