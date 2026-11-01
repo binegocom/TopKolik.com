@@ -17,6 +17,7 @@ use App\Http\Controllers\StaffAdsAssignmentController;
 use App\Http\Controllers\StaffAdsAssignmentApprovalController;
 use App\Http\Controllers\StaffFinanceAccessApprovalController;
 use App\Http\Controllers\StaffFinanceEntitlementController;
+use App\Http\Controllers\StaffFinanceEmergencyDeactivationController;
 use App\Http\Controllers\StaffSecurityAdminGrantController;
 use App\Http\Controllers\StaffSupportEscalationRecoveryController;
 use App\Http\Controllers\StaffSupportTicketController;
@@ -127,6 +128,11 @@ Route::prefix('staff')->group(function (): void {
         // already-active *other* finance employee's entitlement.
         Route::post('/security/finance/staff/{staff}/revoke',
             [StaffFinanceEntitlementController::class, 'revokeOther'])
+            ->whereNumber('staff')->middleware('throttle:6,1');
+
+        // One-way emergency offboarding; atomically revokes sessions and grants.
+        Route::post('/security/finance/staff/{staff}/deactivate',
+            [StaffFinanceEmergencyDeactivationController::class, 'deactivate'])
             ->whereNumber('staff')->middleware('throttle:6,1');
 
         // Entitlement self-check and surrender, both fail closed unless the
