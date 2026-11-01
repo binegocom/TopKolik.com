@@ -75,6 +75,14 @@ try {
         )->plainTextToken;
     }
 
+    // This MFA session predates activation and must be denied immediately
+    // after any successful revocation, without requiring a fresh login.
+    $financeToken = $finance->createToken(
+        'finance-race-existing-session',
+        ['staff:session', 'staff:step-up'],
+        now()->addMinutes(5),
+    )->plainTextToken;
+
     $socket = stream_socket_server('tcp://127.0.0.1:0', $errorCode, $errorMessage);
     if ($socket === false) {
         throw new RuntimeException('Unable to allocate loopback port.');
@@ -179,6 +187,28 @@ try {
         }
     };
 
+    $getFinanceAccess = static function () use ($base, $financeToken): int {
+        $handle = curl_init($base.'/api/v1/staff/finance/access');
+        curl_setopt_array($handle, [
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer '.$financeToken,
+                'Accept: application/json',
+            ],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_TIMEOUT => 15,
+        ]);
+        try {
+            curl_exec($handle);
+            if (curl_errno($handle) !== 0) {
+                throw new RuntimeException('Finance session HTTP check failed: '.curl_error($handle));
+            }
+            return (int) curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
+        } finally {
+            curl_close($handle);
+        }
+    };
+
     $path = '/api/v1/staff/security/finance/access-requests';
     $created = $postTogether([[$path, $tokens['requester'], [
         'target_staff_member_id' => $finance->getKey(),
@@ -214,6 +244,11 @@ try {
         || (int) $decision->reviewed_by_staff_member_id !== (int) $approver->getKey()
         || ! $entitlement || (bool) $entitlement->is_active !== ($revokeCode === 404)) {
         throw new RuntimeException('Finance race committed a non-serializable privilege state.');
+    }
+
+    $expectedAccessCode = $revokeCode === 404 ? 200 : 403;
+    if ($getFinanceAccess() !== $expectedAccessCode) {
+        throw new RuntimeException('Existing finance MFA session did not reflect committed revocation state.');
     }
 
     $events = DB::table('security_audit_events')
@@ -259,7 +294,11 @@ try {
         throw new RuntimeException('Finance revocation replay changed access or duplicated audit.');
     }
 
-    echo "PASS: four-worker finance approval/revocation race, serial state, MFA separation, audit and replay.\n";
+    if ($getFinanceAccess() !== 403) {
+        throw new RuntimeException('Previously issued finance MFA token retained access after revocation.');
+    }
+
+    echo "PASS: four-worker finance approval/revocation race, stale MFA denial, audit and replay.\\n";
 } catch (Throwable $exception) {
     fwrite(STDERR, 'FAIL: finance HTTP concurrency: '.$exception->getMessage()."\n");
     $exit = 1;
