@@ -7,6 +7,7 @@ namespace App\Providers;
 use Illuminate\Auth\Notifications\ResetPassword;
 use App\Authorization\StaffAuthorizationPolicy;
 use App\Authorization\StaffResourceContext;
+use App\Http\Responses\StaffAuthenticationThrottleResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Support\Facades\Gate;
@@ -140,20 +141,31 @@ final class AppServiceProvider extends ServiceProvider
             ];
         });
 
-        RateLimiter::for('staff-login', function (Request $request): array {
+        // Named limiter callbacks execute on 429 even when the controller
+        // never runs. The audit records only HMAC identities, not credentials.
+        $staffLoginThrottled = static fn (Request $request, array $headers) =>
+            app(StaffAuthenticationThrottleResponse::class)->login($request, $headers);
+        $staffStepUpThrottled = static fn (Request $request, array $headers) =>
+            app(StaffAuthenticationThrottleResponse::class)->stepUp($request, $headers);
+
+        RateLimiter::for('staff-login', function (Request $request) use ($staffLoginThrottled): array {
             $email = $request->input('email', '');
             $normalized = is_string($email) ? mb_strtolower(trim($email)) : '';
 
             return [
-                Limit::perMinute(15)->by('staff-login-ip:'.($request->ip() ?? 'unknown')),
-                Limit::perHour(10)->by('staff-login-account:'.hash('sha256', $normalized)),
+                Limit::perMinute(15)->by('staff-login-ip:'.($request->ip() ?? 'unknown'))
+                    ->response($staffLoginThrottled),
+                Limit::perHour(10)->by('staff-login-account:'.hash('sha256', $normalized))
+                    ->response($staffLoginThrottled),
             ];
         });
 
-        RateLimiter::for('staff-step-up', function (Request $request): array {
+        RateLimiter::for('staff-step-up', function (Request $request) use ($staffStepUpThrottled): array {
             return [
-                Limit::perMinute(8)->by('staff-step-up-ip:'.($request->ip() ?? 'unknown')),
-                Limit::perHour(6)->by('staff-step-up-user:'.($request->user()?->getAuthIdentifier() ?? 'anonymous')),
+                Limit::perMinute(8)->by('staff-step-up-ip:'.($request->ip() ?? 'unknown'))
+                    ->response($staffStepUpThrottled),
+                Limit::perHour(6)->by('staff-step-up-user:'.($request->user()?->getAuthIdentifier() ?? 'anonymous'))
+                    ->response($staffStepUpThrottled),
             ];
         });
 
