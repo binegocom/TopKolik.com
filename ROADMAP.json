@@ -1089,12 +1089,29 @@
           "type": "revision",
           "value": "a32d9ea68f8ef21932ce21e31ac315a50b16eca1",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/40"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "194 Laravel tests passed, 1,505 assertions on isolated real PostgreSQL/Redis. 10 new self-scoped staff ads assignment cases cover IDOR, roles/token types, unexpired MFA step-up, relinquishment replay, immediate tenant access revocation, audit record and pagination.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41265945163"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && python3 scripts/status.py check",
+          "result": "Composer audit clean, live HTTP/SMTP smoke checks successful, editorial guard and roadmap CI passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41265945250"
+        },
+        {
+          "type": "revision",
+          "value": "6d0ae933c0e92f2e039347ecad9889fac277c434",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/42"
         }
       ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/40",
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/42",
       "limitations": [
         "This policy foundation is not full P03-007 completion. Real article/ticket records, scoped controllers, advertiser/finance tenancy and BOLA integration are pending; no admin route grants yet.",
         "Support ticket read is an incremental slice only; editorial draft models, support reply/escalation, advertiser and finance scopes, security audit and full BOLA matrix remain open.",
