@@ -243,3 +243,10 @@
 - Existing ad assignment approval requests and decisions now acquire and revalidate the current administrator grant under a row lock inside their transaction, preventing stale permissions from being reused after revocation.
 - Negative feature coverage for cross-principal types, stale role/MFA, expired/revoked tokens, pending requester/approver privilege loss, client mass-assignment overrides and replay.
 - **in_progress, verified backend slice:** [PR #46](https://github.com/binegocom/TopKolik.com/pull/46), feature commit `3d960e7c12ba626207c62492d0ffa506fd9f38a3`. [Laravel API CI](https://github.com/binegocom/TopKolik.com/actions/runs/41269986853) passed **218 tests / 1,757 assertions** on isolated PostgreSQL/Redis with live HTTP/SMTP and clean Composer audit; [editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41269986895) passed. Operator-controlled initial administrator grant provisioning and emergency revocation, finance dual-control, publication and production deployment remain missing.
+
+## P03-010 staff authentication throttling audit — PR #47 in review
+
+- Named Laravel staff login and MFA step-up rate-limit response callbacks record HMAC-pseudonymized authentication failures for rejected requests before the controller runs. Both IP and account/principal dimensions remain enforced; HTTP 429 and Retry-After behavior are preserved.
+- New PostgreSQL regression tests exercise per-account and per-IP exhaustion, invalid identifier handling, authenticated MFA step-up, reader principal isolation, token non-issuance and secret redaction.
+- **in_progress / pending final CI:** [PR #47](https://github.com/binegocom/TopKolik.com/pull/47). Do not mark P03-010 done until external append-only anchoring, privileged DB role separation, retention policy, authorized analyst access and middleware denial coverage are verified.
+- No licensed sports data, runtime fixtures, provider access or production deployment is claimed.
