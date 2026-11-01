@@ -65,8 +65,13 @@ approval/revocation harness, PostgreSQL/Redis, HTTP/SMTP, Composer audit and
 17 editorial guard checks. [Editorial/roadmap CI 41359323964](https://github.com/binegocom/TopKolik.com/actions/runs/41359323964)
 passed. Final evidence commit CI is required before merge.
 
-## Follow-up verification (pending)
+## Approver-grant race verification
 
-The approver-grant revocation scenario and stale-MFA feature regression are
-implemented on the P03-007 feature branch. CI evidence must be attached to
-the PR and roadmap before acceptance; no production verification is implied.
+[PR #74](https://github.com/binegocom/TopKolik.com/pull/74), code SHA
+`f2c26e79eb574fbcc24e1a1ee199eb00c47119c4`:
+[Laravel API CI 41364309164](https://github.com/binegocom/TopKolik.com/actions/runs/41364309164)
+passed 315 tests / 2,698 assertions, including both four-worker ads
+approval/grant revocation scenarios, PostgreSQL/Redis, real HTTP/SMTP,
+Composer audit and 17 editorial guards. [Editorial/roadmap CI 41364309196](https://github.com/binegocom/TopKolik.com/actions/runs/41364309196)
+passed. The final evidence commit requires its own successful CI before merge.
+No production verification is implied.
