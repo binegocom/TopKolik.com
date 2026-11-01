@@ -15,6 +15,8 @@ use App\Http\Controllers\StaffSecurityAuditController;
 use App\Http\Controllers\StaffAdvertiserReviewController;
 use App\Http\Controllers\StaffAdsAssignmentController;
 use App\Http\Controllers\StaffAdsAssignmentApprovalController;
+use App\Http\Controllers\StaffFinanceAccessApprovalController;
+use App\Http\Controllers\StaffFinanceEntitlementController;
 use App\Http\Controllers\StaffSecurityAdminGrantController;
 use App\Http\Controllers\StaffSupportEscalationRecoveryController;
 use App\Http\Controllers\StaffSupportTicketController;
@@ -105,6 +107,29 @@ Route::prefix('staff')->group(function (): void {
         Route::post('/security/support/escalations/{ticket}/recover-reviewer',
             [StaffSupportEscalationRecoveryController::class, 'recoverReviewer'])
             ->whereNumber('ticket')->middleware('throttle:6,1');
+
+        // Independently granted administrators must approve finance access
+        // in two-person workflow; no payment, invoice or ledger operations.
+        Route::get('/security/finance/access-requests',
+            [StaffFinanceAccessApprovalController::class, 'index'])
+            ->middleware('throttle:20,1');
+        Route::post('/security/finance/access-requests',
+            [StaffFinanceAccessApprovalController::class, 'store'])
+            ->middleware('throttle:6,1');
+        Route::post('/security/finance/access-requests/{approval}/approve',
+            [StaffFinanceAccessApprovalController::class, 'approve'])
+            ->whereNumber('approval')->middleware('throttle:6,1');
+        Route::post('/security/finance/access-requests/{approval}/reject',
+            [StaffFinanceAccessApprovalController::class, 'reject'])
+            ->whereNumber('approval')->middleware('throttle:6,1');
+
+        // Entitlement self-check and surrender, both fail closed unless the
+        // finance role AND separate approved access are currently active.
+        Route::get('/finance/access', [StaffFinanceEntitlementController::class, 'show'])
+            ->middleware('throttle:20,1');
+        Route::post('/finance/access/relinquish',
+            [StaffFinanceEntitlementController::class, 'relinquish'])
+            ->middleware('throttle:6,1');
 
         // Dedicated security-administration grant + short-lived MFA step-up.
         // Distinct initiating and deciding staff must authorize activation.

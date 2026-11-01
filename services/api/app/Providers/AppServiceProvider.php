@@ -80,6 +80,13 @@ final class AppServiceProvider extends ServiceProvider
             return app(StaffAuthorizationPolicy::class)->canManageAdsAssignments($principal, $token);
         });
 
+        Gate::define('staff-finance-entitlement', function (
+            Authenticatable $principal,
+            PersonalAccessToken $token,
+        ): bool {
+            return app(StaffAuthorizationPolicy::class)->canUseFinanceEntitlement($principal, $token);
+        });
+
         Gate::define('staff-ads-assignments-admin', function (
             Authenticatable $principal,
             PersonalAccessToken $token,
