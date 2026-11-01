@@ -17,6 +17,7 @@ use App\Http\Controllers\StaffAdsAssignmentController;
 use App\Http\Controllers\StaffAdsAssignmentApprovalController;
 use App\Http\Controllers\StaffSecurityAdminGrantController;
 use App\Http\Controllers\StaffSupportTicketController;
+use App\Http\Controllers\StaffSupportEscalationController;
 use App\Http\Controllers\StaffEditorialDraftController;
 use Illuminate\Support\Facades\Route;
 
@@ -143,6 +144,12 @@ Route::prefix('staff')->group(function (): void {
             ->whereNumber('draft')->middleware('throttle:40,1');
         Route::post('/editorial/drafts/{draft}/submit', [StaffEditorialDraftController::class, 'submit'])
             ->whereNumber('draft')->middleware('throttle:10,1');
+
+        // Independent MFA reviewer scope; no client-selected reviewer.
+        Route::get('/support/escalations/{ticket}', [StaffSupportEscalationController::class, 'show'])
+            ->whereNumber('ticket')->middleware('throttle:20,1');
+        Route::post('/support/escalations/{ticket}/approve', [StaffSupportEscalationController::class, 'approve'])
+            ->whereNumber('ticket')->middleware('throttle:6,1');
 
         // Assigned-only support inbox; metadata excludes ticket messages and replies.
         Route::get('/support/tickets', [StaffSupportTicketController::class, 'index'])

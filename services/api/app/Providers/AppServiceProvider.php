@@ -7,6 +7,7 @@ namespace App\Providers;
 use Illuminate\Auth\Notifications\ResetPassword;
 use App\Authorization\StaffAuthorizationPolicy;
 use App\Authorization\StaffResourceContext;
+use App\Models\SupportTicket;
 use App\Http\Responses\StaffAuthenticationThrottleResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -53,6 +54,14 @@ final class AppServiceProvider extends ServiceProvider
             PersonalAccessToken $token,
         ): bool {
             return app(StaffAuthorizationPolicy::class)->canListOwnSupportTickets($principal, $token);
+        });
+
+        Gate::define('staff-support-escalation-review', function (
+            Authenticatable $principal,
+            SupportTicket $ticket,
+            ?PersonalAccessToken $token,
+        ): bool {
+            return app(StaffAuthorizationPolicy::class)->canReviewSupportEscalation($principal, $ticket, $token);
         });
 
         Gate::define('staff-ads-assignments-admin', function (

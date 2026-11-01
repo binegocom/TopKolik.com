@@ -25,6 +25,7 @@ final class SecurityAuditRecorder
         'staff.advertiser_assignment.rejected',
         'support.ticket.replied',
         'support.ticket.escalated',
+        'support.ticket.escalation_reviewed',
         'support.ticket.resolved',
     ];
 
