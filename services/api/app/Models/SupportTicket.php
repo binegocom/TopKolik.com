@@ -22,6 +22,8 @@ final class SupportTicket extends Model
             'subject' => 'encrypted',
             'message' => 'encrypted',
             'escalated_at' => 'immutable_datetime',
+            'resolved_at' => 'immutable_datetime',
+            'resolution_note' => 'encrypted',
         ];
     }
 }
