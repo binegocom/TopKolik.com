@@ -10,6 +10,7 @@ use App\Http\Controllers\ReaderProfileController;
 use App\Http\Controllers\StaffInvitationAcceptanceController;
 use App\Http\Controllers\StaffMfaEnrollmentController;
 use App\Http\Controllers\StaffAuthController;
+use App\Http\Controllers\StaffSecurityAuditController;
 use App\Http\Controllers\StaffSupportTicketController;
 use App\Http\Controllers\StaffEditorialDraftController;
 use Illuminate\Support\Facades\Route;
@@ -69,6 +70,10 @@ Route::prefix('staff')->group(function (): void {
 
     Route::middleware(['auth:sanctum', 'staff.session'])->group(function (): void {
         Route::get('/auth/me', [StaffAuthController::class, 'me']);
+        // Self-only security metadata, gated on an unexpired MFA step-up.
+        Route::get('/security/audit-events', [StaffSecurityAuditController::class, 'index'])
+            ->middleware('throttle:30,1');
+
         Route::post('/auth/logout', [StaffAuthController::class, 'logout']);
         Route::post('/auth/step-up', [StaffAuthController::class, 'stepUp'])
             ->middleware('throttle:staff-step-up');

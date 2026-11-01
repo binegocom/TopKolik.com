@@ -24,6 +24,17 @@ final class SecurityAuditRecorder
 
     private const SUBJECT_TYPES = ['staff_member', 'support_ticket'];
 
+    public static function allowedActions(): array
+    {
+        return self::ACTIONS;
+    }
+
+    public static function allowedSubjectTypes(): array
+    {
+        return self::SUBJECT_TYPES;
+    }
+
+
     public function record(
         StaffMember $actor,
         string $action,

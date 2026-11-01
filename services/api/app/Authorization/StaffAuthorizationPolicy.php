@@ -101,4 +101,28 @@ final class StaffAuthorizationPolicy
             && $staff->email_verified_at !== null
             && $staff->mfa_enrolled_at !== null;
     }
+
+    /**
+     * Staff can inspect only their own security metadata after a fresh MFA
+     * step-up. This is not a global audit administration grant.
+     */
+    public function canViewOwnAudit(Authenticatable $principal, ?PersonalAccessToken $token): bool
+    {
+        if (! $principal instanceof StaffMember || ! $token
+            || $token->expires_at === null || $token->expires_at->isPast()
+            || ! $token->can('staff:session') || ! $token->can('staff:step-up')
+            || $token->tokenable_type !== $principal->getMorphClass()
+            || (string) $token->tokenable_id !== (string) $principal->getKey()) {
+            return false;
+        }
+
+        $fresh = StaffMember::query()->find($principal->getKey());
+
+        return $fresh !== null
+            && $fresh->is_active
+            && $fresh->email_verified_at !== null
+            && $fresh->mfa_enrolled_at !== null
+            && in_array($fresh->role, ['editor', 'support', 'ads', 'finance'], true);
+    }
+
 }
