@@ -28,6 +28,7 @@ final class SecurityAuditRecorder
         'staff.finance_access.approved',
         'staff.finance_access.rejected',
         'staff.finance_access.relinquished',
+        'staff.finance_access.revoked',
         'support.ticket.replied',
         'support.ticket.escalated',
         'support.ticket.escalation_reviewed',

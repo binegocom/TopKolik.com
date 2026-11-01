@@ -22,7 +22,7 @@ The operational administrator grant still requires independently reviewed provis
 ## Release limitations
 
 - No payment, invoice, ledger, reconciliation, pricing, tax or publication endpoints exist here.
-- No production security-admin bootstrap, emergency finance access revocation by another operator, external tamper-evident audit, or approved finance retention.
+- Emergency finance access revocation by an independently authorized administrator is implemented and tested in PR #66. Production security-admin bootstrap, external tamper-evident audit, approved finance retention and resource-level financial authorization remain unavailable.
 - PostgreSQL application triggers are not protection against database superusers.
 - No proof of production deployment or licensed sports-data access.
 - \`P03-007\` remains **in_progress**, and \`P12-001\` to \`P12-008\` remain \`todo\`.
@@ -39,3 +39,11 @@ php artisan test
 \`\`\`
 
 Test scenarios cover inactive default, two independent administrators, current MFA and role, reader/advertiser principal isolation, expiry, duplicate/replayed decisions, revoked requester or target, self-relinquishment, reapproval, private pagination, cross-staff field injection, audit failure rollback and terminal database immutability.
+
+## Emergency finance entitlement revocation
+
+`POST /api/v1/staff/security/finance/staff/{staff}/revoke` requires an independently granted security administrator with an unexpired staff bearer token and MFA step-up. The administrator cannot target their own staff identity. The endpoint only disables an already-active entitlement and cannot grant access, reactivate staff, issue a new finance approval or change ordinary staff tokens.
+
+A transaction locks and revalidates the administrator grant, then the target staff row and entitlement using the same target-lock order as the finance approval workflow. A metadata-only `staff.finance_access.revoked` audit event must commit atomically. Replays and unknown/inactive entitlements fail closed. The operator may revoke an entitlement remaining after a staff role downgrade or deactivation.
+
+Verified on [PR #66](https://github.com/binegocom/TopKolik.com/pull/66) code commit `bed8e31b3501f7c338456cec699e81fcc81b93c6`: [Laravel CI](https://github.com/binegocom/TopKolik.com/actions/runs/41328512689) 306 passing tests / 2,598 assertions, plus [editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41328512691). This is an isolated backend control, not an independently approved incident-response procedure or a production finance release.
