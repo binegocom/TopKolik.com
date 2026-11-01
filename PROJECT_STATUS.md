@@ -486,3 +486,9 @@
 - Test commands: `cd services/api && php artisan test` and
   `TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-ads-assignment-concurrency.php`
   (second command runs only inside the isolated GitHub Actions environment).
+
+## P03-007 — approver security grant revocation race (review pending)
+
+- Extended the existing guarded four-worker ads assignment HTTP harness with a second isolated race: an independent security administrator revokes the *acting approver's* grant while two approval requests are in flight.
+- Added a PostgreSQL feature regression confirming that already-revoked approver grants deny approve, reject and queue reads even with an unexpired MFA token.
+- Expected serialized outcomes, assignment visibility, audit uniqueness, replay denial and tenant isolation are asserted; GitHub Actions must pass on the final PR commit before acceptance. `P03-007` remains `in_progress`; no production release is claimed.
