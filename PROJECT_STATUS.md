@@ -175,3 +175,9 @@
 - Existing reader preferences now record real opt-in/withdrawal transitions in an append-only PostgreSQL consent ledger, serializing changes with the user row.
 - A pending-only, idempotent deletion request and self-status endpoint are available. No deletion, session revocation, data cascade, production deletion or legal retention override is enabled.
 - **in_progress** despite verified backend slice: 138 Laravel tests / 1000 assertions passed on isolated PostgreSQL/Redis, real HTTP/SMTP, 17 editorial guards and Composer audit clean in [API CI run 41258326986](https://github.com/binegocom/TopKolik.com/actions/runs/41258326986); editorial/roadmap check also passed in [run 41258327042](https://github.com/binegocom/TopKolik.com/actions/runs/41258327042). Legal/finance retention approval and safely verified erasure lifecycle remain unimplemented. [PR #35](https://github.com/binegocom/TopKolik.com/pull/35). ADR-004 remains unchanged.
+
+## P00-004 owner decision gate — blocked
+
+- Marked `P00-004` **blocked** because product, rights, finance, locale and legal decisions in `docs/product/DECISION_REGISTER.md` require explicit owner/vendor approval.
+- Do not infer Turkish UI localization, provider rights, club imagery permissions, gambling ads, tax country or trademark clearance. Independent backend work may proceed while those decisions remain open.
+- `P03-009` privacy API slice was merged in [PR #35](https://github.com/binegocom/TopKolik.com/pull/35) with 138 Laravel tests / 1000 assertions and both GitHub checks green. Actual deletion and legal/finance retention remain pending, so it stays `in_progress`.

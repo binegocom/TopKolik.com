@@ -206,7 +206,7 @@
       "id": "P00-004",
       "phase": "P00",
       "title": "Approve unresolved first-release product decisions",
-      "status": "todo",
+      "status": "blocked",
       "priority": "P0",
       "depends_on": [],
       "implementation": "Record explicit decisions for UI locales, legal entity, domain, provider rights, finance country and advertising policy.",
@@ -218,7 +218,10 @@
       "owner": null,
       "issue_url": null,
       "pr_url": null,
-      "limitations": []
+      "limitations": [
+        "Owner approval is required for ADR-004 UI locale policy (de/fr/it/en remains configured; Turkish UI is not authorized), ADR-007 licensed sports data and exact coverage, ADR-008 team/athlete/media rights, ADR-010 gambling/odds ad policy, ADR-012 legal entity/tax/finance country, and ADR-014 domain/trademark/app identifiers. No default may be treated as approved.",
+        "Advertising vendors (ADR-011), publisher contact (ADR-013), AI vendor/retention (ADR-009) and infrastructure/region budget (ADR-003) are also pending; implementable independent backend work can continue without inventing those decisions."
+      ]
     },
     {
       "id": "P01-001",
@@ -1120,7 +1123,7 @@
       "issue_url": null,
       "pr_url": "https://github.com/binegocom/TopKolik.com/pull/35",
       "limitations": [
-        "Password-reverified privacy export, append-only consent transitions and pending-only deletion request API are in feature-branch CI review. Actual erasure, accounting/legal retention exceptions, third-party backup policy and production deployment require approved privacy/finance rules; no record is deleted."
+        "Password-reverified privacy export, append-only consent transitions and pending-only deletion request API were merged in PR #35 after verified CI. Actual erasure, accounting/legal retention exceptions, third-party backup policy and production deployment require approved privacy/finance rules; no record is deleted."
       ]
     },
     {
