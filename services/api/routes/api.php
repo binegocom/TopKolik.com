@@ -13,6 +13,7 @@ use App\Http\Controllers\StaffMfaEnrollmentController;
 use App\Http\Controllers\StaffAuthController;
 use App\Http\Controllers\StaffSecurityAuditController;
 use App\Http\Controllers\StaffAdvertiserReviewController;
+use App\Http\Controllers\StaffAdsAssignmentController;
 use App\Http\Controllers\StaffSupportTicketController;
 use App\Http\Controllers\StaffEditorialDraftController;
 use Illuminate\Support\Facades\Route;
@@ -82,6 +83,14 @@ Route::prefix('staff')->group(function (): void {
             ->middleware('throttle:30,1');
         Route::get('/security/authentication-failures', [StaffSecurityAuditController::class, 'authenticationFailures'])
             ->middleware('throttle:30,1');
+
+        // Staff may inspect only their own current assignments and relinquish
+        // access after a fresh MFA step-up. No grant/reactivation route exists.
+        Route::get('/ads/assignments', [StaffAdsAssignmentController::class, 'index'])
+            ->middleware('throttle:30,1');
+        Route::post('/ads/assignments/{organization}/relinquish',
+            [StaffAdsAssignmentController::class, 'relinquish'])
+            ->whereNumber('organization')->middleware('throttle:6,1');
 
         // Ads operations can inspect only explicitly assigned, active
         // advertiser organizations and only campaigns in review.

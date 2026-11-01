@@ -136,6 +136,32 @@ final class StaffAuthorizationPolicy
     }
 
     /**
+     * Only ads staff with current MFA-enrolled identity and a real expiring
+     * staff session can discover their own advertiser review assignments.
+     * This does not grant permission to provision or activate assignments.
+     */
+    public function canListOwnAdvertiserAssignments(
+        Authenticatable $principal,
+        ?PersonalAccessToken $token,
+    ): bool {
+        if (! $principal instanceof StaffMember || ! $token
+            || $token->expires_at === null || $token->expires_at->isPast()
+            || ! $token->can('staff:session')
+            || $token->tokenable_type !== $principal->getMorphClass()
+            || (string) $token->tokenable_id !== (string) $principal->getKey()) {
+            return false;
+        }
+
+        $fresh = StaffMember::query()->find($principal->getKey());
+
+        return $fresh !== null
+            && $fresh->role === 'ads'
+            && $fresh->is_active
+            && $fresh->mfa_enrolled_at !== null
+            && $fresh->email_verified_at !== null;
+    }
+
+    /**
      * Staff can inspect only their own security metadata after a fresh MFA
      * step-up. This is not a global audit administration grant.
      */

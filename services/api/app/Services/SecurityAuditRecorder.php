@@ -18,11 +18,12 @@ final class SecurityAuditRecorder
         'staff.session.started',
         'staff.session.stepped_up',
         'staff.session.ended',
+        'staff.advertiser_assignment.relinquished',
         'support.ticket.replied',
         'support.ticket.escalated',
     ];
 
-    private const SUBJECT_TYPES = ['staff_member', 'support_ticket'];
+    private const SUBJECT_TYPES = ['staff_member', 'support_ticket', 'advertiser_organization'];
 
     public static function allowedActions(): array
     {
