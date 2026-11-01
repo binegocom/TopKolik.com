@@ -164,6 +164,20 @@ final class StaffAuthorizationPolicy
     }
 
     /**
+     * An escalation review inbox is not the assigned support-ticket inbox.
+     * Only active support staff with a current MFA step-up may enumerate
+     * their own pending, unreviewed escalation assignments.
+     */
+    public function canListOwnSupportEscalations(
+        Authenticatable $principal,
+        ?PersonalAccessToken $token,
+    ): bool {
+        return $this->canListOwnSupportTickets($principal, $token)
+            && $token !== null
+            && $token->can('staff:step-up');
+    }
+
+    /**
      * Only a distinct, server-assigned support reviewer with current MFA
      * step-up can authorize closure of an escalated support ticket.
      */

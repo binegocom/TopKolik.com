@@ -158,6 +158,10 @@ Route::prefix('staff')->group(function (): void {
         Route::post('/editorial/drafts/{draft}/submit', [StaffEditorialDraftController::class, 'submit'])
             ->whereNumber('draft')->middleware('throttle:10,1');
 
+        // Current MFA reviewers may discover only their own pending assignments.
+        Route::get('/support/escalations', [StaffSupportEscalationController::class, 'index'])
+            ->middleware('throttle:20,1');
+
         // Independent MFA reviewer scope; no client-selected reviewer.
         Route::get('/support/escalations/{ticket}', [StaffSupportEscalationController::class, 'show'])
             ->whereNumber('ticket')->middleware('throttle:20,1');

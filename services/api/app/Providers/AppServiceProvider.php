@@ -56,6 +56,13 @@ final class AppServiceProvider extends ServiceProvider
             return app(StaffAuthorizationPolicy::class)->canListOwnSupportTickets($principal, $token);
         });
 
+        Gate::define('staff-support-escalations-self', function (
+            Authenticatable $principal,
+            ?PersonalAccessToken $token,
+        ): bool {
+            return app(StaffAuthorizationPolicy::class)->canListOwnSupportEscalations($principal, $token);
+        });
+
         Gate::define('staff-support-escalation-review', function (
             Authenticatable $principal,
             SupportTicket $ticket,
