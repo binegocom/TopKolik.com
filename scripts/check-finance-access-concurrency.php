@@ -8,6 +8,7 @@ declare(strict_types=1);
  * It never migrates, truncates or deletes tables.
  */
 
+use App\Models\AdvertiserOrganization;
 use App\Models\StaffMember;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
@@ -187,11 +188,11 @@ try {
         }
     };
 
-    $getFinanceAccess = static function () use ($base, $financeToken): int {
+    $getFinanceAccess = static function (?string $sessionToken = null) use ($base, $financeToken): int {
         $handle = curl_init($base.'/api/v1/staff/finance/access');
         curl_setopt_array($handle, [
             CURLOPT_HTTPHEADER => [
-                'Authorization: Bearer '.$financeToken,
+                'Authorization: Bearer '.($sessionToken ?? $financeToken),
                 'Accept: application/json',
             ],
             CURLOPT_RETURNTRANSFER => true,
@@ -378,7 +379,96 @@ try {
         throw new RuntimeException('Offboarding replay or stale finance session was not denied.');
     }
 
-    echo "PASS: four-worker finance approval/revocation and approval/offboarding races, stale MFA denial, audit and replay.\n";
+
+    // A finance account may retain legacy security-administrator and
+    // advertiser-assignment rows from a previous role. Offboarding must
+    // invalidate them even when another administrator revokes concurrently.
+    $legacyFinance = $makeStaff('finance', 'residual-grants');
+    $legacyToken = $legacyFinance->createToken(
+        'finance-race-residual-session', ['staff:session', 'staff:step-up'],
+        now()->addMinutes(5),
+    )->plainTextToken;
+    DB::table('staff_finance_entitlements')->insert([
+        'staff_member_id' => $legacyFinance->getKey(), 'is_active' => true,
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    DB::table('staff_security_admin_grants')->insert([
+        'staff_member_id' => $legacyFinance->getKey(), 'is_active' => true,
+        'authorization_reference' => 'isolated-ci-residual-grant-race',
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    $legacyOrganization = AdvertiserOrganization::create([
+        'name' => 'Finance residual assignment '.$run,
+    ]);
+    DB::table('staff_advertiser_assignments')->insert([
+        'staff_member_id' => $legacyFinance->getKey(),
+        'advertiser_organization_id' => $legacyOrganization->getKey(),
+        'is_active' => true, 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    if ($getFinanceAccess($legacyToken) !== 200) {
+        throw new RuntimeException('Residual-grant fixture has no initial finance access.');
+    }
+
+    $grantPath = '/api/v1/staff/security/admin-grants/'.$legacyFinance->getKey().'/revoke';
+    $offboardPath = '/api/v1/staff/security/finance/staff/'.$legacyFinance->getKey().'/deactivate';
+    $legacyRace = $postTogether([
+        [$grantPath, $tokens['requester'], []],
+        [$offboardPath, $tokens['approver'], []],
+    ]);
+    if (! in_array($legacyRace[0]['code'], [200, 404], true)
+        || $legacyRace[1]['code'] !== 200) {
+        throw new RuntimeException('Residual-grant/offboarding race returned invalid results: '.json_encode($legacyRace));
+    }
+
+    DB::disconnect();
+    $legacyFinance->refresh();
+    if ($legacyFinance->is_active
+        || DB::table('staff_finance_entitlements')
+            ->where('staff_member_id', $legacyFinance->getKey())->where('is_active', true)->exists()
+        || DB::table('staff_security_admin_grants')
+            ->where('staff_member_id', $legacyFinance->getKey())->where('is_active', true)->exists()
+        || DB::table('staff_advertiser_assignments')
+            ->where('staff_member_id', $legacyFinance->getKey())->where('is_active', true)->exists()
+        || DB::table('personal_access_tokens')
+            ->where('tokenable_type', $legacyFinance->getMorphClass())
+            ->where('tokenable_id', $legacyFinance->getKey())->exists()
+        || $getFinanceAccess($legacyToken) !== 401) {
+        throw new RuntimeException('Residual-grant/offboarding left a usable privilege or bearer token.');
+    }
+
+    $legacyEvents = DB::table('security_audit_events')
+        ->where('subject_type', 'staff_member')
+        ->where('subject_id', $legacyFinance->getKey())
+        ->whereIn('action', [
+            'staff.security_admin_grant.revoked',
+            'staff.finance_access.staff_deactivated',
+        ])->get(['action', 'staff_member_id', 'request_id']);
+    $expectedLegacy = ['staff.finance_access.staff_deactivated' => (int) $approver->getKey()];
+    if ($legacyRace[0]['code'] === 200) {
+        $expectedLegacy['staff.security_admin_grant.revoked'] = (int) $requester->getKey();
+    }
+    if ($legacyEvents->count() !== count($expectedLegacy)
+        || $legacyEvents->pluck('action')->unique()->count() !== count($expectedLegacy)
+        || $legacyEvents->pluck('request_id')->filter()->unique()->count() !== count($expectedLegacy)
+        || $legacyEvents->contains(static fn ($event): bool =>
+            ! isset($expectedLegacy[$event->action])
+            || (int) $event->staff_member_id !== $expectedLegacy[$event->action])) {
+        throw new RuntimeException('Residual-grant/offboarding audit was duplicated or misattributed.');
+    }
+
+    $legacyReplay = $postTogether([
+        [$grantPath, $tokens['requester'], []],
+        [$offboardPath, $tokens['approver'], []],
+    ]);
+    if ($legacyReplay[0]['code'] !== 404 || $legacyReplay[1]['code'] !== 404
+        || DB::table('security_audit_events')
+            ->where('subject_type', 'staff_member')
+            ->where('subject_id', $legacyFinance->getKey())
+            ->whereIn('action', array_keys($expectedLegacy))->count() !== count($expectedLegacy)) {
+        throw new RuntimeException('Residual-grant/offboarding replay changed state or audit.');
+    }
+
+    echo "PASS: four-worker finance approval/revocation, offboarding and residual-grant races; stale MFA, audit and replay.\n";
 } catch (Throwable $exception) {
     fwrite(STDERR, 'FAIL: finance HTTP concurrency: '.$exception->getMessage()."\n");
     $exit = 1;
