@@ -162,3 +162,9 @@
 - Private encrypted campaign drafts are scoped in SQL by organization for list/read/edit; owner/editor may write; viewer is read-only. Optimistic revision protects updates; publishing is unavailable.
 - New isolated PostgreSQL BOLA tests exercise cross-tenant URLs, role downgrade, token confusion (reader/staff), mass assignment, foreign keys, check constraints and membership revocation.
 - **done (backend tenant scoping only):** PR #33 initial feature-branch SHA `a676b7ed8a77efcdd050e37074d09db9fe45103d` verified in [Laravel CI](https://github.com/binegocom/TopKolik.com/actions/runs/41257177847): 121 tests / 828 assertions, PostgreSQL, Redis, SMTP, HTTP, Composer audit, 17 editorial guard tests. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41257177819) passed. No real advertiser onboarding, login, commercial approvals, payments, serving, queue/cache/object tenancy or production deployment is claimed.
+
+## P03-010 staff self-audit query — PR review
+
+- Introduced the read-only, self-scoped audit search API behind active staff identity, current persisted 5-minute MFA step-up token and explicit Gate. Query uses authenticated staff ID only, allowlisted filters, strict cursor pagination and `no-store` responses.
+- New PostgreSQL integration regression tests cover cross-staff isolation, reader/advertiser denial, revoked/expired sessions, role/MFA changes, bounded filters and ledger non-mutation.
+- **in_progress** pending CI. Global incident security-role search, failed attempts, offsite immutable anchoring, production DB separation and retention remain unresolved; no release-ready claim.

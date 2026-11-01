@@ -1146,7 +1146,8 @@
       "issue_url": null,
       "pr_url": "https://github.com/binegocom/TopKolik.com/pull/32",
       "limitations": [
-        "Staff-only insert-only audit ledger under CI review; privileged PostgreSQL owners can bypass DML triggers. Independent offsite anchoring, retention controls, authorized audit search and failed-attempt coverage remain release prerequisites."
+        "Staff-only insert-only audit ledger under CI review; privileged PostgreSQL owners can bypass DML triggers. Independent offsite anchoring, retention controls, authorized audit search and failed-attempt coverage remain release prerequisites.",
+        "Self-only audit metadata search with MFA step-up, validated allowlist filters, actor-scoped SQL and keyset pagination is in PR review. Cross-staff oversight, failed-login capture, independent tamper-evident offsite shipping and retention/privileged DB separation remain unresolved."
       ]
     },
     {
