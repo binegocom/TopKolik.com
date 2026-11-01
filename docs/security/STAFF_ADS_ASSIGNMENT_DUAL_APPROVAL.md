@@ -31,3 +31,9 @@ php artisan test
 ```
 
 Tests run against disposable PostgreSQL/Redis, including two-person authorization, wrong principals, replay/duplicate/expiry, disabled grants and tenants, post-relinquish reapproval, audit atomicity, immutability, and refusal of arbitrary grants.
+
+## GitHub integration evidence
+
+- [Laravel API CI](https://github.com/binegocom/TopKolik.com/actions/runs/41266888211): 205 passing tests / 1,655 assertions on disposable PostgreSQL and Redis after isolating a test-only cross-case throttle counter.
+- [Editorial and roadmap integrity CI](https://github.com/binegocom/TopKolik.com/actions/runs/41266888168): passed; Composer dependency audit, HTTP and SMTP smoke checks also passed in API CI.
+- Explicit user and operator approval remains necessary before creating any real active security-administrator grant in a production environment. No privilege bootstrap endpoint is provided.
