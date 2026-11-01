@@ -291,6 +291,43 @@ final class StaffAdsAssignmentDualApprovalTest extends TestCase
         $this->assertDatabaseCount('security_audit_events', 2);
     }
 
+    public function test_independent_approver_grant_revocation_blocks_decision_with_stale_mfa_token(): void
+    {
+        $requester = $this->admin('support');
+        $approver = $this->admin('editor');
+        $revoker = $this->admin('finance');
+        $target = $this->staff('ads');
+        $org = $this->org();
+        $id = $this->createRequest($requester, $target, $org);
+
+        $this->asStaff($revoker);
+        $this->postJson('/api/v1/staff/security/admin-grants/'.$approver->id.'/revoke')
+            ->assertOk()->assertJsonPath('grant_status', 'revoked');
+
+        $this->asStaff($approver);
+        $this->postJson(self::API.'/'.$id.'/approve')->assertForbidden();
+        $this->postJson(self::API.'/'.$id.'/reject')->assertForbidden();
+        $this->getJson(self::API)->assertForbidden();
+
+        $this->assertDatabaseHas('staff_ads_assignment_approvals', [
+            'id' => $id,
+            'status' => 'pending',
+            'reviewed_by_staff_member_id' => null,
+        ]);
+        $this->assertDatabaseMissing('staff_advertiser_assignments', [
+            'staff_member_id' => $target->id,
+            'advertiser_organization_id' => $org->id,
+            'is_active' => true,
+        ]);
+        $this->assertDatabaseHas('security_audit_events', [
+            'staff_member_id' => $revoker->id,
+            'action' => 'staff.security_admin_grant.revoked',
+            'subject_type' => 'staff_member',
+            'subject_id' => $approver->id,
+        ]);
+        $this->assertDatabaseCount('security_audit_events', 2);
+    }
+
     public function test_expired_request_requires_rejection_before_new_attempt(): void
     {
         $first = $this->admin();

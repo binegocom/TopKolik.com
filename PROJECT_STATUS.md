@@ -486,3 +486,11 @@
 - Test commands: `cd services/api && php artisan test` and
   `TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-ads-assignment-concurrency.php`
   (second command runs only inside the isolated GitHub Actions environment).
+
+## P03-007 — approver security grant revocation race (review pending)
+
+- Extended the existing guarded four-worker ads assignment HTTP harness with a second isolated race: an independent security administrator revokes the *acting approver's* grant while two approval requests are in flight.
+- Added a PostgreSQL feature regression confirming that already-revoked approver grants deny approve, reject and queue reads even with an unexpired MFA token.
+- Expected serialized outcomes, assignment visibility, audit uniqueness, replay denial and tenant isolation are asserted; GitHub Actions must pass on the final PR commit before acceptance. `P03-007` remains `in_progress`; no production release is claimed.
+
+- [PR #74](https://github.com/binegocom/TopKolik.com/pull/74) code SHA `f2c26e79eb574fbcc24e1a1ee199eb00c47119c4` passed [Laravel CI 41364309164](https://github.com/binegocom/TopKolik.com/actions/runs/41364309164): **315 tests / 2,698 assertions**, PostgreSQL/Redis, both four-worker ads races, HTTP/SMTP, Composer audit and 17 editorial guards. [Editorial/roadmap CI 41364309196](https://github.com/binegocom/TopKolik.com/actions/runs/41364309196) passed. Final evidence commit CI remains mandatory before merge; `P03-007` remains `in_progress`.

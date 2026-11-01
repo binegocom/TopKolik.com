@@ -281,7 +281,136 @@ try {
         curl_close($handle);
     }
 
-    fwrite(STDOUT, "Ads approval/requester revocation four-worker HTTP race passed.\n");
+    // A separate pending request races with revocation of the ACTING approver.
+    // A revoked approver cannot use a stale MFA token to approve or reject.
+    $secondRequester = $staff('support', 'second-requester');
+    $secondApprover = $staff('editor', 'second-approver');
+    $secondTarget = $staff('ads', 'second-target');
+    $secondOrganization = AdvertiserOrganization::create(['name' => 'Ads approver race '.$run]);
+    $secondOrganization->forceFill(['is_active' => true])->save();
+
+    foreach ([$secondRequester, $secondApprover] as $admin) {
+        DB::table('staff_security_admin_grants')->insert([
+            'staff_member_id' => $admin->getKey(),
+            'is_active' => true,
+            'authorization_reference' => 'isolated-ci-ads-approver-race',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    $secondRequesterToken = $secondRequester->createToken(
+        'ads-approver-race-requester', ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+    )->plainTextToken;
+    $secondApproverToken = $secondApprover->createToken(
+        'ads-approver-race-approver', ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+    )->plainTextToken;
+    $secondTargetToken = $secondTarget->createToken(
+        'ads-approver-race-target', ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+    )->plainTextToken;
+
+    $secondCreated = $postTogether([[$path, $secondRequesterToken, [
+        'target_staff_member_id' => $secondTarget->getKey(),
+        'advertiser_organization_id' => $secondOrganization->getKey(),
+    ]]]);
+    if ($secondCreated[0]['code'] !== 201 || ! isset($secondCreated[0]['json']['request']['id'])) {
+        throw new RuntimeException('Approver revocation race setup failed: '.json_encode($secondCreated));
+    }
+    $secondApprovalId = (int) $secondCreated[0]['json']['request']['id'];
+    $secondApprovePath = $path.'/'.$secondApprovalId.'/approve';
+    $secondRevokePath = '/api/v1/staff/security/admin-grants/'.$secondApprover->getKey().'/revoke';
+
+    // Revocation first: both approvals must return 403. Approval first:
+    // exactly one 200, with the other request rejected by 403 or 409.
+    $secondRace = $postTogether([
+        [$secondApprovePath, $secondApproverToken, []],
+        [$secondApprovePath, $secondApproverToken, []],
+        [$secondRevokePath, $tokens['revoker'], []],
+    ]);
+    $secondCodes = [$secondRace[0]['code'], $secondRace[1]['code']];
+    sort($secondCodes);
+    $secondApproved = in_array(200, $secondCodes, true);
+    if ($secondRace[2]['code'] !== 200
+        || ($secondApproved && $secondCodes !== [200, 403] && $secondCodes !== [200, 409])
+        || (! $secondApproved && $secondCodes !== [403, 403])) {
+        throw new RuntimeException('Approver revocation race returned invalid outcomes: '.json_encode($secondRace));
+    }
+
+    DB::disconnect();
+    $secondDecision = DB::table('staff_ads_assignment_approvals')
+        ->where('id', $secondApprovalId)->first();
+    $secondAssignment = DB::table('staff_advertiser_assignments')
+        ->where('staff_member_id', $secondTarget->getKey())
+        ->where('advertiser_organization_id', $secondOrganization->getKey())
+        ->where('is_active', true)->exists();
+    $secondApproverGrant = DB::table('staff_security_admin_grants')
+        ->where('staff_member_id', $secondApprover->getKey())
+        ->where('is_active', true)->exists();
+    if (! $secondDecision || $secondDecision->status !== ($secondApproved ? 'approved' : 'pending')
+        || $secondAssignment !== $secondApproved || $secondApproverGrant
+        || ($secondApproved && (int) $secondDecision->reviewed_by_staff_member_id !== (int) $secondApprover->getKey())) {
+        throw new RuntimeException('Approver race persisted inconsistent assignment or grant state.');
+    }
+
+    $secondEvents = DB::table('security_audit_events')
+        ->where(function ($query) use ($secondOrganization, $secondApprover): void {
+            $query->where(function ($inner) use ($secondOrganization): void {
+                $inner->where('subject_type', 'advertiser_organization')
+                    ->where('subject_id', $secondOrganization->getKey());
+            })->orWhere(function ($inner) use ($secondApprover): void {
+                $inner->where('subject_type', 'staff_member')
+                    ->where('subject_id', $secondApprover->getKey());
+            });
+        })
+        ->whereIn('action', [
+            'staff.advertiser_assignment.requested',
+            'staff.advertiser_assignment.approved',
+            'staff.security_admin_grant.revoked',
+        ])->get(['action', 'staff_member_id', 'request_id']);
+    $secondExpected = [
+        'staff.advertiser_assignment.requested' => (int) $secondRequester->getKey(),
+        'staff.security_admin_grant.revoked' => (int) $revoker->getKey(),
+    ];
+    if ($secondApproved) {
+        $secondExpected['staff.advertiser_assignment.approved'] = (int) $secondApprover->getKey();
+    }
+    if ($secondEvents->count() !== count($secondExpected)
+        || $secondEvents->pluck('action')->unique()->count() !== count($secondExpected)
+        || $secondEvents->pluck('request_id')->filter()->unique()->count() !== count($secondExpected)
+        || $secondEvents->contains(static fn ($event): bool =>
+            ! isset($secondExpected[$event->action])
+            || (int) $event->staff_member_id !== $secondExpected[$event->action])) {
+        throw new RuntimeException('Approver race audit missing, duplicated or misattributed.');
+    }
+
+    $secondReplay = $postTogether([
+        [$secondApprovePath, $secondApproverToken, []],
+        [$path.'/'.$secondApprovalId.'/reject', $secondApproverToken, []],
+        [$secondRevokePath, $tokens['revoker'], []],
+    ]);
+    if ($secondReplay[0]['code'] !== 403 || $secondReplay[1]['code'] !== 403
+        || $secondReplay[2]['code'] !== 404) {
+        throw new RuntimeException('Revoked approver or grant replay unexpectedly succeeded: '.json_encode($secondReplay));
+    }
+
+    $secondHandle = curl_init($base.'/api/v1/staff/ads/organizations/'.$secondOrganization->getKey().'/campaigns');
+    curl_setopt_array($secondHandle, [
+        CURLOPT_HTTPHEADER => ['Authorization: Bearer '.$secondTargetToken, 'Accept: application/json'],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_TIMEOUT => 15,
+    ]);
+    try {
+        curl_exec($secondHandle);
+        if (curl_errno($secondHandle) !== 0
+            || (int) curl_getinfo($secondHandle, CURLINFO_RESPONSE_CODE) !== ($secondApproved ? 200 : 404)) {
+            throw new RuntimeException('Ads target session did not reflect approver race outcome.');
+        }
+    } finally {
+        curl_close($secondHandle);
+    }
+
+    fwrite(STDOUT, "Ads approval/requester and approver revocation four-worker HTTP races passed.\n");
 } catch (Throwable $error) {
     $exit = 1;
     fwrite(STDERR, $error->getMessage()."\n");

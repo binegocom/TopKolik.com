@@ -1384,6 +1384,28 @@
           "type": "reference",
           "value": "https://github.com/binegocom/TopKolik.com/pull/73",
           "validation": "Code tested; final evidence commit CI pending; task remains in_progress"
+        },
+        {
+          "type": "file",
+          "path": "docs/qa/ADS_ASSIGNMENT_CONCURRENCY.md",
+          "validation": "Approver grant revocation four-worker HTTP race and stale MFA feature regression verified on code SHA f2c26e79eb574fbcc24e1a1ee199eb00c47119c4; final evidence commit CI required"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test && TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-ads-assignment-concurrency.php",
+          "result": "315 Laravel tests / 2,698 assertions and both four-worker ads approval/revocation HTTP races passed on code SHA f2c26e79eb574fbcc24e1a1ee199eb00c47119c4; PostgreSQL/Redis, HTTP/SMTP, Composer audit and 17 editorial guard tests passed",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41364309164"
+        },
+        {
+          "type": "verification",
+          "command": "python3 scripts/status.py check && bash scripts/test-editorial-guard.sh",
+          "result": "Editorial and roadmap workflow passed on code SHA f2c26e79eb574fbcc24e1a1ee199eb00c47119c4",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41364309196"
+        },
+        {
+          "type": "reference",
+          "value": "https://github.com/binegocom/TopKolik.com/pull/74",
+          "validation": "Approver grant revocation regression; P03-007 remains in_progress"
         }
       ],
       "verified_at": null,
@@ -1421,7 +1443,8 @@
         "PR #70 adds one-way MFA-protected finance staff deactivation with atomic entitlement/grant/session revocation and audit rollback. Six PostgreSQL feature regressions passed on code SHA 6adf654a. This does not change staff roles, supply a reactivation API, verify deactivation under real concurrent workers, complete resource-level finance RBAC, authorize security-admin bootstrap or establish production release.",
         "Four-worker approval-versus-emergency-staff-deactivation HTTP race added for CI verification; final-commit GitHub Actions evidence pending. Full finance resource RBAC, approved operator bootstrap and production release remain open.",
         "Residual security-admin grant revocation versus emergency finance offboarding has an isolated four-worker HTTP regression on feature branch; final-commit CI evidence is pending. Ads-role assignment approval cannot be raced against finance-role offboarding under existing role eligibility. Full finance RBAC, operator provisioning and production verification remain open.",
-        "PR #73 code SHA 489d40945f3a4bca96c73d0228881a26ed081a85 passed 314 Laravel tests / 2,685 assertions, four-worker ads approval/requester-grant revocation HTTP race, PostgreSQL/Redis, HTTP/SMTP, Composer audit and 17 editorial guard tests (Laravel CI 41359323946; editorial CI 41359323964). Final evidence-documentation commit requires fresh CI before merge. Full RBAC matrix, licensed providers and production release remain unverified."
+        "PR #73 code SHA 489d40945f3a4bca96c73d0228881a26ed081a85 passed 314 Laravel tests / 2,685 assertions, four-worker ads approval/requester-grant revocation HTTP race, PostgreSQL/Redis, HTTP/SMTP, Composer audit and 17 editorial guard tests (Laravel CI 41359323946; editorial CI 41359323964). Final evidence-documentation commit requires fresh CI before merge. Full RBAC matrix, licensed providers and production release remain unverified.",
+        "Approver-grant revocation race passed isolated four-worker GitHub Actions on code SHA f2c26e7; final evidence commit CI required. Full RBAC matrix, operator provisioning and production security remain unverified."
       ]
     },
     {
