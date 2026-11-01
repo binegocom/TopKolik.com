@@ -1043,13 +1043,13 @@
           "type": "verification",
           "command": "php artisan migrate --force && php artisan test",
           "result": "156 Laravel tests passed, 1,133 assertions using isolated PostgreSQL/Redis; 10 new ads staff assignment and cross-advertiser BOLA tests cover role isolation, draft privacy, current MFA step-up, revocation and default-deny write actions.",
-          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41259773275"
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41259764571"
         },
         {
           "type": "verification",
           "command": "composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && python3 scripts/status.py check",
           "result": "Composer audit no advisories, real API/SMTP smoke and 17 editorial publication guard scenarios passed; editorial/roadmap CI successful.",
-          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41259773224"
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41259764572"
         },
         {
           "type": "revision",
