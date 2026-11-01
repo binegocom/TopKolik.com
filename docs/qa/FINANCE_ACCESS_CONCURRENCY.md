@@ -67,3 +67,13 @@ CI database. No production administrator provisioning, finance resource
 permissions, billing, payout, accounting, licensed sports feed, or external
 audit anchoring is implemented by this test. The existing `P03-007` task
 remains `in_progress` until its full authorization matrix is verified.
+
+## Residual grant revocation versus finance offboarding
+
+The same guarded four-worker harness creates a separate active finance identity with a historical active security-administrator grant and advertiser assignment, plus an existing finance MFA bearer token. These rows represent stale cross-role privileges, not authorization for finance to administer advertising.
+
+An independent administrator revokes the target's security grant while a different independent administrator deactivates the finance account. Revocation may commit first (HTTP 200) or observe an already deactivated grant (HTTP 404); offboarding must commit once (HTTP 200). In both serial orders, finance entitlement, administrator grant, advertiser assignment, staff account and all bearer tokens must be inactive. The audit ledger must contain one offboarding event and at most one grant-revocation event, each with correct actor and unique request ID. Replays return 404 without extra audit writes, and the stale finance token returns 401.
+
+This is a CI-only regression for residual grants, not an advertiser assignment approval race: an ads assignment cannot legitimately be approved for a current finance role. No destructive migration, production credentials or new privileges are introduced.
+
+Code/docs verification: PR #72 commit `6805fe51` passed [Laravel CI 41353972644](https://github.com/binegocom/TopKolik.com/actions/runs/41353972644) (313 tests / 2,674 assertions, both real four-worker race harnesses, PostgreSQL/Redis, HTTP/SMTP, Composer audit) and [editorial CI 41353972632](https://github.com/binegocom/TopKolik.com/actions/runs/41353972632). The final evidence commit requires fresh CI before merge.

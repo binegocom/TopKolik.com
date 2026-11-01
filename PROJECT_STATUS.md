@@ -455,3 +455,9 @@
   correct per-action totals in a different row order. The test now sorts
   action keys before strict comparison. This is a test assertion correction,
   not a change to authorization behavior; replacement commit CI is required.
+
+## P03-007 — residual administrator grant/offboarding HTTP race (PR #72)
+
+- Added a third isolated four-worker HTTP contention scenario: independent security-admin grant revocation races with finance staff offboarding. The target has an active finance entitlement, historical administrator grant, advertiser assignment and MFA bearer token.
+- Both serial outcomes, complete access revocation, audit attribution, unique request IDs and rejected replays are checked.
+- Code/docs SHA 6805fe51: [Laravel CI 41353972644](https://github.com/binegocom/TopKolik.com/actions/runs/41353972644) passed 313 tests / 2,674 assertions, PostgreSQL/Redis, both four-worker HTTP races, real HTTP/SMTP and Composer audit. [Editorial CI 41353972632](https://github.com/binegocom/TopKolik.com/actions/runs/41353972632) passed. The final evidence-commit CI must also pass before merge. P03-007 remains in_progress; no new done task or production release is claimed.
