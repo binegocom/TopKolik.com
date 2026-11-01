@@ -146,9 +146,10 @@ final class StaffAuthenticationThrottleAuditTest extends TestCase
     public function test_reader_id_collision_does_not_exhaust_staff_mfa_principal_quota(): void
     {
         $staff = $this->staff();
-        $reader = User::factory()->create();
+        // PostgreSQL sequences are not transactional; force an ID collision
+        // instead of assuming independently incremented sequences match.
+        $reader = User::factory()->create(['id' => $staff->getKey()]);
 
-        // Separate tables allocate the same numeric ID in this isolated test.
         $this->assertSame((string) $staff->getKey(), (string) $reader->getKey());
         RateLimiter::clear('staff-step-up-user:staff:'.$staff->getKey());
 
