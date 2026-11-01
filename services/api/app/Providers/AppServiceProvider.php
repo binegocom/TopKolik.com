@@ -64,6 +64,15 @@ final class AppServiceProvider extends ServiceProvider
             return app(StaffAuthorizationPolicy::class)->canReviewSupportEscalation($principal, $ticket, $token);
         });
 
+        // Recovery is not a support-staff privilege. An independently
+        // provisioned security-administration grant and MFA are required.
+        Gate::define('staff-support-escalation-recovery', function (
+            Authenticatable $principal,
+            PersonalAccessToken $token,
+        ): bool {
+            return app(StaffAuthorizationPolicy::class)->canManageAdsAssignments($principal, $token);
+        });
+
         Gate::define('staff-ads-assignments-admin', function (
             Authenticatable $principal,
             PersonalAccessToken $token,

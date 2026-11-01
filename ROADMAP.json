@@ -1219,12 +1219,29 @@
           "type": "revision",
           "value": "dfeafe4abc44b9ef456a8fab1f0284e6aba27d71",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/59"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "280 Laravel tests passed, 2,310 assertions against isolated PostgreSQL/Redis. Eight new held escalation reviewer recovery tests cover full support lifecycle, independent reviewer selection, no-candidate hold, replay, MFA/grant revocation, wrong principals, malicious payloads and audit rollback.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41307626284"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && python3 scripts/status.py check",
+          "result": "Composer audit clean, real HTTP/SMTP smoke and editorial/roadmap checks all passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41307626247"
+        },
+        {
+          "type": "revision",
+          "value": "44314b89ee275a86bfce0dc9f7051f3faec0eb13",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/60"
         }
       ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/57",
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/60",
       "limitations": [
         "This policy foundation is not full P03-007 completion. Real article/ticket records, scoped controllers, advertiser/finance tenancy and BOLA integration are pending; no admin route grants yet.",
         "Support ticket read is an incremental slice only; editorial draft models, support reply/escalation, advertiser and finance scopes, security audit and full BOLA matrix remain open.",
@@ -1243,7 +1260,8 @@
         "PR #56 adds server-assigned independent MFA escalation review before resolution; final evidence-commit CI remains required. Legacy/unassigned escalations remain held; reviewer reassignment/rejection, balanced dispatch, concurrent HTTP workers, full finance RBAC and production verification are not implemented. P03-007 remains in_progress.",
         "PR #55 security-admin emergency revocation passed 259 Laravel tests / 2,103 assertions but could not merge after concurrent PR #56. The same reviewed code is rebased onto new main on replacement branch; full operational security-admin provisioning, finance approvals, offsite audit and production evidence remain missing.",
         "PR #57 merged as 00b66a4f after rebasing PR #55 for concurrent PR #56; all 267 Laravel tests / 2,166 assertions passed on actual main CI run 41299720644 and editorial run 41299720703. Emergency administrator grant revocation is a verified backend slice, not approved live security operator provisioning; full financial authorization, offsite audit, DB role separation and production release remain open.",
-        "PR #59 implements MFA-protected self-relinquishment of an unreviewed support escalation, automatic selection of a distinct eligible replacement and atomic audit rollback. If no replacement exists, the ticket remains held. Legacy unassigned escalation recovery, incident-authorized reassignment, fair scheduling, independent concurrent HTTP-worker tests, finance RBAC and production validation remain outstanding; P03-007 is not done."
+        "PR #59 implements MFA-protected self-relinquishment of an unreviewed support escalation, automatic selection of a distinct eligible replacement and atomic audit rollback. If no replacement exists, the ticket remains held. Legacy unassigned escalation recovery, incident-authorized reassignment, fair scheduling, independent concurrent HTTP-worker tests, finance RBAC and production validation remain outstanding; P03-007 is not done.",
+        "Held legacy/unassigned support escalation reviewer recovery gated by independent active security-admin grant and fresh MFA is implemented on a PR branch pending CI. Only pending escalated unreviewed tickets with no reviewer can be recovered; no reviewer selection, approval/closure, finance mutations or production privileges are introduced."
       ]
     },
     {

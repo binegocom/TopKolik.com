@@ -16,6 +16,7 @@ use App\Http\Controllers\StaffAdvertiserReviewController;
 use App\Http\Controllers\StaffAdsAssignmentController;
 use App\Http\Controllers\StaffAdsAssignmentApprovalController;
 use App\Http\Controllers\StaffSecurityAdminGrantController;
+use App\Http\Controllers\StaffSupportEscalationRecoveryController;
 use App\Http\Controllers\StaffSupportTicketController;
 use App\Http\Controllers\StaffSupportEscalationController;
 use App\Http\Controllers\StaffEditorialDraftController;
@@ -98,6 +99,12 @@ Route::prefix('staff')->group(function (): void {
         Route::post('/security/admin-grants/{staff}/revoke',
             [StaffSecurityAdminGrantController::class, 'revokeOther'])
             ->whereNumber('staff')->middleware('throttle:6,1');
+
+        // Held support escalations can be re-assigned only by an independent
+        // security administrator, never by a client-specified reviewer.
+        Route::post('/security/support/escalations/{ticket}/recover-reviewer',
+            [StaffSupportEscalationRecoveryController::class, 'recoverReviewer'])
+            ->whereNumber('ticket')->middleware('throttle:6,1');
 
         // Dedicated security-administration grant + short-lived MFA step-up.
         // Distinct initiating and deciding staff must authorize activation.
