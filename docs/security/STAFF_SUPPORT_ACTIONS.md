@@ -30,3 +30,9 @@ Verification: CI uses isolated PostgreSQL, Redis, Laravel tests, actual HTTP/SMT
 - Already resolved or still open tickets are not eligible; an escalated pending ticket returns 409 and remains pending for a separately authorized escalation review. There is no public resolution route, staff reassignment, outbound notification or mass-assignment override.
 - Feature tests cover encryption at rest, actor/audit linkage, MFA, BOLA, roles, revocation, state guards, escalation hold, invalid input and expired sessions. [Laravel CI 41286204431](https://github.com/binegocom/TopKolik.com/actions/runs/41286204431) verified 245 tests / 1,998 assertions on PostgreSQL/Redis; [editorial/roadmap CI 41286204469](https://github.com/binegocom/TopKolik.com/actions/runs/41286204469) passed. Final evidence commit CI is still required.
 - P03-007 remains `in_progress`: the complete staff role matrix, finance controls, escalation review and production authorization validation are not finished.
+
+## Resolution transaction resilience (P03-007 incremental hardening)
+
+- The existing assigned-only, MFA step-up-gated resolution transaction now retries PostgreSQL concurrency failures up to three attempts. Each retry reacquires the row lock, re-evaluates persisted authorization and records the audit event inside the same transaction. Validation, authorization denials and audit constraint failures are not retried as successful resolutions.
+- Regression tests assert that a repeated request cannot overwrite the original encrypted resolution note or create a second audit event, and that a rejected audit INSERT rolls back the ticket status, actor, timestamp and note together.
+- The audit failure is injected by a constraint inside the disposable PostgreSQL test transaction; no production schema change is introduced. Actual simultaneous HTTP worker contention and production database failure injection are still unverified. P03-007 remains `in_progress`.
