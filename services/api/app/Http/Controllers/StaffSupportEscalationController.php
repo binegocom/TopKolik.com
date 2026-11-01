@@ -103,6 +103,82 @@ final class StaffSupportEscalationController extends Controller
         ]);
     }
 
+
+    /**
+     * Allow the currently assigned reviewer to step aside without giving
+     * clients the ability to select a replacement or bypass independent review.
+     * With no eligible replacement the ticket stays held for operations.
+     */
+    public function relinquish(Request $request, int $ticket, SecurityAuditRecorder $audit): JsonResponse
+    {
+        $request->validate([
+            'escalation_reviewer_staff_id' => ['missing'],
+            'assigned_staff_id' => ['missing'],
+            'escalation_reviewed_at' => ['missing'],
+            'escalation_reviewed_by_staff_id' => ['missing'],
+            'status' => ['missing'],
+            'review_note' => ['missing'],
+        ]);
+
+        /** @var StaffMember $staff */
+        $staff = $request->user();
+        $token = $this->presentedToken($request);
+
+        $replacementAssigned = DB::transaction(function () use ($staff, $token, $ticket, $audit, $request): bool {
+            $record = SupportTicket::query()
+                ->whereKey($ticket)
+                ->where('escalation_reviewer_staff_id', $staff->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            Gate::forUser($staff)->authorize('staff-support-escalation-review', [$record, $token]);
+
+            // Lock the replacement's staff row to avoid selecting an identity
+            // concurrently being deactivated or stripped of its support role.
+            $excluded = array_values(array_unique(array_filter([
+                $staff->getKey(),
+                $record->assigned_staff_id,
+                $record->escalated_by_staff_id,
+            ], static fn ($id): bool => $id !== null)));
+
+            $replacement = StaffMember::query()
+                ->where('role', 'support')
+                ->where('is_active', true)
+                ->whereNotNull('email_verified_at')
+                ->whereNotNull('mfa_enrolled_at')
+                ->whereNotIn('id', $excluded)
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->first(['id']);
+
+            $record->forceFill([
+                'escalation_reviewer_staff_id' => $replacement?->getKey(),
+            ])->save();
+
+            // The assignment and audit record must commit or roll back together.
+            $audit->record(
+                $staff,
+                'support.ticket.escalation_reviewer_relinquished',
+                'support_ticket',
+                (int) $record->getKey(),
+                $request->attributes->get('request_id'),
+            );
+
+            return $replacement !== null;
+        }, 3);
+
+        return response()->json([
+            'ticket' => [
+                'id' => $ticket,
+                'status' => 'pending',
+                'reviewer_assigned' => $replacementAssigned,
+            ],
+        ])->withHeaders([
+            'Cache-Control' => 'no-store, private',
+            'Pragma' => 'no-cache',
+        ]);
+    }
+
     private function presentedToken(Request $request): ?PersonalAccessToken
     {
         $bearer = $request->bearerToken();
