@@ -29,13 +29,18 @@ by the existing bounded transaction retry mechanism.
 `TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-ads-assignment-concurrency.php`
 
 The script starts four real PHP HTTP workers, creates isolated random staff
-identities and one advertiser organization, and races two authenticated
-approval requests against an independent administrator's requester-grant
-revocation. It asserts serializable outcomes, persisted assignment state,
+identities and advertiser organizations in two isolated scenarios. It races
+two authenticated approvals against independent revocation of the original
+requester's grant, then races two approvals against revocation of the acting
+approver's grant. It asserts serializable outcomes, persisted assignment state,
 exactly-once audit attribution, unique request IDs, rejected replays and
-actual ads staff HTTP visibility. The Laravel feature suite separately
-checks a completed requester-grant revocation followed by an attempted
-approval.
+actual ads staff HTTP visibility. The approver race accepts only the two serialized outcomes: revocation
+first rejects both approvals (403); approval first commits exactly once
+(200, then 403 or 409). In both cases the approver's old MFA token cannot
+approve or reject after revocation. Both scenarios verify assignment state,
+audit uniqueness and actual advertiser isolation. The Laravel feature suite
+separately checks completed requester and approver grant revocations before
+decision attempts.
 
 The harness refuses to run unless `CI=true`, `GITHUB_ACTIONS=true`, Linux,
 explicit opt-in, a non-production Laravel environment and a PostgreSQL
@@ -59,3 +64,9 @@ passed 314 tests / 2,685 assertions, including the real four-worker ads
 approval/revocation harness, PostgreSQL/Redis, HTTP/SMTP, Composer audit and
 17 editorial guard checks. [Editorial/roadmap CI 41359323964](https://github.com/binegocom/TopKolik.com/actions/runs/41359323964)
 passed. Final evidence commit CI is required before merge.
+
+## Follow-up verification (pending)
+
+The approver-grant revocation scenario and stale-MFA feature regression are
+implemented on the P03-007 feature branch. CI evidence must be attached to
+the PR and roadmap before acceptance; no production verification is implied.
