@@ -36,7 +36,7 @@ The existing staff login and MFA step-up rate limits retain both their IP and ac
 
 Reader and staff identities are separate models and may have the same numeric database ID. The MFA step-up limiter now uses a staff-qualified principal key for authenticated `StaffMember` instances and a separate non-staff key for other callers. This prevents a reader token from consuming the staff member's per-principal quota due to an ID collision. The per-IP limiter remains active, including for unauthorized traffic; the change does not claim to prevent IP-level denial of service.
 
-The regression test submits six reader-token requests with a colliding ID, verifies they cannot create staff failure records, clears only the IP limiter, and asserts the staff request reaches MFA verification rather than inheriting a 429. Existing 429 audit response and staff-session authorization remain unchanged. Final GitHub CI evidence is required before merge. This is partial hardening, not completion of P03-010.
+The regression test submits six reader-token requests with a colliding ID, verifies they cannot create staff failure records, clears only the IP limiter, and asserts the staff request reaches MFA verification rather than inheriting a 429. Existing 429 audit response and staff-session authorization remain unchanged. The code commit `8b956bf` passed 224 Laravel tests / 1,849 assertions on isolated PostgreSQL/Redis, real HTTP/SMTP and 17 editorial guard cases ([Laravel CI](https://github.com/binegocom/TopKolik.com/actions/runs/41274750485), [editorial CI](https://github.com/binegocom/TopKolik.com/actions/runs/41274750571)). Final documentation commit CI remains required before merge. This is partial hardening, not completion of P03-010.
 
 ## Remaining release constraints
 
