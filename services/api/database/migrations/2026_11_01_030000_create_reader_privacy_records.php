@@ -32,7 +32,7 @@ return new class extends Migration
         // Independent legal review is required before defining any deletion or
         // retention transition. Neither HTTP code nor a migration can erase data.
         DB::unprepared(<<<'SQL'
-CREATE FUNCTION reject_reader_privacy_event_mutation() RETURNS trigger
+CREATE OR REPLACE FUNCTION reject_reader_privacy_event_mutation() RETURNS trigger
 LANGUAGE plpgsql AS $$
 BEGIN
     RAISE EXCEPTION 'reader privacy events are append-only';
