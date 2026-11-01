@@ -474,9 +474,15 @@
   approvals versus independent requester-grant revocation. The latter checks
   both valid serial outcomes, the actual ads staff API, replay protection,
   unique request IDs and audit actor attribution.
-- `P03-007` remains `in_progress`; CI results and final commit SHA must be
-  verified on this PR before merge. No full RBAC completion, production
-  deployment, external license or new runtime sports data is claimed.
+- Code SHA `489d40945f3a4bca96c73d0228881a26ed081a85` passed
+  [Laravel CI 41359323946](https://github.com/binegocom/TopKolik.com/actions/runs/41359323946):
+  314 tests / 2,685 assertions, PostgreSQL/Redis, support and finance races,
+  new four-worker ads approval/revocation race, real HTTP/SMTP, Composer audit
+  and 17 editorial guard checks. [Editorial/roadmap CI 41359323964](https://github.com/binegocom/TopKolik.com/actions/runs/41359323964)
+  passed. The final documentation/evidence commit must also pass CI.
+- [PR #73](https://github.com/binegocom/TopKolik.com/pull/73) keeps
+  `P03-007` `in_progress`. No full RBAC completion, production deployment,
+  external license or new runtime sports data is claimed.
 - Test commands: `cd services/api && php artisan test` and
   `TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-ads-assignment-concurrency.php`
   (second command runs only inside the isolated GitHub Actions environment).
