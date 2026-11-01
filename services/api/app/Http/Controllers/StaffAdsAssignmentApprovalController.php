@@ -164,12 +164,17 @@ final class StaffAdsAssignmentApprovalController extends Controller
             // Prevent approval of a request made by an operator whose access
             // has subsequently been withdrawn.
             if ($grant) {
-                $requester = StaffMember::query()->find($pending->requested_by_staff_member_id);
+                // Serialize requester-grant revocation with assignment approval.
+                // Without these row locks, an already-revoked requester can
+                // authorize an assignment based on a stale EXISTS snapshot.
+                $requester = StaffMember::query()
+                    ->whereKey($pending->requested_by_staff_member_id)
+                    ->lockForUpdate()->first();
                 if (! $requester || ! $requester->is_active || ! $requester->mfa_enrolled_at
                     || ! $requester->email_verified_at || $requester->role === 'ads'
                     || ! DB::table('staff_security_admin_grants')
                         ->where('staff_member_id', $requester->getKey())
-                        ->where('is_active', true)->exists()) {
+                        ->lockForUpdate()->where('is_active', true)->first()) {
                     abort(409, 'Requesting administrator no longer authorized.');
                 }
 

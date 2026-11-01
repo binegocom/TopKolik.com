@@ -1368,6 +1368,22 @@
           "type": "reference",
           "value": "https://github.com/binegocom/TopKolik.com/pull/72",
           "validation": "Residual-grant/offboarding four-worker regression; task remains in_progress"
+        },
+        {
+          "type": "file",
+          "path": "docs/qa/ADS_ASSIGNMENT_CONCURRENCY.md",
+          "validation": "Implementation and guarded real HTTP test plan; final GitHub Actions verification pending"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test && TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-ads-assignment-concurrency.php",
+          "result": "314 Laravel tests / 2,685 assertions and guarded four-worker ads approval race passed on code SHA 489d40945f3a4bca96c73d0228881a26ed081a85",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41359323946"
+        },
+        {
+          "type": "reference",
+          "value": "https://github.com/binegocom/TopKolik.com/pull/73",
+          "validation": "Code tested; final evidence commit CI pending; task remains in_progress"
         }
       ],
       "verified_at": null,
@@ -1404,7 +1420,8 @@
         "PR #69 verifies stale finance MFA bearer denial after role downgrade and emergency revocation in disposable CI. P03-007 remains in_progress: live finance resource authorization, approved operator bootstrap, sustained role-change concurrency, offsite audit and production release remain unverified.",
         "PR #70 adds one-way MFA-protected finance staff deactivation with atomic entitlement/grant/session revocation and audit rollback. Six PostgreSQL feature regressions passed on code SHA 6adf654a. This does not change staff roles, supply a reactivation API, verify deactivation under real concurrent workers, complete resource-level finance RBAC, authorize security-admin bootstrap or establish production release.",
         "Four-worker approval-versus-emergency-staff-deactivation HTTP race added for CI verification; final-commit GitHub Actions evidence pending. Full finance resource RBAC, approved operator bootstrap and production release remain open.",
-        "Residual security-admin grant revocation versus emergency finance offboarding has an isolated four-worker HTTP regression on feature branch; final-commit CI evidence is pending. Ads-role assignment approval cannot be raced against finance-role offboarding under existing role eligibility. Full finance RBAC, operator provisioning and production verification remain open."
+        "Residual security-admin grant revocation versus emergency finance offboarding has an isolated four-worker HTTP regression on feature branch; final-commit CI evidence is pending. Ads-role assignment approval cannot be raced against finance-role offboarding under existing role eligibility. Full finance RBAC, operator provisioning and production verification remain open.",
+        "PR #73 code SHA 489d40945f3a4bca96c73d0228881a26ed081a85 passed 314 Laravel tests / 2,685 assertions, four-worker ads approval/requester-grant revocation HTTP race, PostgreSQL/Redis, HTTP/SMTP, Composer audit and 17 editorial guard tests (Laravel CI 41359323946; editorial CI 41359323964). Final evidence-documentation commit requires fresh CI before merge. Full RBAC matrix, licensed providers and production release remain unverified."
       ]
     },
     {

@@ -461,3 +461,28 @@
 - Added a third isolated four-worker HTTP contention scenario: independent security-admin grant revocation races with finance staff offboarding. The target has an active finance entitlement, historical administrator grant, advertiser assignment and MFA bearer token.
 - Both serial outcomes, complete access revocation, audit attribution, unique request IDs and rejected replays are checked.
 - Code/docs SHA 6805fe51: [Laravel CI 41353972644](https://github.com/binegocom/TopKolik.com/actions/runs/41353972644) passed 313 tests / 2,674 assertions, PostgreSQL/Redis, both four-worker HTTP races, real HTTP/SMTP and Composer audit. [Editorial CI 41353972632](https://github.com/binegocom/TopKolik.com/actions/runs/41353972632) passed. The final evidence-commit CI must also pass before merge. P03-007 remains in_progress; no new done task or production release is claimed.
+
+## P03-007 — advertiser assignment approval / requester grant revocation race (PR review)
+
+- Analysis identified a time-of-check/time-of-use window: the ads assignment
+  approval read the original requester's security grant with an unlocked
+  `exists()` query while independent security administrators could revoke
+  that grant. The transaction now locks the original requester and grant
+  before writing the assignment and audit.
+- Added a feature regression for an actual security-grant revocation before
+  approval and a guarded four-worker HTTP race for concurrent duplicate
+  approvals versus independent requester-grant revocation. The latter checks
+  both valid serial outcomes, the actual ads staff API, replay protection,
+  unique request IDs and audit actor attribution.
+- Code SHA `489d40945f3a4bca96c73d0228881a26ed081a85` passed
+  [Laravel CI 41359323946](https://github.com/binegocom/TopKolik.com/actions/runs/41359323946):
+  314 tests / 2,685 assertions, PostgreSQL/Redis, support and finance races,
+  new four-worker ads approval/revocation race, real HTTP/SMTP, Composer audit
+  and 17 editorial guard checks. [Editorial/roadmap CI 41359323964](https://github.com/binegocom/TopKolik.com/actions/runs/41359323964)
+  passed. The final documentation/evidence commit must also pass CI.
+- [PR #73](https://github.com/binegocom/TopKolik.com/pull/73) keeps
+  `P03-007` `in_progress`. No full RBAC completion, production deployment,
+  external license or new runtime sports data is claimed.
+- Test commands: `cd services/api && php artisan test` and
+  `TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-ads-assignment-concurrency.php`
+  (second command runs only inside the isolated GitHub Actions environment).
