@@ -37,7 +37,8 @@ final class StaffAdvertiserReviewController extends Controller
             $query->where('id', '<', (int) $data['before_id']);
         }
         $limit = (int) ($data['limit'] ?? 20);
-        $rows = $query->orderByDesc('id')->limit($limit + 1)->get();
+        $rows = $query->orderByDesc('id')->limit($limit + 1)
+            ->get(['id', 'status', 'revision', 'updated_at']);
         $hasMore = $rows->count() > $limit;
         $page = $rows->take($limit)->map(static fn (AdvertiserCampaign $campaign): array => [
             'id' => $campaign->getKey(),
