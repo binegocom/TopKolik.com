@@ -17,6 +17,13 @@ on:
       - feat/laravel13-api-foundation
     paths:
       - 'services/api/**'
+      - 'ROADMAP.json'
+      - 'PROJECT_STATUS.md'
+      - 'scripts/configure-local-api-env.py'
+      - 'scripts/test-editorial-guard.sh'
+      - 'scripts/check-support-reviewer-concurrency.php'
+      - 'scripts/check-finance-access-concurrency.php'
+      - '.github/workflows/laravel-api.yml'
 
 permissions:
   contents: read
