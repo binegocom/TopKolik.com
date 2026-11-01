@@ -123,6 +123,12 @@ Route::prefix('staff')->group(function (): void {
             [StaffFinanceAccessApprovalController::class, 'reject'])
             ->whereNumber('approval')->middleware('throttle:6,1');
 
+        // An independently authorized administrator may revoke only an
+        // already-active *other* finance employee's entitlement.
+        Route::post('/security/finance/staff/{staff}/revoke',
+            [StaffFinanceEntitlementController::class, 'revokeOther'])
+            ->whereNumber('staff')->middleware('throttle:6,1');
+
         // Entitlement self-check and surrender, both fail closed unless the
         // finance role AND separate approved access are currently active.
         Route::get('/finance/access', [StaffFinanceEntitlementController::class, 'show'])
