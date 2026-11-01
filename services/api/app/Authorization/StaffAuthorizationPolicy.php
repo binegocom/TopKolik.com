@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Authorization;
 
 use App\Models\StaffMember;
+use App\Models\SupportTicket;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -160,6 +161,31 @@ final class StaffAuthorizationPolicy
             && $staff->is_active
             && $staff->email_verified_at !== null
             && $staff->mfa_enrolled_at !== null;
+    }
+
+    /**
+     * Only a distinct, server-assigned support reviewer with current MFA
+     * step-up can authorize closure of an escalated support ticket.
+     */
+    public function canReviewSupportEscalation(
+        Authenticatable $principal,
+        SupportTicket $ticket,
+        ?PersonalAccessToken $token,
+    ): bool {
+        if (! $this->canListOwnSupportTickets($principal, $token)
+            || ! $token?->can('staff:step-up')) {
+            return false;
+        }
+
+        $staffId = (int) $principal->getAuthIdentifier();
+
+        return $ticket->exists
+            && (int) $ticket->escalation_reviewer_staff_id === $staffId
+            && (int) $ticket->assigned_staff_id !== $staffId
+            && (int) $ticket->escalated_by_staff_id !== $staffId
+            && $ticket->status === 'pending'
+            && $ticket->escalated_at !== null
+            && $ticket->escalation_reviewed_at === null;
     }
 
     /**

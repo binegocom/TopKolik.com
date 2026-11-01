@@ -233,8 +233,20 @@ final class StaffSupportTicketController extends Controller
                 abort(409, 'Ticket is already escalated.');
             }
 
+            // Assign a distinct, currently eligible reviewer server-side.
+            // If no reviewer exists, keep the escalation on hold.
+            $reviewer = StaffMember::query()
+                ->where('role', 'support')
+                ->where('is_active', true)
+                ->whereNotNull('email_verified_at')
+                ->whereNotNull('mfa_enrolled_at')
+                ->where('id', '<>', $staff->getKey())
+                ->orderBy('id')
+                ->first(['id']);
+
             $record->forceFill([
                 'status' => 'pending',
+                'escalation_reviewer_staff_id' => $reviewer?->getKey(),
                 'escalated_at' => now(),
                 'escalated_by_staff_id' => $staff->getKey(),
             ])->save();
@@ -290,7 +302,7 @@ final class StaffSupportTicketController extends Controller
                 $token,
             ]);
 
-            if ($record->escalated_at !== null) {
+            if ($record->escalated_at !== null && $record->escalation_reviewed_at === null) {
                 abort(409, 'Escalated tickets require separate review.');
             }
 
