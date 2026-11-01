@@ -168,3 +168,10 @@
 - Introduced the read-only, self-scoped audit search API behind active staff identity, current persisted 5-minute MFA step-up token and explicit Gate. Query uses authenticated staff ID only, allowlisted filters, strict cursor pagination and `no-store` responses.
 - New PostgreSQL integration regression tests cover cross-staff isolation, reader/advertiser denial, revoked/expired sessions, role/MFA changes, bounded filters and ledger non-mutation.
 - **in_progress, partially verified:** [PR #34](https://github.com/binegocom/TopKolik.com/pull/34), feature SHA `5203da02f57ef4e0647e570d7dd2f1d2c856ae3a`. [Laravel API CI](https://github.com/binegocom/TopKolik.com/actions/runs/41257648308) passed 129 tests / 905 assertions using PostgreSQL and Redis, real HTTP/SMTP, 17 editorial guard cases, Composer audit. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41257648219) passed. Global incident security-role search, failed attempts, offsite immutable anchoring, production DB separation and retention remain unresolved; no release-ready claim.
+
+## P03-009 reader privacy export and deletion request — PR review
+
+- Owner-bound, password-reverified private JSON export of account, consent history, preferences and canonical favorites; no export file or shared cache is produced.
+- Existing reader preferences now record real opt-in/withdrawal transitions in an append-only PostgreSQL consent ledger, serializing changes with the user row.
+- A pending-only, idempotent deletion request and self-status endpoint are available. No deletion, session revocation, data cascade, production deletion or legal retention override is enabled.
+- **in_progress** until real PostgreSQL/Redis CI validation, legal/finance retention approval and safely verified erasure lifecycle. ADR-004 remains unchanged.

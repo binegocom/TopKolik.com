@@ -7,6 +7,7 @@ use App\Http\Controllers\AdvertiserCampaignController;
 use App\Http\Controllers\ReaderEmailVerificationController;
 use App\Http\Controllers\ReaderPasswordResetController;
 use App\Http\Controllers\ReaderProfileController;
+use App\Http\Controllers\ReaderPrivacyController;
 use App\Http\Controllers\StaffInvitationAcceptanceController;
 use App\Http\Controllers\StaffMfaEnrollmentController;
 use App\Http\Controllers\StaffAuthController;
@@ -46,12 +47,17 @@ Route::middleware('auth:sanctum')->prefix('me')->group(function (): void {
         Route::get('/', [ReaderProfileController::class, 'show']);
         Route::get('/preferences', [ReaderProfileController::class, 'preferences']);
         Route::get('/favorites', [ReaderProfileController::class, 'favorites']);
+        Route::get('/privacy/deletion-request', [ReaderPrivacyController::class, 'deletionStatus']);
     });
 
     Route::middleware('ability:reader:write')->group(function (): void {
         Route::patch('/', [ReaderProfileController::class, 'update']);
         Route::patch('/preferences', [ReaderProfileController::class, 'updatePreferences']);
         Route::put('/favorites', [ReaderProfileController::class, 'replaceFavorites']);
+        Route::post('/privacy/export', [ReaderPrivacyController::class, 'export'])
+            ->middleware('throttle:reader-privacy-sensitive');
+        Route::post('/privacy/deletion-requests', [ReaderPrivacyController::class, 'requestDeletion'])
+            ->middleware('throttle:reader-privacy-sensitive');
     });
 });
 

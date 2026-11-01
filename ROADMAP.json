@@ -1093,7 +1093,7 @@
       "id": "P03-009",
       "phase": "P03",
       "title": "Implement account deletion/export and consent",
-      "status": "todo",
+      "status": "in_progress",
       "priority": "P0",
       "depends_on": [
         "P02-GATE"
@@ -1107,7 +1107,9 @@
       "owner": null,
       "issue_url": null,
       "pr_url": null,
-      "limitations": []
+      "limitations": [
+        "Password-reverified privacy export, append-only consent transitions and pending-only deletion request API are in feature-branch CI review. Actual erasure, accounting/legal retention exceptions, third-party backup policy and production deployment require approved privacy/finance rules; no record is deleted."
+      ]
     },
     {
       "id": "P03-010",

@@ -62,6 +62,18 @@ final class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        RateLimiter::for('reader-privacy-sensitive', function (Request $request): array {
+            $principal = $request->user();
+            $identity = $principal
+                ? hash('sha256', get_class($principal).':'.$principal->getAuthIdentifier())
+                : 'anonymous';
+
+            return [
+                Limit::perMinute(10)->by('privacy-ip:'.($request->ip() ?? 'unknown')),
+                Limit::perHour(6)->by('privacy-account:'.$identity),
+            ];
+        });
+
         RateLimiter::for('reader-verification', fn (Request $request) => Limit::perMinute(4)
             ->by('verify:'.($request->ip() ?? 'unknown').':'.hash('sha256', mb_strtolower((string) $request->input('email', '')))));
 

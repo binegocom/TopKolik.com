@@ -50,10 +50,30 @@ final class ReaderProfileController extends Controller
             User::query()->whereKey($user->getKey())->lockForUpdate()->firstOrFail();
 
             if ($values !== []) {
+                $previous = ReaderPreference::query()->where('user_id', $user->getKey())->first();
                 ReaderPreference::query()->updateOrCreate(
                     ['user_id' => $user->getKey()],
                     $values,
                 );
+
+                // Serialize with the locked user row so simultaneous consent
+                // changes cannot reorder or duplicate the recorded decisions.
+                foreach (['analytics_consent', 'personalized_news_enabled'] as $consentKey) {
+                    if (! array_key_exists($consentKey, $values)) {
+                        continue;
+                    }
+
+                    $old = (bool) ($previous?->{$consentKey} ?? false);
+                    $new = (bool) $values[$consentKey];
+                    if ($old !== $new) {
+                        DB::table('reader_consent_events')->insert([
+                            'user_id' => $user->getKey(),
+                            'consent_key' => $consentKey,
+                            'granted' => $new,
+                            'created_at' => now(),
+                        ]);
+                    }
+                }
             }
         });
 
