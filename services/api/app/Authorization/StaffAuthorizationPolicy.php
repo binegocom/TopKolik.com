@@ -258,6 +258,34 @@ final class StaffAuthorizationPolicy
     }
 
     /**
+     * Finance role is necessary but never sufficient. Finance privileges
+     * require an independent current entitlement and fresh MFA step-up.
+     * This Gate protects access metadata only; no money movement is enabled.
+     */
+    public function canUseFinanceEntitlement(
+        Authenticatable $principal,
+        ?PersonalAccessToken $token,
+    ): bool {
+        if (! $principal instanceof StaffMember || ! $token
+            || $token->expires_at === null || $token->expires_at->isPast()
+            || ! $token->can('staff:session') || ! $token->can('staff:step-up')
+            || $token->tokenable_type !== $principal->getMorphClass()
+            || (string) $token->tokenable_id !== (string) $principal->getKey()) {
+            return false;
+        }
+
+        $fresh = StaffMember::query()->find($principal->getKey());
+        if (! $fresh || $fresh->role !== 'finance' || ! $fresh->is_active
+            || ! $fresh->email_verified_at || ! $fresh->mfa_enrolled_at) {
+            return false;
+        }
+
+        return DB::table('staff_finance_entitlements')
+            ->where('staff_member_id', $fresh->getKey())
+            ->where('is_active', true)->exists();
+    }
+
+    /**
      * Staff can inspect only their own security metadata after a fresh MFA
      * step-up. This is not a global audit administration grant.
      */
