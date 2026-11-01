@@ -1112,12 +1112,29 @@
           "command": "php artisan test; bash scripts/check-api-http.sh; bash scripts/check-reader-email-delivery.sh; bash scripts/test-editorial-guard.sh; composer audit",
           "result": "PR #43 merge bc78ae5b; 205 Laravel tests / 1,655 assertions with PostgreSQL/Redis, HTTP/SMTP, Composer audit and 17 editorial guard tests passed",
           "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41266888211"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "218 Laravel tests passed, 1,757 assertions on isolated PostgreSQL/Redis; nine new self-only security-admin grant relinquishment tests cover MFA, wrong principals, disabled staff, token expiration/revocation, replay, grant isolation, pending requester/approver revocation and audit atomicity.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41269986853"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && python3 scripts/status.py check",
+          "result": "Composer audit reported no security advisories, HTTP/SMTP smoke tests passed, 17 editorial guard scenarios and roadmap CI passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41269986895"
+        },
+        {
+          "type": "revision",
+          "value": "3d960e7c12ba626207c62492d0ffa506fd9f38a3",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/46"
         }
       ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/42",
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/46",
       "limitations": [
         "This policy foundation is not full P03-007 completion. Real article/ticket records, scoped controllers, advertiser/finance tenancy and BOLA integration are pending; no admin route grants yet.",
         "Support ticket read is an incremental slice only; editorial draft models, support reply/escalation, advertiser and finance scopes, security audit and full BOLA matrix remain open.",
@@ -1127,7 +1144,8 @@
         "Owner/editor advertiser draft submission, revision-guarded transaction and append-only tenant-scoped review audit implemented on feature branch, pending PostgreSQL CI. This only moves draft to in_review; no ad approval, publication, delivery, finance approvals, automatic membership enrollment or commercial rights are authorized.",
         "MFA-protected assigned staff request-changes transaction and encrypted feedback retrieval for advertiser owner/editor are undergoing CI review. Only in_review → draft; no advertising approval/publishing, billing dual control, staff assignment provisioning or external immutable archiving.",
         "A narrowly scoped ads-staff self-assignment listing and MFA-protected relinquishment, atomically audited without granting or reactivating access, is under CI review. Assignment provisioning, admin delegation, finance dual-control, campaign publishing, and production security compliance remain missing.",
-        "Security-administrator capability is separate and inactive by default; two-person assignment approval was CI-verified and merged in PR #43 (Laravel 205 tests / 1,655 assertions; run 41266888211; editorial run 41266888168). No live administrator bootstrap is implemented; legal/ops approval, full finance role matrix, ads publishing, DB role hardening and production verification remain open."
+        "Security-administrator capability is separate and inactive by default; two-person assignment approval was CI-verified and merged in PR #43 (Laravel 205 tests / 1,655 assertions; run 41266888211; editorial run 41266888168). No live administrator bootstrap is implemented; legal/ops approval, full finance role matrix, ads publishing, DB role hardening and production verification remain open.",
+        "MFA-protected security administrator self-relinquishment and in-transaction grant rechecks for ad assignment dual approvals are implemented on a review branch, pending CI. This does not create admin grants, provide emergency third-party revocation, finance approval or production entitlement."
       ]
     },
     {
