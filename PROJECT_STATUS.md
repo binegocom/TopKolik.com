@@ -449,3 +449,9 @@
   Final evidence-commit CI must also pass before merge.
 - P03-007 stays `in_progress`; no `done` task, production privilege,
   migration, provider access or release is claimed.
+
+- Final evidence-commit CI run [41349025206](https://github.com/binegocom/TopKolik.com/actions/runs/41349025206)
+  found an order-sensitive audit-count assertion: PostgreSQL returned the
+  correct per-action totals in a different row order. The test now sorts
+  action keys before strict comparison. This is a test assertion correction,
+  not a change to authorization behavior; replacement commit CI is required.
