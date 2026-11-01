@@ -310,7 +310,7 @@ final class StaffSupportTicketController extends Controller
             );
 
             return $record;
-        });
+        }, 3); // Retry only concurrency failures; each attempt re-locks and re-authorizes.
 
         return response()->json([
             'ticket' => [
