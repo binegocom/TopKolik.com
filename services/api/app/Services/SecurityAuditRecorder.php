@@ -27,6 +27,7 @@ final class SecurityAuditRecorder
         'support.ticket.replied',
         'support.ticket.escalated',
         'support.ticket.escalation_reviewed',
+        'support.ticket.escalation_reviewer_relinquished',
         'support.ticket.resolved',
     ];
 

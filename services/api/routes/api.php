@@ -156,6 +156,8 @@ Route::prefix('staff')->group(function (): void {
             ->whereNumber('ticket')->middleware('throttle:20,1');
         Route::post('/support/escalations/{ticket}/approve', [StaffSupportEscalationController::class, 'approve'])
             ->whereNumber('ticket')->middleware('throttle:6,1');
+        Route::post('/support/escalations/{ticket}/relinquish', [StaffSupportEscalationController::class, 'relinquish'])
+            ->whereNumber('ticket')->middleware('throttle:6,1');
 
         // Assigned-only support inbox; metadata excludes ticket messages and replies.
         Route::get('/support/tickets', [StaffSupportTicketController::class, 'index'])
