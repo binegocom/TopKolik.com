@@ -1140,6 +1140,17 @@
           "type": "revision",
           "value": "5063f6b7b7999efcb32e71b9947b66b8e39c26a9",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/50"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test; composer audit --no-interaction; bash scripts/check-api-http.sh; bash scripts/check-reader-email-delivery.sh; bash scripts/test-editorial-guard.sh",
+          "result": "PR #51 code/docs SHA 163f1963b72866ca028cea222ecdd9fb66ae15b6: 245 Laravel tests / 1,998 assertions passed against isolated PostgreSQL/Redis; live HTTP and SMTP, Composer audit and 17 editorial guard cases passed. Nine new resolution tests cover MFA, assignment BOLA, encryption, audit and state transitions.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41286204431"
+        },
+        {
+          "type": "revision",
+          "value": "163f1963b72866ca028cea222ecdd9fb66ae15b6",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/51"
         }
       ],
       "verified_at": null,
@@ -1157,7 +1168,8 @@
         "A narrowly scoped ads-staff self-assignment listing and MFA-protected relinquishment, atomically audited without granting or reactivating access, is under CI review. Assignment provisioning, admin delegation, finance dual-control, campaign publishing, and production security compliance remain missing.",
         "Security-administrator capability is separate and inactive by default; two-person assignment approval was CI-verified and merged in PR #43 (Laravel 205 tests / 1,655 assertions; run 41266888211; editorial run 41266888168). No live administrator bootstrap is implemented; legal/ops approval, full finance role matrix, ads publishing, DB role hardening and production verification remain open.",
         "MFA-protected security administrator self-relinquishment and in-transaction grant rechecks for ad assignment dual approvals are implemented on a review branch, pending CI. This does not create admin grants, provide emergency third-party revocation, finance approval or production entitlement.",
-        "Assigned-only support inbox with private subject-only metadata and bounded keyset pagination was tested in PR #50. P03-007 remains in_progress: complete staff RBAC/BOLA matrix, ticket lifecycle, finance dual-control, operations review and production verification are not complete."
+        "Assigned-only support inbox with private subject-only metadata and bounded keyset pagination was tested in PR #50. P03-007 remains in_progress: complete staff RBAC/BOLA matrix, ticket lifecycle, finance dual-control, operations review and production verification are not complete.",
+        "MFA-gated support resolution from pending to resolved (excluding escalated tickets) verified on PR #51; P03-007 remains in_progress pending full staff/finance RBAC, escalated-ticket review, operational controls and production verification. No external notifications or live sports-provider data."
       ]
     },
     {
