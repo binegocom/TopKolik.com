@@ -155,6 +155,8 @@ Route::prefix('staff')->group(function (): void {
             ->whereNumber('ticket')->middleware('throttle:20,1');
         Route::post('/support/tickets/{ticket}/escalate', [StaffSupportTicketController::class, 'escalate'])
             ->whereNumber('ticket')->middleware('throttle:6,1');
+        Route::post('/support/tickets/{ticket}/resolve', [StaffSupportTicketController::class, 'resolve'])
+            ->whereNumber('ticket')->middleware('throttle:6,1');
     });
 });
 

@@ -25,6 +25,7 @@ final class SecurityAuditRecorder
         'staff.advertiser_assignment.rejected',
         'support.ticket.replied',
         'support.ticket.escalated',
+        'support.ticket.resolved',
     ];
 
     private const SUBJECT_TYPES = ['staff_member', 'support_ticket', 'advertiser_organization'];

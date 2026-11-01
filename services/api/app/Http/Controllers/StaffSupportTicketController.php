@@ -253,6 +253,74 @@ final class StaffSupportTicketController extends Controller
         ])->header('Cache-Control', 'no-store, private');
     }
 
+    /**
+     * Finalize an answered ticket only after a fresh staff MFA step-up.
+     * Escalated cases are deliberately held for a separate review workflow.
+     */
+    public function resolve(Request $request, int $ticket, SecurityAuditRecorder $audit): JsonResponse
+    {
+        $data = $request->validate([
+            'resolution_note' => ['required', 'string', 'min:1', 'max:2000'],
+            'status' => ['missing'],
+            'assigned_staff_id' => ['missing'],
+            'resolved_at' => ['missing'],
+            'resolved_by_staff_id' => ['missing'],
+            'escalated_at' => ['missing'],
+        ]);
+
+        /** @var StaffMember $staff */
+        $staff = $request->user();
+        $token = $this->presentedStaffToken($request);
+
+        $record = DB::transaction(function () use ($staff, $token, $ticket, $data, $audit, $request): SupportTicket {
+            $record = SupportTicket::query()
+                ->whereKey($ticket)
+                ->where('assigned_staff_id', $staff->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            Gate::forUser($staff)->authorize('staff-resource', [
+                'support.ticket.resolve',
+                new StaffResourceContext(
+                    id: (int) $record->getKey(),
+                    kind: 'support_ticket',
+                    state: $record->status,
+                    assignedStaffId: (int) $record->assigned_staff_id,
+                ),
+                $token,
+            ]);
+
+            if ($record->escalated_at !== null) {
+                abort(409, 'Escalated tickets require separate review.');
+            }
+
+            $record->forceFill([
+                'status' => 'resolved',
+                'resolved_at' => now(),
+                'resolved_by_staff_id' => $staff->getKey(),
+                'resolution_note' => $data['resolution_note'],
+            ])->save();
+
+            $audit->record(
+                $staff,
+                'support.ticket.resolved',
+                'support_ticket',
+                (int) $record->getKey(),
+                $request->attributes->get('request_id'),
+            );
+
+            return $record;
+        });
+
+        return response()->json([
+            'ticket' => [
+                'id' => $record->getKey(),
+                'status' => $record->status,
+                'resolved_at' => $record->resolved_at?->toIso8601String(),
+            ],
+        ])->header('Cache-Control', 'no-store, private');
+    }
+
     private function presentedStaffToken(Request $request): ?PersonalAccessToken
     {
         $presented = $request->bearerToken();
