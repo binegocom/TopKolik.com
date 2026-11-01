@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\StaffMember;
 use App\Models\SupportTicket;
 use App\Services\SecurityAuditRecorder;
+use App\Services\SupportEscalationReviewerSelector;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -72,24 +73,13 @@ final class StaffSupportEscalationRecoveryController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            // The server selects an independent currently eligible reviewer.
-            // The actor, ticket assignee and initial escalator are excluded
-            // even when they hold the support role.
-            $excluded = array_values(array_unique(array_filter([
+            // The server chooses the least-loaded eligible independent
+            // reviewer, excluding the administrator, assignee and escalator.
+            $reviewer = app(SupportEscalationReviewerSelector::class)->select([
                 $actor->getKey(),
                 $record->assigned_staff_id,
                 $record->escalated_by_staff_id,
-            ], static fn ($id): bool => $id !== null)));
-
-            $reviewer = StaffMember::query()
-                ->where('role', 'support')
-                ->where('is_active', true)
-                ->whereNotNull('email_verified_at')
-                ->whereNotNull('mfa_enrolled_at')
-                ->whereNotIn('id', $excluded)
-                ->orderBy('id')
-                ->lockForUpdate()
-                ->first(['id']);
+            ]);
 
             if (! $reviewer) {
                 abort(409, 'No eligible independent escalation reviewer is available.');
