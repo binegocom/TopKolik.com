@@ -72,6 +72,8 @@ final class StaffAuthorizationPolicy
                     in_array($resource->state, ['open', 'pending'], true),
                 'support.ticket.escalate' =>
                     $resource->state === 'open' && $token->can('staff:step-up'),
+                'support.ticket.resolve' =>
+                    $resource->state === 'pending' && $token->can('staff:step-up'),
                 default => false,
             };
         }
