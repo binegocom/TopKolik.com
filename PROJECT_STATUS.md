@@ -271,3 +271,11 @@
 - Optional status filter, 1–50 bounded keyset pagination and `next_before_id` expose only ticket ID, encrypted-at-rest subject (decrypted after authorization), state and timestamps. Ticket bodies, reply history, assignment actor IDs and cross-staff records are never included. Private no-store and no-cache headers apply.
 - **P03-007 remains in_progress**: this is an incremental read-only support workflow, not a complete RBAC matrix, support lifecycle, finance dual-control or production verification. No runtime sports data, external API rights, migrations or public ticket endpoints were added.
 - [PR #50](https://github.com/binegocom/TopKolik.com/pull/50) code/docs commit `5063f6b7b7999efcb32e71b9947b66b8e39c26a9`: [Laravel CI 41282163617](https://github.com/binegocom/TopKolik.com/actions/runs/41282163617) **236 tests / 1,944 assertions**, isolated PostgreSQL/Redis, real HTTP and SMTP, Composer audit clean; [editorial/roadmap CI 41282163549](https://github.com/binegocom/TopKolik.com/actions/runs/41282163549) passed 17 guard tests and integrity checks. Final documentation commit must also pass required checks before merge.
+
+
+## P03-007 assigned support resolution — feature branch review
+
+- Added a default-deny, assigned-only support resolution transition from `pending` to `resolved`, requiring current staff MFA step-up. Escalated tickets cannot be silently closed.
+- Forward-only columns preserve encrypted resolution note, resolver and timestamp. Resolution and an allowlisted security audit event commit atomically under a PostgreSQL row lock; no external notifications or user-visible sports data are introduced.
+- New PostgreSQL feature regression tests cover IDOR, wrong principal/role, stale MFA, revocation, state restrictions, encryption and audit linkage.
+- **in_progress, CI not yet verified:** feature branch `feat/p03-007-support-ticket-resolution`. Do not mark P03-007 done or merge without the latest commit's Laravel and editorial/roadmap checks. Production release remains unverified.
