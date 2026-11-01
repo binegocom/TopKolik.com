@@ -1271,12 +1271,29 @@
           "type": "revision",
           "value": "2cae2d31a0cb3e1b925e8ef0bf7a45e59a2188d5",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/63"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "300 Laravel feature/integration tests passed, 2,550 assertions on disposable PostgreSQL and Redis, including eleven finance entitlement dual-control cases: inactive-by-default, distinct requester/approver/target, MFA and staff principal scoping, request expiry, decision replay, revoked initiator and ineligible targets, self-relinquishment/reapproval, immutable decisions and audit rollback.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41321684897"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && python3 scripts/status.py check",
+          "result": "No Composer security advisories; live HTTP and SMTP smoke, editorial policy checks and roadmap integrity passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41321684865"
+        },
+        {
+          "type": "revision",
+          "value": "c2945c523dd1235193de1af694fea41d58f88bc7",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/64"
         }
       ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/60",
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/64",
       "limitations": [
         "This policy foundation is not full P03-007 completion. Real article/ticket records, scoped controllers, advertiser/finance tenancy and BOLA integration are pending; no admin route grants yet.",
         "Support ticket read is an incremental slice only; editorial draft models, support reply/escalation, advertiser and finance scopes, security audit and full BOLA matrix remain open.",
