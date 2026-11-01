@@ -8,6 +8,7 @@ use App\Models\StaffMember;
 use App\Models\SupportTicket;
 use App\Models\SupportTicketReply;
 use App\Services\SecurityAuditRecorder;
+use App\Services\SupportEscalationReviewerSelector;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -184,23 +185,14 @@ final class StaffSupportEscalationController extends Controller
 
             Gate::forUser($staff)->authorize('staff-support-escalation-review', [$record, $token]);
 
-            // Lock the replacement's staff row to avoid selecting an identity
-            // concurrently being deactivated or stripped of its support role.
-            $excluded = array_values(array_unique(array_filter([
+            // Select the least-loaded eligible independent reviewer.
+            // A transaction advisory lock also coordinates initial escalation
+            // and security-admin recovery assignments.
+            $replacement = app(SupportEscalationReviewerSelector::class)->select([
                 $staff->getKey(),
                 $record->assigned_staff_id,
                 $record->escalated_by_staff_id,
-            ], static fn ($id): bool => $id !== null)));
-
-            $replacement = StaffMember::query()
-                ->where('role', 'support')
-                ->where('is_active', true)
-                ->whereNotNull('email_verified_at')
-                ->whereNotNull('mfa_enrolled_at')
-                ->whereNotIn('id', $excluded)
-                ->orderBy('id')
-                ->lockForUpdate()
-                ->first(['id']);
+            ]);
 
             $record->forceFill([
                 'escalation_reviewer_staff_id' => $replacement?->getKey(),

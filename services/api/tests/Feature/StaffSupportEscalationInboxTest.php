@@ -72,8 +72,10 @@ final class StaffSupportEscalationInboxTest extends TestCase
         $first = $this->escalated($assignee);
         $second = $this->escalated($assignee);
 
-        // Assign another pending escalation to a different eligible reviewer.
+        // Construct an explicit inbox ownership fixture: load balancing now
+        // distributes new cases, but the inbox must remain assignment-scoped.
         $third = $this->escalated($assignee);
+        $second->forceFill(['escalation_reviewer_staff_id' => $reviewer->id])->save();
         $third->forceFill(['escalation_reviewer_staff_id' => $otherReviewer->id])->save();
 
         $this->asStaff($reviewer);

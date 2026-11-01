@@ -9,6 +9,7 @@ use App\Models\StaffMember;
 use App\Models\SupportTicket;
 use App\Models\SupportTicketReply;
 use App\Services\SecurityAuditRecorder;
+use App\Services\SupportEscalationReviewerSelector;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -233,16 +234,10 @@ final class StaffSupportTicketController extends Controller
                 abort(409, 'Ticket is already escalated.');
             }
 
-            // Assign a distinct, currently eligible reviewer server-side.
-            // If no reviewer exists, keep the escalation on hold.
-            $reviewer = StaffMember::query()
-                ->where('role', 'support')
-                ->where('is_active', true)
-                ->whereNotNull('email_verified_at')
-                ->whereNotNull('mfa_enrolled_at')
-                ->where('id', '<>', $staff->getKey())
-                ->orderBy('id')
-                ->first(['id']);
+            // Serialize workload-aware selection with all other reviewer
+            // assignment paths; never permit the escalator to review.
+            $reviewer = app(SupportEscalationReviewerSelector::class)
+                ->select([$staff->getKey(), $record->assigned_staff_id]);
 
             $record->forceFill([
                 'status' => 'pending',
