@@ -211,7 +211,164 @@ try {
         throw new RuntimeException('Concurrent escalation did not commit exactly one audit event per ticket.');
     }
 
-    echo "PASS: five concurrent HTTP requests, four distinct escalations, one duplicate denied, balanced independent reviewers and four atomic audit records.\n";
+
+    // Exercise real HTTP races across two distinct state transitions. The
+    // same-ticket loser must not mutate the ticket or append another audit.
+    $parallelPosts = static function (array $requests) use ($base): array {
+        $multi = curl_multi_init();
+        $handles = [];
+        try {
+            foreach ($requests as [$path, $bearer]) {
+                $handle = curl_init($base.$path);
+                curl_setopt_array($handle, [
+                    CURLOPT_POST => true,
+                    CURLOPT_POSTFIELDS => '{}',
+                    CURLOPT_HTTPHEADER => [
+                        'Authorization: Bearer '.$bearer,
+                        'Accept: application/json',
+                        'Content-Type: application/json',
+                    ],
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_CONNECTTIMEOUT => 5,
+                    CURLOPT_TIMEOUT => 30,
+                ]);
+                curl_multi_add_handle($multi, $handle);
+                $handles[] = $handle;
+            }
+            $active = null;
+            $deadline = microtime(true) + 40;
+            do {
+                $result = curl_multi_exec($multi, $active);
+                if ($result !== CURLM_OK || microtime(true) > $deadline) {
+                    throw new RuntimeException('Reviewer transition HTTP requests timed out.');
+                }
+                if ($active > 0 && curl_multi_select($multi, 1.0) === -1) {
+                    usleep(10000);
+                }
+            } while ($active > 0);
+
+            $codes = [];
+            foreach ($handles as $handle) {
+                if (curl_error($handle) !== '') {
+                    throw new RuntimeException('Reviewer transition HTTP transport failed: '.curl_error($handle));
+                }
+                $codes[] = curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
+            }
+            sort($codes);
+
+            return $codes;
+        } finally {
+            foreach ($handles as $handle) {
+                curl_multi_remove_handle($multi, $handle);
+                curl_close($handle);
+            }
+            curl_multi_close($multi);
+        }
+    };
+
+    $makeStaff = static function (string $role, string $label) use ($run): StaffMember {
+        $member = StaffMember::create([
+            'name' => 'Concurrency '.$label,
+            'email' => $run.'-'.$label.'@example.test',
+            'password' => Str::random(40),
+            'role' => $role,
+        ]);
+        $member->forceFill([
+            'is_active' => true,
+            'email_verified_at' => now(),
+            'mfa_enrolled_at' => now(),
+        ])->save();
+
+        return $member;
+    };
+
+    // Isolate a ticket with exactly one eligible independent reviewer. The
+    // previous fixture remains intact but cannot receive new assignments.
+    foreach ($staff as $member) {
+        $member->forceFill(['is_active' => false])->save();
+    }
+    $caseAssignee = $makeStaff('support', 'transition-assignee');
+    $caseReviewer = $makeStaff('support', 'transition-reviewer');
+    $caseTicket = SupportTicket::create([
+        'assigned_staff_id' => $caseAssignee->getKey(),
+        'subject' => 'Transition race '.$run,
+        'message' => 'Isolated transition race regression',
+        'status' => 'open',
+    ]);
+    $caseId = (int) $caseTicket->getKey();
+    $assigneeToken = $caseAssignee->createToken(
+        'transition', ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+    )->plainTextToken;
+    $escalatePath = '/api/v1/staff/support/tickets/'.$caseId.'/escalate';
+    if ($parallelPosts([[$escalatePath, $assigneeToken]]) !== [200]
+        || (int) $caseTicket->fresh()->escalation_reviewer_staff_id !== (int) $caseReviewer->getKey()) {
+        throw new RuntimeException('Transition race setup did not assign the sole independent reviewer.');
+    }
+
+    $reviewerToken = $caseReviewer->createToken(
+        'transition', ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+    )->plainTextToken;
+    $relinquishPath = '/api/v1/staff/support/escalations/'.$caseId.'/relinquish';
+    $relinquishCodes = $parallelPosts([
+        [$relinquishPath, $reviewerToken],
+        [$relinquishPath, $reviewerToken],
+    ]);
+    $held = $caseTicket->fresh();
+    if ($relinquishCodes !== [200, 404] || $held->status !== 'pending'
+        || $held->escalation_reviewer_staff_id !== null || $held->escalation_reviewed_at !== null) {
+        throw new RuntimeException(
+            'Concurrent reviewer relinquishment did not preserve a single held transition: '.json_encode($relinquishCodes),
+        );
+    }
+
+    // Recovery must select a *different* currently eligible reviewer. The
+    // former reviewer is made ineligible before the concurrent admin requests.
+    $caseReviewer->forceFill(['is_active' => false])->save();
+    $admin = $makeStaff('finance', 'transition-admin');
+    DB::table('staff_security_admin_grants')->insert([
+        'staff_member_id' => $admin->getKey(),
+        'is_active' => true,
+        'authorization_reference' => 'isolated-ci-security-operator',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    $replacement = $makeStaff('support', 'transition-replacement');
+    $adminToken = $admin->createToken(
+        'transition', ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+    )->plainTextToken;
+    $recoverPath = '/api/v1/staff/security/support/escalations/'.$caseId.'/recover-reviewer';
+    $recoveryCodes = $parallelPosts([
+        [$recoverPath, $adminToken],
+        [$recoverPath, $adminToken],
+    ]);
+    $recovered = $caseTicket->fresh();
+    if ($recoveryCodes !== [200, 404] || $recovered->status !== 'pending'
+        || (int) $recovered->escalation_reviewer_staff_id !== (int) $replacement->getKey()
+        || $recovered->escalation_reviewed_at !== null) {
+        throw new RuntimeException(
+            'Concurrent held-reviewer recovery did not commit exactly once: '.json_encode($recoveryCodes),
+        );
+    }
+
+    $transitionAudit = DB::table('security_audit_events')
+        ->where('subject_type', 'support_ticket')
+        ->where('subject_id', $caseId)
+        ->get(['action', 'staff_member_id', 'request_id']);
+    $expectedActors = [
+        'support.ticket.escalated' => (int) $caseAssignee->getKey(),
+        'support.ticket.escalation_reviewer_relinquished' => (int) $caseReviewer->getKey(),
+        'support.ticket.escalation_reviewer_recovered' => (int) $admin->getKey(),
+    ];
+    if ($transitionAudit->count() !== 3
+        || $transitionAudit->pluck('action')->unique()->count() !== 3
+        || $transitionAudit->pluck('request_id')->filter()->unique()->count() !== 3
+        || $transitionAudit->contains(static fn ($event): bool =>
+            ! isset($expectedActors[$event->action])
+            || (int) $event->staff_member_id !== $expectedActors[$event->action])) {
+        throw new RuntimeException('Concurrent reviewer transitions violated audit atomicity or actor attribution.');
+    }
+
+    echo "PASS: escalation, relinquishment and recovery HTTP races; single commits, held-state safety, independent reassignment and atomic audit.\n";
 } catch (Throwable $exception) {
     fwrite(STDERR, 'FAIL: support reviewer HTTP concurrency: '.$exception->getMessage()."\n");
     $exit = 1;
