@@ -300,25 +300,26 @@ final class AdvertiserTenantIsolationTest extends TestCase
         $this->assertSame('draft', $draft->fresh()->status);
     }
 
-    public function test_organization_and_membership_constraints_reject_invalid_values(): void
+    public function test_duplicate_membership_violates_database_unique_constraint(): void
     {
         $account = $this->account();
         $org = $this->organization();
         $this->member($account, $org);
 
-        try {
-            $this->member($account, $org);
-            $this->fail('Duplicate membership should violate unique constraint.');
-        } catch (\Illuminate\Database\QueryException $exception) {
-            $this->assertSame('23505', $exception->errorInfo[0]);
-        }
+        // PostgreSQL aborts the current transaction on a constraint error.
+        // The assertion must be the final statement in this transaction.
+        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectExceptionMessage('23505');
+        $this->member($account, $org);
+    }
 
-        $invalidOrg = $this->organization();
-        try {
-            $this->member($account, $invalidOrg, 'superadmin');
-            $this->fail('Invalid role should violate CHECK constraint.');
-        } catch (\Illuminate\Database\QueryException $exception) {
-            $this->assertSame('23514', $exception->errorInfo[0]);
-        }
+    public function test_invalid_membership_role_violates_database_check_constraint(): void
+    {
+        $account = $this->account();
+        $org = $this->organization();
+
+        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectExceptionMessage('23514');
+        $this->member($account, $org, 'superadmin');
     }
 }
