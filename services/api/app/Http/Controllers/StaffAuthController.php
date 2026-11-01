@@ -28,6 +28,10 @@ final class StaffAuthController extends Controller
         $candidate = StaffMember::query()->where('email', $email)->first();
         if (! $candidate || ! $candidate->is_active || ! $candidate->mfa_enrolled_at
             || ! $candidate->email_verified_at || ! Hash::check($data['password'], $candidate->password)) {
+            $audit->recordFailure(
+                'staff.login.failed', $email, $candidate, $request->attributes->get('request_id'),
+            );
+
             return response()->json(['message' => 'Invalid credentials or MFA.'], 401);
         }
 
@@ -46,6 +50,10 @@ final class StaffAuthController extends Controller
         });
 
         if ($token === null) {
+            $audit->recordFailure(
+                'staff.login.failed', $email, $candidate, $request->attributes->get('request_id'),
+            );
+
             return response()->json(['message' => 'Invalid credentials or MFA.'], 401);
         }
 
@@ -118,6 +126,10 @@ final class StaffAuthController extends Controller
         });
 
         if ($token === null) {
+            $audit->recordFailure(
+                'staff.step_up.failed', $staff->email, $staff, $request->attributes->get('request_id'),
+            );
+
             return response()->json(['message' => 'Invalid MFA.'], 401);
         }
 

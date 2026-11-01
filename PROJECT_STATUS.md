@@ -181,3 +181,10 @@
 - Marked `P00-004` **blocked** because product, rights, finance, locale and legal decisions in `docs/product/DECISION_REGISTER.md` require explicit owner/vendor approval.
 - Do not infer Turkish UI localization, provider rights, club imagery permissions, gambling ads, tax country or trademark clearance. Independent backend work may proceed while those decisions remain open.
 - `P03-009` privacy API slice was merged in [PR #35](https://github.com/binegocom/TopKolik.com/pull/35) with 138 Laravel tests / 1000 assertions and both GitHub checks green. Actual deletion and legal/finance retention remain pending, so it stays `in_progress`.
+
+## P03-010 failed staff authentication audit — PR review
+
+- Added `security_auth_failures` for rejected, well-formed staff login attempts (known/unknown identities) and authenticated MFA step-up failures. No fabricated staff identity, raw email, password, IP, MFA factor or bearer token is stored; identity correlation uses an APP_KEY HMAC.
+- Server-generated request UUID, explicit event allowlist, optional staff FK, indexes and database append-only DML triggers. Authentication errors retain generic 401 responses; login session issuance remains unchanged.
+- Added PostgreSQL integration tests for known/unknown user indistinguishability, factor replay, success/failure separation, immutable rows, no plaintext secrets and invalid event rejection.
+- **in_progress, partial backend verified:** [PR #37](https://github.com/binegocom/TopKolik.com/pull/37), feature commit `1d43da1208eae4b57471c35b669b0002f1ad0cb8`. [Laravel CI](https://github.com/binegocom/TopKolik.com/actions/runs/41259116353) passed 146 tests / 1,054 assertions with PostgreSQL/Redis, real HTTP/SMTP, Composer audit clean, and 17 editorial guard cases. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41259116332) passed. Rate-limit/validation/middleware denials, offsite archival, privileged DB separation, global analyst authorization, and approved retention remain unresolved; no production-ready claim.
