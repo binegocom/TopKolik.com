@@ -230,3 +230,9 @@
 - Initiator and approver must be distinct, active verified MFA-enrolled non-ads staff with independently authorized grants and five-minute step-up tokens. Request is pending without access; a separate approver atomically activates only the scoped assignment, records terminal decision and appends an allowlisted audit. Rejection never activates access.
 - Added PostgreSQL constraints/one-way transition guard, 24-hour expiry, uniqueness per pending target/org, current requester authorization recheck and negative replay/role/tenant/token tests.
 - **in_progress:** pending CI; authorized production administrator bootstrap/revocation, finance dual control, campaign publication and production security gates remain unavailable.
+
+## P03-010 malformed staff authentication validation audit — PR #44
+
+- The existing staff login and MFA step-up validation contracts remain unchanged (422 for malformed input). A malformed login with a syntactically valid email is recorded as an HMAC-only unknown-principal failure; malformed authenticated step-up records the persisted staff identity. No raw email, password, bearer token or MFA factor is written.
+- New PostgreSQL feature tests cover malformed login/step-up inputs, token non-issuance, secret redaction, absent/array email and unauthenticated step-up denial.
+- **in_progress; CI verification pending:** [PR #44](https://github.com/binegocom/TopKolik.com/pull/44). Missing/invalid-email attempts, middleware and rate-limit denials, offsite tamper-evident archival, approved retention and production DB role separation remain open. No production deployment or live sports-provider access is claimed.
