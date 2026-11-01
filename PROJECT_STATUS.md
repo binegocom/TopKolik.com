@@ -308,3 +308,10 @@
 - No staff role changes, own-grant mutation via this route, reactivation, grant provisioning or finance permissions were added. A revoked administrator cannot approve previously requested advertising assignments.
 - [PR #55](https://github.com/binegocom/TopKolik.com/pull/55) code passed **259 tests / 2,103 assertions** on [Laravel CI 41298981975](https://github.com/binegocom/TopKolik.com/actions/runs/41298981975) and editorial CI 41298982027, but concurrent PR #56 changed `main` and prevented the original merge.
 - **in_progress:** This replacement PR applies the isolated changes to the updated `main`, including independent escalation review. Fresh CI required. Production operator designation, security grant bootstrap, finance, offsite immutable audit and live deployment remain unverified.
+
+## P03-007 emergency security-admin revocation — verified main CI
+
+- **Merged:** [PR #57](https://github.com/binegocom/TopKolik.com/pull/57), commit `00b66a4f4643bbd453adfd5865751b19529d141e`. Old [PR #55](https://github.com/binegocom/TopKolik.com/pull/55) was closed unmerged after concurrent PR #56 changed `main`; the new PR preserved PR #56's support escalation changes.
+- **Final main verification:** [Laravel API CI](https://github.com/binegocom/TopKolik.com/actions/runs/41299720644) passed **267 tests, 2,166 assertions**, isolated PostgreSQL/Redis, real HTTP/SMTP and Composer audit with no advisories. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41299720703) passed.
+- Emergency grant revocation is only for current independently authorized security administrators with fresh MFA step-up; the revoked administrator's usual role is preserved and no new grant provisioning route exists.
+- **P03-007 remains in_progress:** security-admin bootstrap and incident authorization policy, finance dual-control, full staff RBAC, database role separation, audit archival and production verification remain unavailable.
