@@ -1236,6 +1236,19 @@
           "type": "revision",
           "value": "44314b89ee275a86bfce0dc9f7051f3faec0eb13",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/60"
+        },
+        {
+          "type": "verification",
+          "command": "GitHub Actions laravel-api.yml: composer install, php artisan test on disposable PostgreSQL/Redis, real HTTP/SMTP, composer audit, editorial guard",
+          "result": "exit 0; 285 tests, 2373 assertions; 17 editorial guard cases; run 41308544607",
+          "url": "https://github.com/binegocom/TopKolik.com/actions/runs/41308544607",
+          "revision": "21f93450c0e471b0c7d4eb75495d5981730f8f3d"
+        },
+        {
+          "type": "revision",
+          "commit": "21f93450c0e471b0c7d4eb75495d5981730f8f3d",
+          "pr_url": "https://github.com/binegocom/TopKolik.com/pull/61",
+          "description": "Reviewer-only pending escalation inbox; MFA step-up, scoped SQL pagination, metadata-only response and BOLA tests; editorial/roadmap CI 41308544664 passed."
         }
       ],
       "verified_at": null,
@@ -1261,7 +1274,8 @@
         "PR #55 security-admin emergency revocation passed 259 Laravel tests / 2,103 assertions but could not merge after concurrent PR #56. The same reviewed code is rebased onto new main on replacement branch; full operational security-admin provisioning, finance approvals, offsite audit and production evidence remain missing.",
         "PR #57 merged as 00b66a4f after rebasing PR #55 for concurrent PR #56; all 267 Laravel tests / 2,166 assertions passed on actual main CI run 41299720644 and editorial run 41299720703. Emergency administrator grant revocation is a verified backend slice, not approved live security operator provisioning; full financial authorization, offsite audit, DB role separation and production release remain open.",
         "PR #59 implements MFA-protected self-relinquishment of an unreviewed support escalation, automatic selection of a distinct eligible replacement and atomic audit rollback. If no replacement exists, the ticket remains held. Legacy unassigned escalation recovery, incident-authorized reassignment, fair scheduling, independent concurrent HTTP-worker tests, finance RBAC and production validation remain outstanding; P03-007 is not done.",
-        "Held legacy/unassigned support escalation reviewer recovery gated by independent active security-admin grant and fresh MFA is implemented on a PR branch pending CI. Only pending escalated unreviewed tickets with no reviewer can be recovered; no reviewer selection, approval/closure, finance mutations or production privileges are introduced."
+        "Held legacy/unassigned support escalation reviewer recovery gated by independent active security-admin grant and fresh MFA is implemented on a PR branch pending CI. Only pending escalated unreviewed tickets with no reviewer can be recovered; no reviewer selection, approval/closure, finance mutations or production privileges are introduced.",
+        "PR #61 adds a pending-only support escalation reviewer inbox with current MFA step-up, persisted role checks, reviewer-scoped SQL, bounded keyset pagination and metadata-only output. Code commit 21f9345 passed 285 Laravel tests / 2,373 assertions, PostgreSQL/Redis, real HTTP/SMTP, Composer audit and 17 editorial guard cases (CI 41308544607, 41308544664). Full staff/finance RBAC, independent concurrent HTTP-worker tests, fair reviewer scheduling and production verification remain open; P03-007 is not done."
       ]
     },
     {
