@@ -21,6 +21,7 @@ final class StaffAuthenticationThrottleAuditTest extends TestCase
         parent::setUp();
         RateLimiter::clear('staff-login-ip:127.0.0.1');
         RateLimiter::clear('staff-step-up-ip:127.0.0.1');
+        RateLimiter::clear('staff-step-up-user:nonstaff');
     }
 
     private function staff(): StaffMember
@@ -140,6 +141,45 @@ final class StaffAuthenticationThrottleAuditTest extends TestCase
         $this->assertSame($denied->headers->get('X-Request-ID'), $row->request_id);
         $this->assertStringNotContainsString($session, json_encode($row));
         $this->assertStringNotContainsString(str_repeat('A', 32), json_encode($row));
+    }
+
+    public function test_reader_id_collision_does_not_exhaust_staff_mfa_principal_quota(): void
+    {
+        $staff = $this->staff();
+        // PostgreSQL sequences are not transactional; force an ID collision
+        // instead of assuming independently incremented sequences match.
+        $reader = User::factory()->create(['id' => $staff->getKey()]);
+
+        $this->assertSame((string) $staff->getKey(), (string) $reader->getKey());
+        RateLimiter::clear('staff-step-up-user:staff:'.$staff->getKey());
+
+        $readerToken = $reader->createToken('reader', ['reader:read'])->plainTextToken;
+        $staffToken = $staff->createToken(
+            'staff-session', ['staff:session'], now()->addMinutes(15),
+        )->plainTextToken;
+
+        for ($attempt = 0; $attempt < 6; $attempt++) {
+            $this->withToken($readerToken)->postJson('/api/v1/staff/auth/step-up', [
+                'recovery_code' => str_repeat('A', 32),
+            ])->assertForbidden();
+        }
+
+        $this->assertDatabaseCount('security_auth_failures', 0);
+
+        // Only clear the shared IP dimension to isolate the principal key.
+        // The exhausted non-staff quota must not throttle this staff session.
+        RateLimiter::clear('staff-step-up-ip:127.0.0.1');
+        app('auth')->forgetGuards();
+
+        $this->withToken($staffToken)->postJson('/api/v1/staff/auth/step-up', [
+            'recovery_code' => str_repeat('A', 32),
+        ])->assertUnauthorized();
+
+        $this->assertDatabaseCount('security_auth_failures', 1);
+        $this->assertSame(
+            $staff->getKey(),
+            DB::table('security_auth_failures')->sole()->staff_member_id,
+        );
     }
 
     public function test_reader_session_cannot_create_staff_throttle_audit_records(): void
