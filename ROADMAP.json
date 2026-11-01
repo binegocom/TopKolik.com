@@ -1151,6 +1151,17 @@
           "type": "revision",
           "value": "163f1963b72866ca028cea222ecdd9fb66ae15b6",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/51"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction && php artisan migrate --force && php artisan test && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && python3 scripts/status.py check",
+          "result": "PR #52 code SHA e9428d7: 247 Laravel tests / 2,012 assertions passed on disposable PostgreSQL/Redis, including duplicate-resolution and failed-audit rollback regressions. Composer audit clean, real HTTP/SMTP, 17 editorial guard scenarios and roadmap integrity passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41290499920"
+        },
+        {
+          "type": "revision",
+          "value": "e9428d7bb99c852825fe22d683caedc7b1ec87ab",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/52"
         }
       ],
       "verified_at": null,
@@ -1169,7 +1180,8 @@
         "Security-administrator capability is separate and inactive by default; two-person assignment approval was CI-verified and merged in PR #43 (Laravel 205 tests / 1,655 assertions; run 41266888211; editorial run 41266888168). No live administrator bootstrap is implemented; legal/ops approval, full finance role matrix, ads publishing, DB role hardening and production verification remain open.",
         "MFA-protected security administrator self-relinquishment and in-transaction grant rechecks for ad assignment dual approvals are implemented on a review branch, pending CI. This does not create admin grants, provide emergency third-party revocation, finance approval or production entitlement.",
         "Assigned-only support inbox with private subject-only metadata and bounded keyset pagination was tested in PR #50. P03-007 remains in_progress: complete staff RBAC/BOLA matrix, ticket lifecycle, finance dual-control, operations review and production verification are not complete.",
-        "MFA-gated support resolution from pending to resolved (excluding escalated tickets) verified on PR #51; P03-007 remains in_progress pending full staff/finance RBAC, escalated-ticket review, operational controls and production verification. No external notifications or live sports-provider data."
+        "MFA-gated support resolution from pending to resolved (excluding escalated tickets) verified on PR #51; P03-007 remains in_progress pending full staff/finance RBAC, escalated-ticket review, operational controls and production verification. No external notifications or live sports-provider data.",
+        "PR #52 adds bounded PostgreSQL deadlock retries and rollback/replay regression coverage. True simultaneous HTTP-worker contention, complete staff/finance role matrix, escalation review and production authorization remain unverified; P03-007 is not done."
       ]
     },
     {
