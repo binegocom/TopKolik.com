@@ -195,3 +195,10 @@
 - Reading creative title/body requires a fresh five-minute MFA step-up token and SQL-scoped in-review campaign. Advertiser drafts and foreign-tenant IDs are inaccessible; no write, approve, publish, invoice or finance permission is exposed.
 - New PostgreSQL integration tests cover cross-organization IDOR/BOLA, draft filtering, revocation, role change, MFA, wrong token principal, cursor bounds and default-deny operations.
 - **in_progress, ads review backend slice verified:** [PR #38](https://github.com/binegocom/TopKolik.com/pull/38) final code SHA `1833d938129561e3faa9071bed7a0821c2821e33`. [Laravel CI](https://github.com/binegocom/TopKolik.com/actions/runs/41259764571) passed 156 tests and 1,133 assertions with isolated PostgreSQL/Redis, API HTTP/SMTP, Composer audit and 17 editorial guards; [editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41259764572) passed. Finance dual approval, secure assignment administration, publishing and full RBAC review remain unimplemented; no production release claim.
+
+## P03-007 advertiser submission to staff review — feature-branch verification
+
+- Added `POST /api/v1/advertiser/organizations/{organization}/campaigns/{campaign}/submit` for active advertiser owner/editor membership, current revision and strict organization-scoped SQL. One-way `draft → in_review` only, with row lock and conditional version update; attempts to change status/tenant/reviewer/body are rejected.
+- Added append-only `advertiser_campaign_review_events` ledger inside the same transaction as status/revision mutation, linked to actual advertiser account, campaign, organization and server request UUID. No personal credential or raw creative content is logged.
+- New PostgreSQL regression scenarios cover current owner/editor, viewer role change, cross-tenant BOLA, no record on failed submission, stale/replayed requests, token isolation, no publication and immutable audit.
+- **in_progress:** awaiting CI/PR validation and independent full finance and ads approval RBAC, legal review, retention and production release gates.

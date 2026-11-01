@@ -101,6 +101,72 @@ final class AdvertiserCampaignController extends Controller
         return $this->privateResponse(['campaign' => $this->payload($record)]);
     }
 
+    public function submit(Request $request, int $organization, int $campaign): JsonResponse
+    {
+        $data = $request->validate([
+            'revision' => ['required', 'integer', 'min:1', 'max:2147483646'],
+            'title' => ['missing'],
+            'body' => ['missing'],
+            'status' => ['missing'],
+            'advertiser_organization_id' => ['missing'],
+            'advertiser_account_id' => ['missing'],
+            'reviewer_id' => ['missing'],
+            'approved_by' => ['missing'],
+            'id' => ['missing'],
+        ]);
+
+        $account = $this->account($request);
+
+        $record = DB::transaction(function () use ($request, $account, $organization, $campaign, $data): AdvertiserCampaign {
+            // Keep lock acquisition order consistent with store/update:
+            // membership first, then the organization-scoped campaign.
+            $this->membership($account, $organization, true, true);
+            $record = $this->scopedCampaign($organization, $campaign, true);
+
+            if ($record->status !== 'draft') {
+                abort(409, 'Campaign is already submitted for review.');
+            }
+            if ((int) $record->revision !== (int) $data['revision']) {
+                abort(409, 'Campaign revision conflict.');
+            }
+
+            // Database-level compare-and-swap protects against stale
+            // concurrent submissions even if future code changes row locks.
+            $nextRevision = (int) $record->revision + 1;
+            $changed = AdvertiserCampaign::query()
+                ->whereKey($record->getKey())
+                ->where('advertiser_organization_id', $organization)
+                ->where('status', 'draft')
+                ->where('revision', $data['revision'])
+                ->update([
+                    'status' => 'in_review',
+                    'revision' => $nextRevision,
+                    'updated_at' => now(),
+                ]);
+            if ($changed !== 1) {
+                abort(409, 'Campaign revision conflict.');
+            }
+
+            // Audit and state transition commit or roll back together.
+            // Request UUID originates exclusively from AttachRequestId.
+            DB::table('advertiser_campaign_review_events')->insert([
+                'advertiser_organization_id' => $organization,
+                'advertiser_campaign_id' => $record->getKey(),
+                'advertiser_account_id' => $account->getKey(),
+                'action' => 'submitted_for_review',
+                'from_revision' => (int) $data['revision'],
+                'to_revision' => $nextRevision,
+                'request_id' => $request->attributes->get('request_id'),
+                'created_at' => now(),
+            ]);
+
+            return $record->fresh();
+        });
+
+        // This endpoint never approves, publishes, bills or serves advertising.
+        return $this->privateResponse(['campaign' => $this->payload($record)]);
+    }
+
     private function account(Request $request): AdvertiserAccount
     {
         $account = $request->user();
