@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\StaffMember;
 use App\Models\SupportTicket;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\DB;
@@ -240,6 +241,64 @@ final class StaffSupportTicketResolutionTest extends TestCase
             ->assertUnauthorized();
 
         $this->assertSame('pending', $ticket->fresh()->status);
+        $this->assertDatabaseCount('security_audit_events', 0);
+    }
+
+    public function test_repeated_resolution_cannot_overwrite_the_original_note_or_duplicate_audit(): void
+    {
+        $staff = $this->staff();
+        $ticket = $this->ticket($staff);
+        $this->withToken($this->token($staff));
+
+        $this->postJson($this->url($ticket), ['resolution_note' => 'First verified decision.'])
+            ->assertOk();
+        $first = $ticket->fresh();
+        $resolvedAt = $first->resolved_at?->toIso8601String();
+
+        $this->postJson($this->url($ticket), ['resolution_note' => 'Conflicting retry.'])
+            ->assertForbidden();
+
+        $fresh = $ticket->fresh();
+        $this->assertSame('resolved', $fresh->status);
+        $this->assertSame('First verified decision.', $fresh->resolution_note);
+        $this->assertSame($resolvedAt, $fresh->resolved_at?->toIso8601String());
+        $this->assertSame($staff->id, $fresh->resolved_by_staff_id);
+        $this->assertDatabaseCount('security_audit_events', 1);
+        $this->assertDatabaseHas('security_audit_events', [
+            'staff_member_id' => $staff->id,
+            'action' => 'support.ticket.resolved',
+            'subject_type' => 'support_ticket',
+            'subject_id' => $ticket->id,
+        ]);
+    }
+
+    public function test_failed_audit_insert_rolls_back_the_entire_resolution(): void
+    {
+        $staff = $this->staff();
+        $ticket = $this->ticket($staff);
+
+        // Disposable PostgreSQL test transaction only: force the audit INSERT
+        // to fail after the ticket UPDATE, proving that both writes roll back.
+        // RefreshDatabase removes this test-only constraint on teardown.
+        DB::statement(
+            "ALTER TABLE security_audit_events ADD CONSTRAINT reject_support_resolution_test ".
+            "CHECK (action <> 'support.ticket.resolved')"
+        );
+
+        $this->withoutExceptionHandling();
+        try {
+            $this->withToken($this->token($staff))
+                ->postJson($this->url($ticket), ['resolution_note' => 'Must not persist.']);
+            $this->fail('The audit insert must reject this resolution.');
+        } catch (QueryException $exception) {
+            $this->assertSame('23514', (string) $exception->getCode());
+        }
+
+        $fresh = $ticket->fresh();
+        $this->assertSame('pending', $fresh->status);
+        $this->assertNull($fresh->resolved_at);
+        $this->assertNull($fresh->resolved_by_staff_id);
+        $this->assertNull($fresh->resolution_note);
         $this->assertDatabaseCount('security_audit_events', 0);
     }
 }
