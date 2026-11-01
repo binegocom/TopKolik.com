@@ -48,6 +48,13 @@ final class AppServiceProvider extends ServiceProvider
             return app(StaffAuthorizationPolicy::class)->canViewOwnAudit($principal, $token);
         });
 
+        Gate::define('staff-support-tickets-self', function (
+            Authenticatable $principal,
+            PersonalAccessToken $token,
+        ): bool {
+            return app(StaffAuthorizationPolicy::class)->canListOwnSupportTickets($principal, $token);
+        });
+
         Gate::define('staff-ads-assignments-admin', function (
             Authenticatable $principal,
             PersonalAccessToken $token,

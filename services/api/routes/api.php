@@ -144,6 +144,10 @@ Route::prefix('staff')->group(function (): void {
         Route::post('/editorial/drafts/{draft}/submit', [StaffEditorialDraftController::class, 'submit'])
             ->whereNumber('draft')->middleware('throttle:10,1');
 
+        // Assigned-only support inbox; metadata excludes ticket messages and replies.
+        Route::get('/support/tickets', [StaffSupportTicketController::class, 'index'])
+            ->middleware('throttle:30,1');
+
         // No public ticket discovery: SQL assignment scope and Gate both enforce access.
         Route::get('/support/tickets/{ticket}', [StaffSupportTicketController::class, 'show'])
             ->whereNumber('ticket');

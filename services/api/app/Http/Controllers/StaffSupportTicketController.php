@@ -17,6 +17,61 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 final class StaffSupportTicketController extends Controller
 {
+    public function index(Request $request): JsonResponse
+    {
+        $filters = $request->validate([
+            'status' => ['sometimes', 'string', 'in:open,pending,resolved'],
+            'limit' => ['sometimes', 'integer', 'between:1,50'],
+            'before_id' => ['sometimes', 'integer', 'min:1'],
+            'assigned_staff_id' => ['missing'],
+            'staff_member_id' => ['missing'],
+            'include_unassigned' => ['missing'],
+            'include_all' => ['missing'],
+            'with_replies' => ['missing'],
+        ]);
+
+        /** @var StaffMember $staff */
+        $staff = $request->user();
+        $token = $this->presentedStaffToken($request);
+        if (! $token) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        Gate::forUser($staff)->authorize('staff-support-tickets-self', [$token]);
+
+        // Apply the authenticated assignment at SQL level, not in memory.
+        // Keyset pagination avoids offset drift when tickets are added.
+        $limit = (int) ($filters['limit'] ?? 20);
+        $query = SupportTicket::query()->where('assigned_staff_id', $staff->getKey());
+
+        if (isset($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+        if (isset($filters['before_id'])) {
+            $query->where('id', '<', (int) $filters['before_id']);
+        }
+
+        $rows = $query->orderByDesc('id')->limit($limit + 1)
+            ->get(['id', 'subject', 'status', 'created_at', 'updated_at', 'escalated_at']);
+        $hasMore = $rows->count() > $limit;
+        $page = $rows->take($limit)->map(static fn (SupportTicket $ticket): array => [
+            'id' => (int) $ticket->getKey(),
+            'subject' => $ticket->subject,
+            'status' => $ticket->status,
+            'created_at' => $ticket->created_at?->toIso8601String(),
+            'updated_at' => $ticket->updated_at?->toIso8601String(),
+            'escalated_at' => $ticket->escalated_at?->toIso8601String(),
+        ])->values()->all();
+
+        return response()->json([
+            'tickets' => $page,
+            'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
+        ])->withHeaders([
+            'Cache-Control' => 'no-store, private',
+            'Pragma' => 'no-cache',
+        ]);
+    }
+
     public function show(Request $request, int $ticket): JsonResponse
     {
         /** @var StaffMember $staff */

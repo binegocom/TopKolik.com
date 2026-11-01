@@ -12,3 +12,12 @@
 - Migrations are additive and forward-only. Do not execute on production without approved migration plan.
 
 Verification: CI uses isolated PostgreSQL, Redis, Laravel tests, actual HTTP/SMTP smoke, 17 editorial guard cases, and Composer audit.
+
+## Assigned support inbox (P03-007 incremental slice)
+
+- `GET /api/v1/staff/support/tickets` is a read-only, throttled inbox for currently active, email-verified, MFA-enrolled staff with the persisted `support` role and an unexpired `staff:session` bearer token. The dedicated `staff-support-tickets-self` Gate denies access even when the inbox is empty.
+- PostgreSQL always filters `assigned_staff_id` using the authenticated staff ID. No client-supplied assignment or global listing is permitted. The optional `status` filter accepts `open`, `pending` or `resolved`.
+- Bounded keyset pagination accepts `limit` 1–50 (default 20) and `before_id` greater than zero. Results sort by descending ticket ID; `next_before_id` is null at the end.
+- Each item contains ID, decrypted subject, status and timestamps. Ticket message, reply history, staff assignment IDs and escalation actor are excluded. All responses are `no-store, private` with `Pragma: no-cache`. The existing assigned-only detail route remains the sole conversation reader.
+- No ticket assignment, creation, resolution, external notification, privilege grant, schema migration or production data mutation is introduced. Database feature tests cover cross-operator isolation, empty-inbox role denial, revoked staff permissions, expired MFA sessions, encrypted subjects, pagination and forbidden query selectors.
+- This is not complete P03-007 RBAC acceptance; support lifecycle, finance dual-control, production authorization and other staff resources remain open.
