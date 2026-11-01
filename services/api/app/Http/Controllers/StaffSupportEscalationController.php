@@ -16,6 +16,57 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 final class StaffSupportEscalationController extends Controller
 {
+    /**
+     * Reviewer-only work queue. The authenticated principal is the sole
+     * assignment selector; no ticket content or staff identifiers are listed.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $filters = $request->validate([
+            'limit' => ['sometimes', 'integer', 'between:1,50'],
+            'before_id' => ['sometimes', 'integer', 'min:1'],
+            'staff_member_id' => ['missing'],
+            'escalation_reviewer_staff_id' => ['missing'],
+            'assigned_staff_id' => ['missing'],
+            'include_all' => ['missing'],
+            'with_replies' => ['missing'],
+            'status' => ['missing'],
+        ]);
+
+        /** @var StaffMember $staff */
+        $staff = $request->user();
+        $token = $this->presentedToken($request);
+        Gate::forUser($staff)->authorize('staff-support-escalations-self', [$token]);
+
+        $limit = (int) ($filters['limit'] ?? 20);
+        $query = SupportTicket::query()
+            ->where('escalation_reviewer_staff_id', $staff->getKey())
+            ->where('status', 'pending')
+            ->whereNotNull('escalated_at')
+            ->whereNull('escalation_reviewed_at')
+            ->whereNull('escalation_reviewed_by_staff_id');
+
+        if (isset($filters['before_id'])) {
+            $query->where('id', '<', (int) $filters['before_id']);
+        }
+
+        $rows = $query->orderByDesc('id')->limit($limit + 1)
+            ->get(['id', 'escalated_at']);
+        $hasMore = $rows->count() > $limit;
+        $page = $rows->take($limit)->map(static fn (SupportTicket $ticket): array => [
+            'id' => (int) $ticket->getKey(),
+            'escalated_at' => $ticket->escalated_at?->toIso8601String(),
+        ])->values()->all();
+
+        return response()->json([
+            'escalations' => $page,
+            'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
+        ])->withHeaders([
+            'Cache-Control' => 'no-store, private',
+            'Pragma' => 'no-cache',
+        ]);
+    }
+
     public function show(Request $request, int $ticket): JsonResponse
     {
         /** @var StaffMember $staff */
