@@ -161,10 +161,18 @@ final class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('staff-step-up', function (Request $request) use ($staffStepUpThrottled): array {
+            // Reader and staff IDs come from independent tables and can overlap.
+            // Never allow a reader bearer token to consume a staff member's
+            // per-principal MFA quota merely because the numeric IDs match.
+            $principal = $request->user();
+            $principalKey = $principal instanceof \App\Models\StaffMember
+                ? 'staff:'.$principal->getAuthIdentifier()
+                : 'nonstaff';
+
             return [
                 Limit::perMinute(8)->by('staff-step-up-ip:'.($request->ip() ?? 'unknown'))
                     ->response($staffStepUpThrottled),
-                Limit::perHour(6)->by('staff-step-up-user:'.($request->user()?->getAuthIdentifier() ?? 'anonymous'))
+                Limit::perHour(6)->by('staff-step-up-user:'.$principalKey)
                     ->response($staffStepUpThrottled),
             ];
         });
