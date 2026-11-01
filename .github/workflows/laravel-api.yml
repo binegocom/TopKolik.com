@@ -8,6 +8,7 @@ on:
       - 'PROJECT_STATUS.md'
       - 'scripts/configure-local-api-env.py'
       - 'scripts/test-editorial-guard.sh'
+      - 'scripts/check-support-reviewer-concurrency.php'
       - '.github/workflows/laravel-api.yml'
   push:
     branches:
@@ -51,6 +52,10 @@ jobs:
           php artisan migrate --force
           php artisan route:list --except-vendor
           php artisan test
+      - name: Verify multi-worker support escalation concurrency
+        env:
+          TOPKOLIK_CONCURRENCY_TEST: '1'
+        run: php scripts/check-support-reviewer-concurrency.php
       - name: Verify live Laravel HTTP endpoints
         run: bash scripts/check-api-http.sh
       - name: Verify real SMTP verification email delivery
