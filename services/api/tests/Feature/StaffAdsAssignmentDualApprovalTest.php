@@ -60,6 +60,11 @@ final class StaffAdsAssignmentDualApprovalTest extends TestCase
 
     private function asStaff(StaffMember $s, bool $stepUp = true, int $minutes = 5): void
     {
+        // Isolated PostgreSQL tests reuse numeric IDs between RefreshDatabase
+        // cases while Redis survives the suite. Prevent other test cases from
+        // exhausting this case's *real* per-principal route throttle.
+        \Illuminate\Support\Facades\RateLimiter::clear(sha1((string) $s->getKey()));
+
         $token = $s->createToken(
             'security-administrator',
             $stepUp ? ['staff:session', 'staff:step-up'] : ['staff:session'],
