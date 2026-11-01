@@ -1322,6 +1322,17 @@
           "command": "python3 scripts/status.py check && bash scripts/test-editorial-guard.sh",
           "result": "Editorial and roadmap CI succeeded on PR #47 code commit 95a45c84f419acd687a12e3c66d7399f417776a4.",
           "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41270870749"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh",
+          "result": "PR #48 code commit 8b956bf: 224 Laravel tests, 1,849 assertions passed on isolated PostgreSQL/Redis; live HTTP, real SMTP and 17 editorial guard cases passed. Final documentation commit CI remains pending.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41274750485"
+        },
+        {
+          "type": "revision",
+          "value": "8b956bf78f51dfea313758016e40694a07bb1d90",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/48"
         }
       ],
       "verified_at": null,
@@ -1335,7 +1346,7 @@
         "MFA step-up protected self-only search for known staff-linked failed authentication events verified in PR #41. Unknown-principal failures remain recorded but inaccessible through self-search. Global analyst authorization, malformed/throttled/middleware failure coverage, offsite immutable anchoring, production DB role separation and approved retention remain open; P03-010 stays in_progress.",
         "Malformed staff login/MFA validation audit verified on PR #44 in Laravel CI run 41267032971 (209 tests / 1,688 assertions) and editorial/roadmap run 41267032961. Only valid login email identifiers and authenticated step-up principals are fingerprinted. Middleware, throttled and missing/invalid-email rejections remain outside this slice; no offsite anchoring, privileged DB role separation, retention approval or production verification. P03-010 remains in_progress.",
         "PR #47 staff login/MFA step-up 429 audit passed PostgreSQL/Redis CI (223 tests / 1,838 assertions, run 41270870736) on code commit 95a45c8; final documentation commit CI still required. Existing action codes do not distinguish 429 cause; missing/malformed email, middleware denials, offsite anchoring, privileged DB separation, approved retention and global analyst access remain open. P03-010 stays in_progress.",
-        "PR #48 (security/segregate-staff-step-up-throttle-20261101) proposes isolating staff MFA per-principal throttling from reader accounts with overlapping numeric IDs; PostgreSQL regression and final-commit CI are pending. No completion claimed; middleware-denial coverage, offsite anchoring, DB role separation and approved retention remain outstanding."
+        "PR #48 isolates staff MFA principal throttling from reader IDs that collide across separate tables; 224 tests / 1,849 assertions passed on code commit 8b956bf (Laravel run 41274750485; editorial run 41274750571). Final documentation commit CI is pending. P03-010 remains in_progress: middleware-denial coverage, offsite anchoring, DB role separation and approved retention are outstanding."
       ]
     },
     {
