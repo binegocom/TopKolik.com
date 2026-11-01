@@ -1129,6 +1129,17 @@
           "type": "revision",
           "value": "3d960e7c12ba626207c62492d0ffa506fd9f38a3",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/46"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test; composer audit --no-interaction; bash scripts/check-api-http.sh; bash scripts/check-reader-email-delivery.sh; bash scripts/test-editorial-guard.sh; python3 scripts/status.py check",
+          "result": "PR #50 code/docs SHA 5063f6b: 236 Laravel tests, 1,944 assertions passed on disposable PostgreSQL/Redis; real HTTP and Mailpit SMTP, Composer audit, 17 editorial guards and roadmap validation passed. Seven new assigned-inbox tests cover BOLA, role/MFA revocation, pagination and filter validation.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41282163617"
+        },
+        {
+          "type": "revision",
+          "value": "5063f6b7b7999efcb32e71b9947b66b8e39c26a9",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/50"
         }
       ],
       "verified_at": null,
@@ -1145,7 +1156,8 @@
         "MFA-protected assigned staff request-changes transaction and encrypted feedback retrieval for advertiser owner/editor are undergoing CI review. Only in_review → draft; no advertising approval/publishing, billing dual control, staff assignment provisioning or external immutable archiving.",
         "A narrowly scoped ads-staff self-assignment listing and MFA-protected relinquishment, atomically audited without granting or reactivating access, is under CI review. Assignment provisioning, admin delegation, finance dual-control, campaign publishing, and production security compliance remain missing.",
         "Security-administrator capability is separate and inactive by default; two-person assignment approval was CI-verified and merged in PR #43 (Laravel 205 tests / 1,655 assertions; run 41266888211; editorial run 41266888168). No live administrator bootstrap is implemented; legal/ops approval, full finance role matrix, ads publishing, DB role hardening and production verification remain open.",
-        "MFA-protected security administrator self-relinquishment and in-transaction grant rechecks for ad assignment dual approvals are implemented on a review branch, pending CI. This does not create admin grants, provide emergency third-party revocation, finance approval or production entitlement."
+        "MFA-protected security administrator self-relinquishment and in-transaction grant rechecks for ad assignment dual approvals are implemented on a review branch, pending CI. This does not create admin grants, provide emergency third-party revocation, finance approval or production entitlement.",
+        "Assigned-only support inbox with private subject-only metadata and bounded keyset pagination was tested in PR #50. P03-007 remains in_progress: complete staff RBAC/BOLA matrix, ticket lifecycle, finance dual-control, operations review and production verification are not complete."
       ]
     },
     {
