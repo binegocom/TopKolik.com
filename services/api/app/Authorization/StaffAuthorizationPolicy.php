@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Authorization;
 
 use App\Models\StaffMember;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -37,12 +38,12 @@ final class StaffAuthorizationPolicy
         $staff = StaffMember::query()->find($principal->getKey());
         if (! $staff || ! $staff->is_active
             || ! $staff->mfa_enrolled_at
-            || ! $staff->email_verified_at
-            || $resource->advertiserId !== null) {
+            || ! $staff->email_verified_at) {
             return false;
         }
 
-        if ($staff->role === 'editor' && $resource->kind === 'editorial_article') {
+        if ($staff->role === 'editor' && $resource->advertiserId === null
+            && $resource->kind === 'editorial_article') {
             if ($resource->ownerStaffId !== (int) $staff->getKey()) {
                 return false;
             }
@@ -58,7 +59,8 @@ final class StaffAuthorizationPolicy
             };
         }
 
-        if ($staff->role === 'support' && $resource->kind === 'support_ticket') {
+        if ($staff->role === 'support' && $resource->advertiserId === null
+            && $resource->kind === 'support_ticket') {
             if ($resource->assignedStaffId !== (int) $staff->getKey()) {
                 return false;
             }
@@ -74,8 +76,38 @@ final class StaffAuthorizationPolicy
             };
         }
 
-        // Ads and finance are deliberately not authorized by this foundation:
-        // their scopes depend on P03-008 and the finance dual-approval model.
+        if ($staff->role === 'ads' && $resource->advertiserId !== null
+            && $resource->advertiserId > 0
+            && $token->expires_at !== null) {
+            $allowed = match ($action) {
+                'advertising.organization.review' =>
+                    $resource->kind === 'advertiser_organization'
+                    && $resource->id === $resource->advertiserId
+                    && $resource->state === 'active',
+                'advertising.campaign.read' =>
+                    $resource->kind === 'advertiser_campaign'
+                    && $resource->state === 'in_review'
+                    && $token->can('staff:step-up'),
+                default => false,
+            };
+
+            if (! $allowed) {
+                return false;
+            }
+
+            // Never trust a resource context or staff role alone: every grant
+            // must exist as an active assignment to an active organization.
+            return DB::table('staff_advertiser_assignments as a')
+                ->join('advertiser_organizations as o', 'o.id', '=', 'a.advertiser_organization_id')
+                ->where('a.staff_member_id', $staff->getKey())
+                ->where('a.advertiser_organization_id', $resource->advertiserId)
+                ->where('a.is_active', true)
+                ->where('o.is_active', true)
+                ->exists();
+        }
+
+        // Billing mutations, ad approval/publishing and privilege management
+        // remain default-denied until independent reviewed policies exist.
         return false;
     }
 

@@ -188,3 +188,10 @@
 - Server-generated request UUID, explicit event allowlist, optional staff FK, indexes and database append-only DML triggers. Authentication errors retain generic 401 responses; login session issuance remains unchanged.
 - Added PostgreSQL integration tests for known/unknown user indistinguishability, factor replay, success/failure separation, immutable rows, no plaintext secrets and invalid event rejection.
 - **in_progress, partial backend verified:** [PR #37](https://github.com/binegocom/TopKolik.com/pull/37), feature commit `1d43da1208eae4b57471c35b669b0002f1ad0cb8`. [Laravel CI](https://github.com/binegocom/TopKolik.com/actions/runs/41259116353) passed 146 tests / 1,054 assertions with PostgreSQL/Redis, real HTTP/SMTP, Composer audit clean, and 17 editorial guard cases. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41259116332) passed. Rate-limit/validation/middleware denials, offsite archival, privileged DB separation, global analyst authorization, and approved retention remain unresolved; no production-ready claim.
+
+## P03-007 assigned advertising campaign review — feature branch
+
+- Introduced inactive-by-default `staff_advertiser_assignments` with real staff/organization foreign keys and uniqueness. Only active MFA-qualified staff with current `ads` role, active explicit assignment and active advertiser organization may list submitted campaign metadata.
+- Reading creative title/body requires a fresh five-minute MFA step-up token and SQL-scoped in-review campaign. Advertiser drafts and foreign-tenant IDs are inaccessible; no write, approve, publish, invoice or finance permission is exposed.
+- New PostgreSQL integration tests cover cross-organization IDOR/BOLA, draft filtering, revocation, role change, MFA, wrong token principal, cursor bounds and default-deny operations.
+- **in_progress:** PR CI pending. Full finance dual approval, secure assignment administration, publishing and complete RBAC review still remain.
