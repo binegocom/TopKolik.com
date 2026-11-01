@@ -1310,6 +1310,18 @@
           "command": "php artisan test; bash scripts/check-api-http.sh; bash scripts/check-reader-email-delivery.sh; bash scripts/test-editorial-guard.sh; composer audit",
           "result": "GitHub Actions: 209 Laravel tests / 1,688 assertions, PostgreSQL/Redis, real HTTP/SMTP, 17 guard cases, Composer audit clean; editorial/roadmap integrity passed",
           "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41267032971"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && composer audit --no-interaction",
+          "result": "223 Laravel tests / 1,838 assertions passed on isolated PostgreSQL and Redis; real HTTP/SMTP, Composer audit and 17 editorial guard scenarios passed on PR #47 code commit 95a45c84f419acd687a12e3c66d7399f417776a4.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41270870736"
+        },
+        {
+          "type": "verification",
+          "command": "python3 scripts/status.py check && bash scripts/test-editorial-guard.sh",
+          "result": "Editorial and roadmap CI succeeded on PR #47 code commit 95a45c84f419acd687a12e3c66d7399f417776a4.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41270870749"
         }
       ],
       "verified_at": null,
@@ -1322,7 +1334,7 @@
         "Failed staff login and MFA step-up attempts (including unknown identities) are implemented in a separate HMAC-pseudonymized, DML append-only PostgreSQL ledger on a review branch. Schema validation rejects, middleware throttles, invalid bearer token rejection, offsite tamper evidence, global analyst access and retention controls remain release prerequisites; CI pending.",
         "MFA step-up protected self-only search for known staff-linked failed authentication events verified in PR #41. Unknown-principal failures remain recorded but inaccessible through self-search. Global analyst authorization, malformed/throttled/middleware failure coverage, offsite immutable anchoring, production DB role separation and approved retention remain open; P03-010 stays in_progress.",
         "Malformed staff login/MFA validation audit verified on PR #44 in Laravel CI run 41267032971 (209 tests / 1,688 assertions) and editorial/roadmap run 41267032961. Only valid login email identifiers and authenticated step-up principals are fingerprinted. Middleware, throttled and missing/invalid-email rejections remain outside this slice; no offsite anchoring, privileged DB role separation, retention approval or production verification. P03-010 remains in_progress.",
-        "PR #47 adds HMAC-only staff login/MFA step-up 429 audit callbacks for both named limiter dimensions; final GitHub CI verification is pending. The existing action codes do not separately identify throttle denials; invalid/missing email, middleware denials, offsite anchoring, privileged DB separation, approved retention and global analyst access remain open. P03-010 stays in_progress."
+        "PR #47 staff login/MFA step-up 429 audit passed PostgreSQL/Redis CI (223 tests / 1,838 assertions, run 41270870736) on code commit 95a45c8; final documentation commit CI still required. Existing action codes do not distinguish 429 cause; missing/malformed email, middleware denials, offsite anchoring, privileged DB separation, approved retention and global analyst access remain open. P03-010 stays in_progress."
       ]
     },
     {
