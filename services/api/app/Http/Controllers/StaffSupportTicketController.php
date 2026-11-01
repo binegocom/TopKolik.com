@@ -187,7 +187,7 @@ final class StaffSupportTicketController extends Controller
             $audit->record($staff, 'support.ticket.replied', 'support_ticket', (int) $record->getKey(), $request->attributes->get('request_id'));
 
             return [$created, false];
-        });
+        }, 3); // Retry deadlocks with a fresh scoped row lock and policy check.
 
         return response()->json([
             'reply' => [
@@ -242,7 +242,7 @@ final class StaffSupportTicketController extends Controller
             $audit->record($staff, 'support.ticket.escalated', 'support_ticket', (int) $record->getKey(), $request->attributes->get('request_id'));
 
             return $record;
-        });
+        }, 3); // Retry deadlocks; authorization and escalation state are rechecked.
 
         return response()->json([
             'ticket' => [

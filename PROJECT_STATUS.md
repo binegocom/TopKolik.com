@@ -286,3 +286,11 @@
 - New disposable PostgreSQL feature tests verify that repeated resolution requests cannot overwrite the encrypted note or duplicate the audit event, and that an audit INSERT constraint failure rolls back the entire resolution without leaving a partially closed ticket. The expected database error is asserted directly rather than logged as an unexpected application 500.
 - **in_progress / backend slice CI verified:** [PR #52](https://github.com/binegocom/TopKolik.com/pull/52), code SHA `e9428d7bb99c852825fe22d683caedc7b1ec87ab`. [Laravel CI 41290499920](https://github.com/binegocom/TopKolik.com/actions/runs/41290499920) passed **247 tests / 2,012 assertions** with disposable PostgreSQL/Redis, live HTTP/SMTP, clean Composer audit and 17 editorial safety tests. [Editorial/roadmap CI 41290500019](https://github.com/binegocom/TopKolik.com/actions/runs/41290500019) passed. Final evidence commit CI is required before merge.
 - True concurrent-worker contention, escalation-review workflow, complete finance/staff BOLA matrix and production security validation are still open. No production release or licensed sports provider access is claimed.
+
+## P03-007 — support reply/escalation transaction atomicity (PR #53)
+
+- **Status:** in_progress; PR under CI review, not a completed roadmap task.
+- Reply and escalation mutations now retry PostgreSQL deadlocks (up to three transaction attempts), re-locking the scoped ticket and re-evaluating staff authorization on each attempt.
+- New PostgreSQL feature cases exercise reply and escalation audit-insert failure rollback, duplicate escalation rejection and reply idempotency/audit deduplication.
+- **Verification:** Pending final-head GitHub Actions Laravel API and editorial/roadmap checks. PR: https://github.com/binegocom/TopKolik.com/pull/53
+- **Still missing:** independent concurrent HTTP-worker load verification, a separately authorized escalation-review workflow, complete staff/finance RBAC and production release evidence. No migration, production data deletion, provider entitlement or locale change.
