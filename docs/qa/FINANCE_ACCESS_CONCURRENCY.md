@@ -46,11 +46,18 @@ records. It does not migrate, reset, truncate or delete any database content.
 7. A pre-existing finance MFA bearer token reflects the committed entitlement:
    it can inspect access only while activation remains in effect and receives
    HTTP 403 immediately after revocation, including on replay.
-8. A separate Laravel feature regression checks a stale finance MFA token
+8. A second pending finance access request races two approvals against one
+   independent emergency staff deactivation. Either exactly one approval
+   commits before offboarding, or both approvals conflict because offboarding
+   committed first. The account, entitlement, grants and tokens stay inactive.
+9. Persisted request state, actor attribution, unique request IDs, exactly-once
+   audit events, rejected deactivation replay and HTTP 401 for the revoked
+   finance bearer are asserted after the second race.
+10. A separate Laravel feature regression checks a stale finance MFA token
    across persisted role downgrade, emergency revocation and role restoration.
    No new privilege is granted by these tests.
 
-A rejected revocation is never treated as successful. The test does not
+A rejected revocation is never treated as successful. In-flight approval must not undo emergency staff deactivation. The test does not
 assume the timing of concurrent PostgreSQL transactions.
 
 ## Limits
