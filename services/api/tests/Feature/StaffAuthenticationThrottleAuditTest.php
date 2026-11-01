@@ -54,7 +54,7 @@ final class StaffAuthenticationThrottleAuditTest extends TestCase
 
         $denied = $this->postJson('/api/v1/staff/auth/login', $payload)
             ->assertStatus(429)
-            ->assertHeader('Cache-Control', 'no-store')
+            ->assertHeader('Cache-Control', 'no-store, private')
             ->assertJson(['message' => 'Too Many Attempts.']);
 
         $this->assertNotNull($denied->headers->get('Retry-After'));
@@ -130,7 +130,7 @@ final class StaffAuthenticationThrottleAuditTest extends TestCase
 
         $denied = $this->withToken($session)->postJson('/api/v1/staff/auth/step-up', [
             'recovery_code' => str_repeat('A', 32),
-        ])->assertStatus(429)->assertHeader('Cache-Control', 'no-store');
+        ])->assertStatus(429)->assertHeader('Cache-Control', 'no-store, private');
 
         $this->assertDatabaseCount('security_auth_failures', 7);
         $this->assertDatabaseCount('personal_access_tokens', 1);
@@ -147,11 +147,18 @@ final class StaffAuthenticationThrottleAuditTest extends TestCase
         $reader = User::factory()->create();
         $token = $reader->createToken('reader', ['reader:read'])->plainTextToken;
 
-        for ($attempt = 0; $attempt < 7; $attempt++) {
+        // The throttle is deliberately applied before the session guard:
+        // a reader remains unauthorized and cannot become an audit actor,
+        // even after its request rate is exhausted.
+        for ($attempt = 0; $attempt < 6; $attempt++) {
             $this->withToken($token)->postJson('/api/v1/staff/auth/step-up', [
                 'recovery_code' => str_repeat('A', 32),
             ])->assertForbidden();
         }
+
+        $this->withToken($token)->postJson('/api/v1/staff/auth/step-up', [
+            'recovery_code' => str_repeat('A', 32),
+        ])->assertStatus(429);
 
         $this->assertDatabaseCount('security_auth_failures', 0);
     }
