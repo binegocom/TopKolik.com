@@ -206,6 +206,51 @@ final class StaffFinanceEmergencyRevocationTest extends TestCase
         ]);
     }
 
+    public function test_stale_finance_session_cannot_survive_role_downgrade_or_emergency_revocation(): void
+    {
+        $admin = $this->admin();
+        $finance = $this->staff('finance');
+        $this->grant($finance);
+
+        // Keep the exact same already-issued MFA bearer token across transitions.
+        $token = $finance->createToken(
+            'stale-finance-session',
+            ['staff:session', 'staff:step-up'],
+            now()->addMinutes(5),
+        )->plainTextToken;
+
+        app('auth')->forgetGuards();
+        $this->withToken($token);
+        $this->getJson(self::ACCESS)->assertOk();
+
+        // A persisted role change must be checked afresh, not trusted from
+        // the session or an otherwise still-active finance entitlement.
+        $finance->forceFill(['role' => 'editor'])->save();
+        app('auth')->forgetGuards();
+        $this->withToken($token);
+        $this->getJson(self::ACCESS)->assertForbidden();
+        $this->postJson(self::ACCESS.'/relinquish')->assertForbidden();
+        $this->assertDatabaseHas('staff_finance_entitlements', [
+            'staff_member_id' => $finance->id, 'is_active' => true,
+        ]);
+        $this->assertDatabaseCount('security_audit_events', 0);
+
+        // Security administrators can revoke stale entitlements even after
+        // a role downgrade; restoring the role must not restore the grant.
+        $this->asStaff($admin);
+        $this->postJson(self::REVOKE.$finance->id.'/revoke')->assertOk();
+        $finance->forceFill(['role' => 'finance'])->save();
+
+        app('auth')->forgetGuards();
+        $this->withToken($token);
+        $this->getJson(self::ACCESS)->assertForbidden();
+        $this->postJson(self::ACCESS.'/relinquish')->assertForbidden();
+        $this->assertDatabaseHas('staff_finance_entitlements', [
+            'staff_member_id' => $finance->id, 'is_active' => false,
+        ]);
+        $this->assertDatabaseCount('security_audit_events', 1);
+    }
+
     public function test_audit_failure_rolls_back_emergency_revocation(): void
     {
         $admin = $this->admin();
