@@ -1106,6 +1106,12 @@
           "type": "revision",
           "value": "6d0ae933c0e92f2e039347ecad9889fac277c434",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/42"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test; bash scripts/check-api-http.sh; bash scripts/check-reader-email-delivery.sh; bash scripts/test-editorial-guard.sh; composer audit",
+          "result": "PR #43 merge bc78ae5b; 205 Laravel tests / 1,655 assertions with PostgreSQL/Redis, HTTP/SMTP, Composer audit and 17 editorial guard tests passed",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41266888211"
         }
       ],
       "verified_at": null,
@@ -1121,7 +1127,7 @@
         "Owner/editor advertiser draft submission, revision-guarded transaction and append-only tenant-scoped review audit implemented on feature branch, pending PostgreSQL CI. This only moves draft to in_review; no ad approval, publication, delivery, finance approvals, automatic membership enrollment or commercial rights are authorized.",
         "MFA-protected assigned staff request-changes transaction and encrypted feedback retrieval for advertiser owner/editor are undergoing CI review. Only in_review → draft; no advertising approval/publishing, billing dual control, staff assignment provisioning or external immutable archiving.",
         "A narrowly scoped ads-staff self-assignment listing and MFA-protected relinquishment, atomically audited without granting or reactivating access, is under CI review. Assignment provisioning, admin delegation, finance dual-control, campaign publishing, and production security compliance remain missing.",
-        "Security-administrator capability is separate and inactive by default; dual-control assignment request/approval and immutable decision records are under feature-branch CI review. No live admin authorization bootstrap is implemented; legal/ops approval, full finance role matrix, ads publishing, DB role hardening and production verification remain open."
+        "Security-administrator capability is separate and inactive by default; two-person assignment approval was CI-verified and merged in PR #43 (Laravel 205 tests / 1,655 assertions; run 41266888211; editorial run 41266888168). No live administrator bootstrap is implemented; legal/ops approval, full finance role matrix, ads publishing, DB role hardening and production verification remain open."
       ]
     },
     {
@@ -1280,6 +1286,12 @@
           "type": "revision",
           "value": "76600fccbe54ffd89fc3306804dd144d66f029ec",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/41"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test; bash scripts/check-api-http.sh; bash scripts/check-reader-email-delivery.sh; bash scripts/test-editorial-guard.sh; composer audit",
+          "result": "GitHub Actions: 209 Laravel tests / 1,688 assertions, PostgreSQL/Redis, real HTTP/SMTP, 17 guard cases, Composer audit clean; editorial/roadmap integrity passed",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41267032971"
         }
       ],
       "verified_at": null,
@@ -1290,7 +1302,8 @@
         "Staff-only insert-only audit ledger under CI review; privileged PostgreSQL owners can bypass DML triggers. Independent offsite anchoring, retention controls, authorized audit search and failed-attempt coverage remain release prerequisites.",
         "Self-only audit metadata search with MFA step-up, validated allowlist filters, actor-scoped SQL and keyset pagination is in PR review. Cross-staff oversight, failed-login capture, independent tamper-evident offsite shipping and retention/privileged DB separation remain unresolved.",
         "Failed staff login and MFA step-up attempts (including unknown identities) are implemented in a separate HMAC-pseudonymized, DML append-only PostgreSQL ledger on a review branch. Schema validation rejects, middleware throttles, invalid bearer token rejection, offsite tamper evidence, global analyst access and retention controls remain release prerequisites; CI pending.",
-        "MFA step-up protected self-only search for known staff-linked failed authentication events verified in PR #41. Unknown-principal failures remain recorded but inaccessible through self-search. Global analyst authorization, malformed/throttled/middleware failure coverage, offsite immutable anchoring, production DB role separation and approved retention remain open; P03-010 stays in_progress."
+        "MFA step-up protected self-only search for known staff-linked failed authentication events verified in PR #41. Unknown-principal failures remain recorded but inaccessible through self-search. Global analyst authorization, malformed/throttled/middleware failure coverage, offsite immutable anchoring, production DB role separation and approved retention remain open; P03-010 stays in_progress.",
+        "Malformed staff login/MFA validation audit verified on PR #44 in Laravel CI run 41267032971 (209 tests / 1,688 assertions) and editorial/roadmap run 41267032961. Only valid login email identifiers and authenticated step-up principals are fingerprinted. Middleware, throttled and missing/invalid-email rejections remain outside this slice; no offsite anchoring, privileged DB role separation, retention approval or production verification. P03-010 remains in_progress."
       ]
     },
     {

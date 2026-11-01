@@ -11,18 +11,38 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\PersonalAccessToken;
 
 final class StaffAuthController extends Controller
 {
     public function login(Request $request, StaffMfaService $mfa, SecurityAuditRecorder $audit): JsonResponse
     {
-        $data = $request->validate([
+        $validator = Validator::make($request->all(), [
             'email' => ['required', 'email:rfc', 'max:254'],
             'password' => ['required', 'string'],
             'code' => ['nullable', 'string', 'regex:/^[0-9]{6}$/'],
             'recovery_code' => ['nullable', 'string', 'regex:/^[0-9A-F]{32}$/'],
         ]);
+        if ($validator->fails()) {
+            // Record only a syntactically valid identifier. Invalid or missing
+            // email input must not become an invented staff identity.
+            $rawEmail = $request->input('email');
+            if (is_string($rawEmail)) {
+                $normalized = mb_strtolower(trim($rawEmail));
+                if (mb_strlen($normalized) <= 254
+                    && filter_var($normalized, FILTER_VALIDATE_EMAIL) !== false) {
+                    $audit->recordFailure(
+                        'staff.login.failed', $normalized, null,
+                        $request->attributes->get('request_id'),
+                    );
+                }
+            }
+
+            throw new ValidationException($validator);
+        }
+        $data = $validator->validated();
 
         $email = mb_strtolower(trim($data['email']));
         $candidate = StaffMember::query()->where('email', $email)->first();
@@ -102,11 +122,22 @@ final class StaffAuthController extends Controller
 
     public function stepUp(Request $request, StaffMfaService $mfa, SecurityAuditRecorder $audit): JsonResponse
     {
-        $data = $request->validate([
+        $validator = Validator::make($request->all(), [
             'code' => ['nullable', 'string', 'regex:/^[0-9]{6}$/'],
             'recovery_code' => ['nullable', 'string', 'regex:/^[0-9A-F]{32}$/'],
         ]);
         $staff = $request->user();
+        if ($validator->fails()) {
+            // The staff session middleware already established the principal.
+            // Never persist a submitted factor, password or bearer token.
+            $audit->recordFailure(
+                'staff.step_up.failed', $staff->email, $staff,
+                $request->attributes->get('request_id'),
+            );
+
+            throw new ValidationException($validator);
+        }
+        $data = $validator->validated();
 
         $token = DB::transaction(static function () use ($staff, $data, $mfa, $audit, $request): ?string {
             $locked = StaffMember::query()->whereKey($staff->getKey())->lockForUpdate()->firstOrFail();
