@@ -1345,6 +1345,12 @@
           "command": "cd services/api && php artisan test; php scripts/check-support-reviewer-concurrency.php; php scripts/check-finance-access-concurrency.php",
           "result": "313 Laravel tests / 2674 assertions passed; four-worker support and finance races, HTTP/SMTP, Composer audit and editorial guard passed on PR #70 code SHA 6adf654a18bca8c021c27f7d15469051d2938229",
           "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41343543588"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test; TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-finance-access-concurrency.php; bash scripts/check-api-http.sh; bash scripts/check-reader-email-delivery.sh; bash scripts/test-editorial-guard.sh; composer audit --no-interaction; python3 scripts/status.py check",
+          "result": "PR #71 code+documentation commit d22b3ad4: GitHub Actions Laravel API and editorial/roadmap checks passed on isolated PostgreSQL/Redis; four-worker finance approval/offboarding race, support concurrency, real HTTP/SMTP and audit checks succeeded. Final evidence-commit CI must also pass.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41348900691"
         }
       ],
       "verified_at": null,
