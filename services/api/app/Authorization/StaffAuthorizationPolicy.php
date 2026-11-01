@@ -84,7 +84,8 @@ final class StaffAuthorizationPolicy
                     $resource->kind === 'advertiser_organization'
                     && $resource->id === $resource->advertiserId
                     && $resource->state === 'active',
-                'advertising.campaign.read' =>
+                'advertising.campaign.read',
+                'advertising.campaign.request_changes' =>
                     $resource->kind === 'advertiser_campaign'
                     && $resource->state === 'in_review'
                     && $token->can('staff:step-up'),
