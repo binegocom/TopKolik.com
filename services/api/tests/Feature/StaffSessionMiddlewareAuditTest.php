@@ -42,7 +42,7 @@ final class StaffSessionMiddlewareAuditTest extends TestCase
         return $staff;
     }
 
-    private function session(StaffMember $staff, array $abilities = ['staff:session']): string
+    private function staffSession(StaffMember $staff, array $abilities = ['staff:session']): string
     {
         return $staff->createToken(
             'staff-session', $abilities, now()->addMinutes(15),
@@ -52,7 +52,7 @@ final class StaffSessionMiddlewareAuditTest extends TestCase
     public function test_deactivated_staff_step_up_is_denied_and_audited_without_secrets(): void
     {
         $staff = $this->staff();
-        $token = $this->session($staff);
+        $token = $this->staffSession($staff);
         $factor = str_repeat('A', 32);
         $staff->forceFill(['is_active' => false])->save();
 
@@ -84,7 +84,7 @@ final class StaffSessionMiddlewareAuditTest extends TestCase
     public function test_removed_mfa_enrollment_is_denied_and_audited(): void
     {
         $staff = $this->staff();
-        $token = $this->session($staff);
+        $token = $this->staffSession($staff);
         $staff->forceFill(['mfa_enrolled_at' => null])->save();
 
         $response = $this->withToken($token)->postJson('/api/v1/staff/auth/step-up', [
@@ -102,7 +102,7 @@ final class StaffSessionMiddlewareAuditTest extends TestCase
     public function test_valid_staff_identity_with_missing_session_ability_is_audited(): void
     {
         $staff = $this->staff();
-        $token = $this->session($staff, ['unrelated:read']);
+        $token = $this->staffSession($staff, ['unrelated:read']);
 
         $response = $this->withToken($token)->postJson('/api/v1/staff/auth/step-up', [
             'code' => '000000',
@@ -134,7 +134,7 @@ final class StaffSessionMiddlewareAuditTest extends TestCase
     public function test_revoked_and_invalid_bearer_tokens_cannot_create_a_staff_audit_actor(): void
     {
         $staff = $this->staff();
-        $token = $this->session($staff);
+        $token = $this->staffSession($staff);
         $staff->tokens()->delete();
 
         app('auth')->forgetGuards();
