@@ -416,3 +416,10 @@
 - `P03-007` remains `in_progress`; no new `done` task is claimed.
   Real production authorization, operator provisioning, legal finance
   policy and provider rights are still unverified.
+
+## P03-007 finance stale-session regression — PR #69
+
+- **in_progress**, not a completed phase or production release. Existing finance MFA bearer tokens are checked against fresh persisted role and entitlement state after role downgrade and emergency revocation; the real four-worker finance race harness also checks access before and after the committed revocation.
+- Code/test commit `c11492acb2e8c9bda5c04634f40dac2709b5bf60` — [PR #69](https://github.com/binegocom/TopKolik.com/pull/69).
+- [GitHub Actions Laravel run 41338786982](https://github.com/binegocom/TopKolik.com/actions/runs/41338786982): exit 0, 307 Laravel tests / 2,608 assertions, isolated PostgreSQL/Redis, real four-worker support and finance HTTP concurrency, HTTP/SMTP and Composer audit. [Editorial run 41338786815](https://github.com/binegocom/TopKolik.com/actions/runs/41338786815): exit 0, editorial/roadmap checks.
+- Final documentation-commit CI must still pass before merge. No role mutation API, finance payment permissions, production security-administrator bootstrap, sustained load, external audit anchoring or production deployment is authorized or verified.

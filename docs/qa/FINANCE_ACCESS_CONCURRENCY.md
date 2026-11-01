@@ -43,6 +43,12 @@ records. It does not migrate, reset, truncate or delete any database content.
    the expected actor and a unique request correlation ID.
 6. If an early revocation was rejected, a separate explicit retry must
    deactivate the entitlement. A replay cannot change state or append audit.
+7. A pre-existing finance MFA bearer token reflects the committed entitlement:
+   it can inspect access only while activation remains in effect and receives
+   HTTP 403 immediately after revocation, including on replay.
+8. A separate Laravel feature regression checks a stale finance MFA token
+   across persisted role downgrade, emergency revocation and role restoration.
+   No new privilege is granted by these tests.
 
 A rejected revocation is never treated as successful. The test does not
 assume the timing of concurrent PostgreSQL transactions.

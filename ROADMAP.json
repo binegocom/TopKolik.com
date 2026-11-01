@@ -1333,6 +1333,12 @@
           "type": "revision",
           "value": "eac6f5aa2fe2c6d2197041bfad0b4f651ce70966",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/67"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test; TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-finance-access-concurrency.php; bash scripts/test-editorial-guard.sh",
+          "result": "307 Laravel tests / 2,608 assertions passed on isolated PostgreSQL/Redis; real four-worker finance approval/revocation race and stale MFA session denial passed; 17 editorial guard scenarios passed; Composer audit, live HTTP and SMTP passed (PR #69 code SHA c11492ac).",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41338786982"
         }
       ],
       "verified_at": null,
@@ -1365,7 +1371,8 @@
         "Finance staff access entitlement (inactive by default) with distinct MFA-confirmed security administrator request+approval, self-relinquishment and immutable PostgreSQL decisions is under CI review. This only manages access eligibility and implements no financial transaction, invoice, reconciliation, policy-complete finance approval, production security-admin bootstrap or production data access.",
         "PR #65 adds isolated four-worker HTTP regression for concurrent reviewer relinquishment and held escalation recovery, verified on code SHA 7175b931. Sustained load, full finance/resource-level staff RBAC, operational approvals and production deployment remain unverified; P03-007 stays in_progress.",
         "PR #66 adds independently authorized MFA emergency revocation for already-active finance entitlements; code CI passed (306 tests / 2,598 assertions) but final documentation-commit CI and merge are pending. No financial resource authorization, production security-admin bootstrap, sustained finance activation/revocation concurrency test, offsite audit anchoring or production release is verified; P03-007 remains in_progress.",
-        "PR #67 adds a CI-only real four-worker HTTP race for finance approval versus emergency revocation. It validates serial states, exactly-once audit and rejected replay; code CI passed on eac6f5aa, but final evidence-commit CI and merge are still required. Sustained contention, full finance resource RBAC, independently approved operator bootstrap, offsite audit and production release remain unverified."
+        "PR #67 adds a CI-only real four-worker HTTP race for finance approval versus emergency revocation. It validates serial states, exactly-once audit and rejected replay; code CI passed on eac6f5aa, but final evidence-commit CI and merge are still required. Sustained contention, full finance resource RBAC, independently approved operator bootstrap, offsite audit and production release remain unverified.",
+        "PR #69 verifies stale finance MFA bearer denial after role downgrade and emergency revocation in disposable CI. P03-007 remains in_progress: live finance resource authorization, approved operator bootstrap, sustained role-change concurrency, offsite audit and production release remain unverified."
       ]
     },
     {
