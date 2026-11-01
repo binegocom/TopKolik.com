@@ -229,7 +229,7 @@
 - Created separate inactive-by-default staff security administrator grant and two-person assignment approval queue. Existing editor/support/ads/finance roles gain no implicit admin rights and no self-provisioning API exists.
 - Initiator and approver must be distinct, active verified MFA-enrolled non-ads staff with independently authorized grants and five-minute step-up tokens. Request is pending without access; a separate approver atomically activates only the scoped assignment, records terminal decision and appends an allowlisted audit. Rejection never activates access.
 - Added PostgreSQL constraints/one-way transition guard, 24-hour expiry, uniqueness per pending target/org, current requester authorization recheck and negative replay/role/tenant/token tests.
-- **in_progress:** pending CI; authorized production administrator bootstrap/revocation, finance dual control, campaign publication and production security gates remain unavailable.
+- **in_progress, partial backend CI verified and merged:** [PR #43](https://github.com/binegocom/TopKolik.com/pull/43), merge `bc78ae5b20b1c55e0a6aa5ef1551e7b1dfc8e05f`. [Laravel CI 41266888211](https://github.com/binegocom/TopKolik.com/actions/runs/41266888211) passed 205 tests / 1,655 assertions on PostgreSQL/Redis, HTTP/SMTP, Composer audit and 17 editorial guards; [editorial/roadmap CI 41266888168](https://github.com/binegocom/TopKolik.com/actions/runs/41266888168) passed. Authorized production administrator bootstrap/revocation, finance dual control, campaign publication and production security gates remain unavailable.
 
 ## P03-010 malformed staff authentication validation audit — PR #44
 
