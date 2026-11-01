@@ -298,7 +298,7 @@ try {
         throw new RuntimeException('Previously issued finance MFA token retained access after revocation.');
     }
 
-    echo "PASS: four-worker finance approval/revocation race, stale MFA denial, audit and replay.\\n";
+    echo "PASS: four-worker finance approval/revocation race, stale MFA denial, audit and replay.\n";
 } catch (Throwable $exception) {
     fwrite(STDERR, 'FAIL: finance HTTP concurrency: '.$exception->getMessage()."\n");
     $exit = 1;
