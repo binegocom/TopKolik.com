@@ -61,6 +61,7 @@ try {
     $revoker = $staff('finance', 'revoker');
     $target = $staff('ads', 'target');
     $organization = AdvertiserOrganization::create(['name' => 'Ads race '.$run]);
+    $organization->forceFill(['is_active' => true])->save();
 
     foreach ([$requester, $approver, $revoker] as $admin) {
         DB::table('staff_security_admin_grants')->insert([
