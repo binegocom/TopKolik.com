@@ -1139,12 +1139,29 @@
           "type": "file",
           "path": "docs/security/SECURITY_AUDIT_EVENTS.md",
           "validation": "Partial staff audit ledger; no authorized search, offsite immutability or failed-attempt audit"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "129 Laravel tests passed (905 assertions) on isolated PostgreSQL/Redis including 8 new own-audit search tests covering self-scoping, cursor pagination, session step-up, token-role isolation, revocation and parameter validation.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41257648308"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && python3 scripts/status.py check",
+          "result": "Composer audit clean; live HTTP/SMTP, 17 editorial guard cases, roadmap validation CI passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41257648219"
+        },
+        {
+          "type": "revision",
+          "value": "5203da02f57ef4e0647e570d7dd2f1d2c856ae3a",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/34"
         }
       ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/32",
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/34",
       "limitations": [
         "Staff-only insert-only audit ledger under CI review; privileged PostgreSQL owners can bypass DML triggers. Independent offsite anchoring, retention controls, authorized audit search and failed-attempt coverage remain release prerequisites.",
         "Self-only audit metadata search with MFA step-up, validated allowlist filters, actor-scoped SQL and keyset pagination is in PR review. Cross-staff oversight, failed-login capture, independent tamper-evident offsite shipping and retention/privileged DB separation remain unresolved."
