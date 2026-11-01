@@ -155,3 +155,10 @@
 - Forward-only PostgreSQL staff audit ledger, server-generated request correlation and DML append-only triggers. Privileged state changes write audit records in the same transaction; ticket reply replay does not duplicate events.
 - Covers staff invitation acceptance, MFA enrollment, operator activation, login, step-up, logout, ticket reply and escalation. No credential, MFA factor, token, email or ticket body is logged.
 - **in_progress, not done:** GitHub Actions run [41254268444](https://github.com/binegocom/TopKolik.com/actions/runs/41254268444) passed 110 Laravel tests / 751 assertions, PostgreSQL/Redis, HTTP, SMTP, 17 editorial guard tests and Composer audit. Database owner/superuser can bypass triggers; offsite append-only shipping, production role separation, failed-login coverage, authorized search and retention policy are release prerequisites. No production readiness claim.
+
+## P03-008 advertiser tenant isolation — feature branch review
+
+- A separate advertiser-account Sanctum principal, active organization and explicit active membership are required per tenant. Role changes, deactivation and token revocation invalidate access without trusting client-supplied tenant IDs.
+- Private encrypted campaign drafts are scoped in SQL by organization for list/read/edit; owner/editor may write; viewer is read-only. Optimistic revision protects updates; publishing is unavailable.
+- New isolated PostgreSQL BOLA tests exercise cross-tenant URLs, role downgrade, token confusion (reader/staff), mass assignment, foreign keys, check constraints and membership revocation.
+- **in_progress**, not done: PostgreSQL CI and PR review pending; real advertiser enrollment/login, commercial approval, payment, serving, cache/queue/object scoping and production verification remain separate prerequisites.
