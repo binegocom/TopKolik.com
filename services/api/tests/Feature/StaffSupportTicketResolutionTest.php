@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\StaffMember;
 use App\Models\SupportTicket;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\DB;
@@ -284,9 +285,14 @@ final class StaffSupportTicketResolutionTest extends TestCase
             "CHECK (action <> 'support.ticket.resolved')"
         );
 
-        $this->withToken($this->token($staff))
-            ->postJson($this->url($ticket), ['resolution_note' => 'Must not persist.'])
-            ->assertStatus(500);
+        $this->withoutExceptionHandling();
+        try {
+            $this->withToken($this->token($staff))
+                ->postJson($this->url($ticket), ['resolution_note' => 'Must not persist.']);
+            $this->fail('The audit insert must reject this resolution.');
+        } catch (QueryException $exception) {
+            $this->assertSame('23514', (string) $exception->getCode());
+        }
 
         $fresh = $ticket->fresh();
         $this->assertSame('pending', $fresh->status);
