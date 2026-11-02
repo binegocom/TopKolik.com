@@ -2006,6 +2006,13 @@
           "command": "python3 scripts/validate_blueprint.py && python3 scripts/status.py check && bash scripts/test-editorial-guard.sh",
           "result": "PR #100 SHA 79dd1cca812fc48665dbabce84276d5c12298988 editorial/roadmap CI passed; final evidence commit CI still required.",
           "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41532195920"
+        },
+        {
+          "type": "test",
+          "path": "scripts/check-audit-read-revocation-concurrency.php",
+          "validation": "Four isolated four-worker HTTP scenarios (audit events and authentication failures versus deactivation and logout), observed PostgreSQL staff lock contention, fail-closed 401/403, own-only metadata, bearer revocation and append-only ledger invariants. Verified on implementation commit a22b7c2cfe7f0da5bd327cb448839bf89c844f3e: Laravel API https://github.com/binegocom/TopKolik.com/actions/runs/41540613952 and Editorial/Roadmap https://github.com/binegocom/TopKolik.com/actions/runs/41540614098. Final documentation commit requires its own CI.",
+          "pr_url": "https://github.com/binegocom/TopKolik.com/pull/101",
+          "commit": "a22b7c2cfe7f0da5bd327cb448839bf89c844f3e"
         }
       ],
       "verified_at": null,
@@ -2021,7 +2028,8 @@
         "PR #47 staff login/MFA step-up 429 audit passed PostgreSQL/Redis CI (223 tests / 1,838 assertions, run 41270870736) on code commit 95a45c8; final documentation commit CI still required. Existing action codes do not distinguish 429 cause; missing/malformed email, middleware denials, offsite anchoring, privileged DB separation, approved retention and global analyst access remain open. P03-010 stays in_progress.",
         "PR #48 isolates staff MFA principal throttling from reader IDs that collide across separate tables; 224 tests / 1,849 assertions passed on code commit 8b956bf (Laravel run 41274750485; editorial run 41274750571). Final documentation commit CI is pending. P03-010 remains in_progress: middleware-denial coverage, offsite anchoring, DB role separation and approved retention are outstanding.",
         "PR #49 adds middleware-denied MFA step-up failure auditing for authenticated staff with persisted matching bearer tokens (inactive/MFA-removed/missing session ability); regression tests cover reader ID collision, invalid/revoked tokens, secret redaction and unrelated-route denial. Code SHA 054e3367967242f74e030bfa111e30043ee087e6 passed 229 Laravel tests / 1,876 assertions in CI run 41278505352, including PostgreSQL/Redis, real HTTP/SMTP and 17 editorial guard tests; editorial/roadmap CI run 41278505354 passed. Final documentation commit CI must also pass before merge. P03-010 remains in_progress: unauthenticated middleware denials cannot safely be attributed to staff, and independent offsite anchoring, production DB role separation, approved retention and authorized global analyst access remain unverified.",
-        "PR under review: audit-event and authentication-failure self-reads now hold persisted staff and bearer row locks through scoped response serialization, matching logout lock order. Feature-level SQL lock assertions and existing revocation tests require successful final-head CI; multi-worker read/revocation races and independent offsite audit immutability remain unverified."
+        "PR under review: audit-event and authentication-failure self-reads now hold persisted staff and bearer row locks through scoped response serialization, matching logout lock order. Feature-level SQL lock assertions and existing revocation tests require successful final-head CI; multi-worker read/revocation races and independent offsite audit immutability remain unverified.",
+        "PR #101 verifies self-only audit and authentication-failure read revocation in four-worker HTTP races, but independently anchored tamper evidence, approved retention, global security analyst authorization, database-role separation, independent security review and production release remain outstanding. No new grants, provider data, UI locales or destructive migration."
       ]
     },
     {
