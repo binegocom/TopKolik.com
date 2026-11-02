@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Real four-worker HTTP regression for editorial writes racing staff logout.
+ * Real four-worker HTTP regression for editorial writes racing staff logout and role revocation.
  *
  * Runs exclusively against the disposable GitHub Actions PostgreSQL instance.
  * No schema changes, production data, external sports feeds or fake runtime data.

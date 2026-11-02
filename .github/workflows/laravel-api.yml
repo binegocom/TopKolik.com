@@ -68,7 +68,7 @@ jobs:
         env:
           TOPKOLIK_CONCURRENCY_TEST: '1'
         run: php scripts/check-support-reviewer-concurrency.php
-      - name: Verify multi-worker editorial logout and draft write races
+      - name: Verify multi-worker editorial logout and role-revocation races
         env:
           TOPKOLIK_CONCURRENCY_TEST: '1'
         run: php scripts/check-editorial-logout-concurrency.php
