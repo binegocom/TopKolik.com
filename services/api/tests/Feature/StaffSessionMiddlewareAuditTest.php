@@ -150,4 +150,28 @@ final class StaffSessionMiddlewareAuditTest extends TestCase
         $this->assertDatabaseCount('security_auth_failures', 0);
         $this->assertDatabaseCount('security_audit_events', 0);
     }
+
+    public function test_non_expiring_staff_bearer_cannot_enter_any_staff_session_route(): void
+    {
+        $staff = $this->staff();
+        $token = $staff->createToken(
+            'legacy-unbounded-session',
+            ['staff:session', 'staff:step-up'],
+        )->plainTextToken;
+
+        $this->withToken($token)->getJson('/api/v1/staff/auth/me')
+            ->assertUnauthorized();
+        app('auth')->forgetGuards();
+        $this->withToken($token)->getJson('/api/v1/staff/editorial/drafts')
+            ->assertUnauthorized();
+        app('auth')->forgetGuards();
+        $this->withToken($token)->postJson('/api/v1/staff/auth/step-up', [
+            'code' => '000000',
+        ])->assertUnauthorized();
+
+        $this->assertDatabaseCount('security_auth_failures', 0);
+        $this->assertDatabaseCount('security_audit_events', 0);
+        $this->assertDatabaseCount('personal_access_tokens', 1);
+    }
+
 }
