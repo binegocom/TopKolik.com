@@ -471,6 +471,30 @@ try {
     // Two identical finance access requests race emergency offboarding of
     // the same eligible target. A request committed before offboarding may
     // remain pending, but it must never activate the deactivated account.
+    // Dedicated independent administrators avoid coupling this regression
+    // to the rate-limit budgets already consumed by earlier race scenarios.
+    $requestRaceRequester = $makeStaff('support', 'request-race-requester');
+    $requestRaceApprover = $makeStaff('editor', 'request-race-approver');
+    $requestRaceRevoker = $makeStaff('support', 'request-race-revoker');
+    $requestRaceTokens = [];
+    foreach ([
+        'requester' => $requestRaceRequester,
+        'approver' => $requestRaceApprover,
+        'revoker' => $requestRaceRevoker,
+    ] as $key => $admin) {
+        DB::table('staff_security_admin_grants')->insert([
+            'staff_member_id' => $admin->getKey(),
+            'is_active' => true,
+            'authorization_reference' => 'isolated-ci-finance-request-offboarding',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $requestRaceTokens[$key] = $admin->createToken(
+            'finance-request-offboarding',
+            ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+        )->plainTextToken;
+    }
+
     $requestRaceFinance = $makeStaff('finance', 'request-offboarding');
     $requestRaceToken = $requestRaceFinance->createToken(
         'finance-request-offboarding-stale-session',
@@ -479,13 +503,13 @@ try {
     $requestRacePath = '/api/v1/staff/security/finance/staff/'
         .$requestRaceFinance->getKey().'/deactivate';
     $requestRace = $postTogether([
-        [$path, $tokens['requester'], [
+        [$path, $requestRaceTokens['requester'], [
             'target_staff_member_id' => $requestRaceFinance->getKey(),
         ]],
-        [$path, $tokens['requester'], [
+        [$path, $requestRaceTokens['requester'], [
             'target_staff_member_id' => $requestRaceFinance->getKey(),
         ]],
-        [$requestRacePath, $tokens['revoker'], []],
+        [$requestRacePath, $requestRaceTokens['revoker'], []],
     ]);
     $requestCodes = [$requestRace[0]['code'], $requestRace[1]['code']];
     sort($requestCodes);
@@ -522,10 +546,10 @@ try {
             'staff.finance_access.staff_deactivated',
         ])->get(['action', 'staff_member_id', 'request_id']);
     $expectedRequestEvents = [
-        'staff.finance_access.staff_deactivated' => (int) $revoker->getKey(),
+        'staff.finance_access.staff_deactivated' => (int) $requestRaceRevoker->getKey(),
     ];
     if ($requestCreated) {
-        $expectedRequestEvents['staff.finance_access.requested'] = (int) $requester->getKey();
+        $expectedRequestEvents['staff.finance_access.requested'] = (int) $requestRaceRequester->getKey();
     }
     if ($requestRaceEvents->count() !== count($expectedRequestEvents)
         || $requestRaceEvents->pluck('action')->unique()->count() !== count($expectedRequestEvents)
@@ -539,7 +563,7 @@ try {
     if ($requestCreated) {
         $pendingId = (int) $pendingRows->first()->id;
         $lateApproval = $postTogether([[
-            $path.'/'.$pendingId.'/approve', $tokens['approver'], [],
+            $path.'/'.$pendingId.'/approve', $requestRaceTokens['approver'], [],
         ]]);
         if ($lateApproval[0]['code'] !== 409) {
             throw new RuntimeException('Late finance approval reactivated offboarded staff: '
@@ -555,7 +579,7 @@ try {
         }
     }
 
-    $requestRaceReplay = $postTogether([[$requestRacePath, $tokens['revoker'], []]]);
+    $requestRaceReplay = $postTogether([[$requestRacePath, $requestRaceTokens['revoker'], []]]);
     if ($requestRaceReplay[0]['code'] !== 404
         || DB::table('security_audit_events')
             ->where('subject_type', 'staff_member')
