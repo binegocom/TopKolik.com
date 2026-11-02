@@ -670,3 +670,10 @@
 - Two PostgreSQL feature tests cover the lock order and revocation at the post-read boundary for all three write paths, without adding a publication route, migration, new locale, sports provider dependency or runtime fixture.
 - **Verified implementation commit `dae1042f163444527e3103905eb5f226b3b03304`:** [Laravel API CI 41440393165](https://github.com/binegocom/TopKolik.com/actions/runs/41440393165) passed **354 tests / 3,179 assertions** with disposable PostgreSQL/Redis, four-worker support/finance/ads HTTP races, live HTTP/SMTP, Composer audit and 17 editorial guards. [Editorial/roadmap CI 41440393157](https://github.com/binegocom/TopKolik.com/actions/runs/41440393157) passed.
 - Final documentation commit requires its own successful CI before merge. `P03-007` remains **in_progress**: independent editorial/logout multi-worker contention, full RBAC/BOLA acceptance and production release remain unverified. `P00-004` remains blocked on owner/legal/provider decisions.
+
+## P03-007 editorial logout / write HTTP concurrency — PR #90
+
+- **2026-11-02, in_progress:** Added a real four-worker HTTP regression for staff editor draft creation, update and review submission racing staff logout. The controller's existing persisted staff → bearer → draft lock order is unchanged.
+- The disposable PostgreSQL test accepts only serialized outcomes: the mutation commits before logout, or is rejected with 401 after logout. It validates exact draft state/revision, bearer revocation, one correlated logout audit event and replay denial without subsequent writes.
+- **Verified PR head `46bc39eea3f0717e8e044cb6468a3612a9ec46a8`:** [Laravel API CI](https://github.com/binegocom/TopKolik.com/actions/runs/41448560623) passed 354 tests / 3,179 assertions and three real HTTP race scenarios. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41448560710) passed.
+- Full role/resource BOLA coverage, production IAM, deployment and provider/licensing gates remain outstanding. P03-007 is **not done**; no public release claim.

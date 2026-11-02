@@ -16,3 +16,11 @@
 - The database contains no fabricated sports fixtures, provider events or published articles. All test data are isolated disposable PostgreSQL fixtures.
 - Server-side publication must first connect real licensed provider evidence to the publication guard, pass claim/licensing checks and preserve version history (P06).
 - Editorial review staff separation, full audit ledger, advertiser scopes, CMS UI, provider integrations, cross-object BOLA suite and legal approval remain pending. No production migration has been run.
+
+## Editorial logout / write concurrency verification (2026-11-02)
+
+- A separate four-worker HTTP regression runs against disposable GitHub Actions PostgreSQL: `php scripts/check-editorial-logout-concurrency.php`.
+- Each of create, update and submit races a real staff logout using the same bearer. The write may serialize before logout or return 401 after revocation; both orders are safe only if persisted draft state/revision matches the response.
+- The test verifies the presented token is deleted, the logout audit event is written exactly once with request correlation, and a later replay of each write is rejected with 401 without additional persistence or audit.
+- Verified on PR #90 head `46bc39eea3f0717e8e044cb6468a3612a9ec46a8`: [Laravel API CI](https://github.com/binegocom/TopKolik.com/actions/runs/41448560623) (354 tests, 3,179 assertions and all three real HTTP races); [editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41448560710).
+- This is an isolated backend concurrency check, not production verification or completion of the full staff RBAC/BOLA matrix.

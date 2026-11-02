@@ -1605,6 +1605,24 @@
           "type": "revision",
           "value": "dae1042f163444527e3103905eb5f226b3b03304",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/89"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test && php scripts/check-editorial-logout-concurrency.php",
+          "result": "PR #90 head 46bc39e: 354 Laravel tests / 3,179 assertions and three four-worker editorial create/update/submit versus logout HTTP races passed against disposable PostgreSQL/Redis; revoked token replay denied.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41448560623"
+        },
+        {
+          "type": "verification",
+          "command": "python3 scripts/status.py check && bash scripts/test-editorial-guard.sh",
+          "result": "PR #90 head 46bc39e editorial/roadmap integrity workflow passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41448560710"
+        },
+        {
+          "type": "revision",
+          "value": "46bc39eea3f0717e8e044cb6468a3612a9ec46a8",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/90",
+          "validation": "Four-worker editorial logout regression verified; full RBAC/BOLA matrix remains in_progress."
         }
       ],
       "verified_at": null,
