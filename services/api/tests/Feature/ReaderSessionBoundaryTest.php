@@ -67,7 +67,6 @@ final class ReaderSessionBoundaryTest extends TestCase
 
     public function test_staff_and_advertiser_tokens_cannot_cross_reader_boundary_even_with_reader_abilities(): void
     {
-        $reader = $this->reader();
         $staff = StaffMember::create([
             'name' => 'Cross Principal Staff',
             'email' => Str::uuid().'@example.test',
@@ -79,11 +78,15 @@ final class ReaderSessionBoundaryTest extends TestCase
             'email_verified_at' => now(),
             'mfa_enrolled_at' => now(),
         ])->save();
-        $advertiser = AdvertiserAccount::create([
+        // Explicitly set primary keys in isolated test tables: PostgreSQL
+        // sequences across identity tables do not advance in lockstep.
+        $reader = User::factory()->create(['id' => $staff->id]);
+        $advertiser = new AdvertiserAccount([
             'name' => 'Cross Principal Advertiser',
             'email' => Str::uuid().'@example.test',
             'password' => 'Strong!ReaderBoundary2026',
         ]);
+        $advertiser->forceFill(['id' => $staff->id])->save();
 
         // Separate identity tables may have overlapping numeric IDs.
         $this->assertSame($reader->id, $staff->id);
