@@ -620,6 +620,157 @@ try {
         }
         echo 'PASS editorial read/role-revocation/'.$action." (HTTP 403 after SQL lock)\n";
     }
+
+    // An editor deactivated while a read is waiting on the persisted actor
+    // row must never receive private data, even if bearer deletion is delayed.
+    foreach (['index', 'detail'] as $action) {
+        $editor = StaffMember::create([
+            'name' => 'Editorial read deactivation '.$action,
+            'email' => $run.'-read-deactivated-'.$action.'@example.test',
+            'password' => Str::random(40),
+            'role' => 'editor',
+        ]);
+        $editor->forceFill([
+            'is_active' => true,
+            'email_verified_at' => now(),
+            'mfa_enrolled_at' => now(),
+        ])->save();
+        $other = StaffMember::create([
+            'name' => 'Foreign owner during deactivation',
+            'email' => $run.'-foreign-deactivated-'.$action.'@example.test',
+            'password' => Str::random(40),
+            'role' => 'editor',
+        ]);
+        $owned = EditorialArticle::create([
+            'owner_staff_id' => $editor->getKey(),
+            'title' => 'Private deactivation owner draft',
+            'body' => 'Deactivated staff must not receive confidential editorial content.',
+        ]);
+        $foreign = EditorialArticle::create([
+            'owner_staff_id' => $other->getKey(),
+            'title' => 'Private deactivation foreign draft',
+            'body' => 'Cross-editor confidentiality survives account deactivation.',
+        ]);
+        $bearer = $editor->createToken(
+            'editorial-read-deactivation-race', ['staff:session'], now()->addMinutes(5),
+        )->plainTextToken;
+        $path = '/api/v1/staff/editorial/drafts';
+        if ($action === 'detail') {
+            $path .= '/'.$owned->getKey();
+        }
+
+        $multi = curl_multi_init();
+        $handle = curl_init($base.$path);
+        try {
+            DB::beginTransaction();
+            StaffMember::query()->whereKey($editor->getKey())
+                ->lockForUpdate()->firstOrFail();
+
+            curl_setopt_array($handle, [
+                CURLOPT_CUSTOMREQUEST => 'GET',
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer '.$bearer,
+                    'Accept: application/json',
+                ],
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_TIMEOUT => 30,
+            ]);
+            curl_multi_add_handle($multi, $handle);
+
+            $waiting = false;
+            $active = null;
+            $deadline = microtime(true) + 10;
+            do {
+                if (curl_multi_exec($multi, $active) !== CURLM_OK) {
+                    throw new RuntimeException('Editorial deactivation read failed to start.');
+                }
+                DB::selectOne('SELECT pg_stat_clear_snapshot()');
+                $waiting = (int) DB::selectOne(
+                    "SELECT count(*) AS waiting FROM pg_stat_activity ".
+                    "WHERE pid <> pg_backend_pid() AND wait_event_type = 'Lock' ".
+                    "AND query ILIKE '%staff_members%' AND query ILIKE '%for update%'"
+                )->waiting > 0;
+                if (! $waiting && $active > 0 && curl_multi_select($multi, 0.1) === -1) {
+                    usleep(10000);
+                }
+            } while (! $waiting && $active > 0 && microtime(true) < $deadline);
+
+            if (! $waiting) {
+                throw new RuntimeException(
+                    'Editorial '.$action.' read did not wait on the deactivated staff row.',
+                );
+            }
+
+            // Keep the bearer valid until after denial to prove that the
+            // persisted is_active flag alone closes the authorization gate.
+            StaffMember::query()->whereKey($editor->getKey())
+                ->update(['is_active' => false]);
+            DB::commit();
+
+            $deadline = microtime(true) + 30;
+            do {
+                if (curl_multi_exec($multi, $active) !== CURLM_OK || microtime(true) > $deadline) {
+                    throw new RuntimeException('Editorial deactivated read did not finish.');
+                }
+                if ($active > 0 && curl_multi_select($multi, 1.0) === -1) {
+                    usleep(10000);
+                }
+            } while ($active > 0);
+
+            if (curl_error($handle) !== ''
+                || curl_getinfo($handle, CURLINFO_RESPONSE_CODE) !== 403
+                || str_contains((string) curl_multi_getcontent($handle), $owned->body)
+                || str_contains((string) curl_multi_getcontent($handle), $foreign->body)) {
+                throw new RuntimeException(
+                    'Deactivated editor read private data: HTTP '.
+                    curl_getinfo($handle, CURLINFO_RESPONSE_CODE).' '.curl_error($handle),
+                );
+            }
+        } finally {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+            curl_multi_remove_handle($multi, $handle);
+            curl_close($handle);
+            curl_multi_close($multi);
+        }
+
+        DB::disconnect();
+        if ($editor->fresh()->is_active
+            || PersonalAccessToken::findToken($bearer) === null
+            || EditorialArticle::query()->whereKey($owned->getKey())->firstOrFail()->revision !== 1
+            || EditorialArticle::query()->whereKey($foreign->getKey())->firstOrFail()->revision !== 1
+            || DB::table('security_audit_events')->where('staff_member_id', $editor->getKey())->exists()) {
+            throw new RuntimeException('Editorial deactivation race altered bearer, drafts or audit.');
+        }
+
+        $replay = $parallel([
+            'index' => ['GET', '/api/v1/staff/editorial/drafts', $bearer, new stdClass()],
+            'owned' => ['GET', '/api/v1/staff/editorial/drafts/'.$owned->getKey(), $bearer, new stdClass()],
+            'foreign' => ['GET', '/api/v1/staff/editorial/drafts/'.$foreign->getKey(), $bearer, new stdClass()],
+        ]);
+        foreach ($replay as $response) {
+            if ($response['code'] !== 403
+                || str_contains($response['body'], $owned->body)
+                || str_contains($response['body'], $foreign->body)) {
+                throw new RuntimeException('Deactivated editor retained private read access.');
+            }
+        }
+
+        // A subsequent explicit bearer revocation must also deny replay.
+        PersonalAccessToken::findToken($bearer)->delete();
+        $revoked = $parallel([
+            'index' => ['GET', '/api/v1/staff/editorial/drafts', $bearer, new stdClass()],
+            'detail' => ['GET', '/api/v1/staff/editorial/drafts/'.$owned->getKey(), $bearer, new stdClass()],
+        ]);
+        if ($revoked['index']['code'] !== 401 || $revoked['detail']['code'] !== 401
+            || DB::table('security_audit_events')->where('staff_member_id', $editor->getKey())->exists()) {
+            throw new RuntimeException('Deactivated editor bearer revocation was not enforced.');
+        }
+        echo 'PASS editorial read/deactivation/'.$action." (HTTP 403 after SQL lock, 401 after token revocation)\n";
+    }
+
 } catch (Throwable $error) {
     $exit = 1;
     fwrite(STDERR, $error->getMessage()."\n");
