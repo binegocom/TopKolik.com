@@ -51,17 +51,35 @@ final class StaffSupportEscalationRecoveryController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $actor, $token, $ticket, $audit): void {
-            // Shared grant lock with emergency revocation and staff access
-            // administration: a revoked operator cannot reuse stale access.
+            // Lock the persisted actor and presented bearer before the
+            // independent security grant and ticket. A role downgrade,
+            // logout or grant revocation must serialize with recovery.
+            $lockedActor = StaffMember::query()
+                ->whereKey($actor->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+            $currentToken = PersonalAccessToken::query()
+                ->whereKey($token->getKey())
+                ->lockForUpdate()
+                ->first();
+            if (! $currentToken || $currentToken->expires_at === null
+                || $currentToken->expires_at->isPast()
+                || $currentToken->tokenable_type !== $lockedActor->getMorphClass()
+                || (string) $currentToken->tokenable_id !== (string) $lockedActor->getKey()) {
+                abort(401, 'Unauthenticated.');
+            }
+
+            // This is also the lock used by independent security admins
+            // revoking a grant while recovery is already in flight.
             $grant = DB::table('staff_security_admin_grants')
-                ->where('staff_member_id', $actor->getKey())
+                ->where('staff_member_id', $lockedActor->getKey())
                 ->lockForUpdate()
                 ->first();
             if (! $grant || ! $grant->is_active) {
                 abort(403);
             }
 
-            Gate::forUser($actor)->authorize('staff-support-escalation-recovery', [$token]);
+            Gate::forUser($lockedActor)->authorize('staff-support-escalation-recovery', [$currentToken]);
 
             $record = SupportTicket::query()
                 ->whereKey($ticket)
