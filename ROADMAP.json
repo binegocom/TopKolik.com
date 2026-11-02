@@ -1496,6 +1496,22 @@
           "type": "revision",
           "value": "39b67e4d9e21e1c3e33b6e244ae57929aefaa98a",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/82"
+        },
+        {
+          "type": "verification",
+          "command": "cd services/api && php artisan test; isolated four-worker HTTP/SMTP and editorial guard workflows",
+          "result": "PR #83 code SHA 2596ecabf89576a165ab20825fb3d99c3811531d: 346 Laravel tests / 3,116 assertions passed on disposable PostgreSQL/Redis; support actor-before-ticket lock ordering and revoked-role denial, four-worker support/finance/ads HTTP races, real HTTP/SMTP, Composer audit and 17 editorial guard cases passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41396330449"
+        },
+        {
+          "type": "reference",
+          "value": "https://github.com/binegocom/TopKolik.com/pull/83",
+          "validation": "Support reply, escalation and resolution now lock the persisted acting staff identity before the assigned ticket; P03-007 remains in_progress."
+        },
+        {
+          "type": "revision",
+          "value": "2596ecabf89576a165ab20825fb3d99c3811531d",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/83"
         }
       ],
       "verified_at": null,
@@ -1539,7 +1555,8 @@
         "PR #76 adds transaction-scoped acting-admin identity locking and a guarded real HTTP emergency-offboarding/request-creation race; code SHA b3ec83f passed CI. Final evidence commit CI must pass before merge. Full role matrix, production deployment, sports provider licenses and operational approvals remain unverified.",
         "PR #77 verifies concurrent finance request creation versus one-way staff offboarding with isolated real HTTP workers; full resource-level RBAC, approved operator provisioning, offsite audit and production release remain unverified.",
         "PR #81 adds private/no-store headers at staff and advertiser session middleware boundaries, verified with PostgreSQL-backed feature tests. Full RBAC/BOLA matrix, unauthenticated outer auth middleware responses, production proxy caching configuration and external security review remain unverified.",
-        "PR #82 serializes editorial draft creation/update/submit with a persisted staff row lock and fresh role check. Full RBAC/BOLA acceptance, independent concurrency security review, deployment and production release remain unverified; task stays in_progress."
+        "PR #82 serializes editorial draft creation/update/submit with a persisted staff row lock and fresh role check. Full RBAC/BOLA acceptance, independent concurrency security review, deployment and production release remain unverified; task stays in_progress.",
+        "PR #83 verified support actor-row lock ordering and revoked-role denial on code CI; final documentation commit CI, independent multi-worker role-revocation-vs-support-write contention, complete RBAC/BOLA matrix, operational revocation path and production deployment remain unverified."
       ]
     },
     {
