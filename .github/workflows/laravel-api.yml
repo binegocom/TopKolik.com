@@ -15,6 +15,7 @@ on:
       - 'scripts/check-finance-access-concurrency.php'
       - 'scripts/check-finance-inventory-read-concurrency.php'
       - 'scripts/check-ads-assignment-concurrency.php'
+      - 'scripts/check-ads-review-read-concurrency.php'
       - '.github/workflows/laravel-api.yml'
   push:
     branches:
@@ -33,6 +34,7 @@ on:
       - 'scripts/check-finance-access-concurrency.php'
       - 'scripts/check-finance-inventory-read-concurrency.php'
       - 'scripts/check-ads-assignment-concurrency.php'
+      - 'scripts/check-ads-review-read-concurrency.php'
       - '.github/workflows/laravel-api.yml'
 
 permissions:
@@ -54,6 +56,8 @@ jobs:
           tools: composer:v2
       - name: Lint isolated audit concurrency harness
         run: php -l scripts/check-audit-read-revocation-concurrency.php
+      - name: Lint isolated advertiser review concurrency harness
+        run: php -l scripts/check-ads-review-read-concurrency.php
       - name: Prepare database, cache and isolated credentials
         run: |
           python3 scripts/dev-env.py init
@@ -100,6 +104,10 @@ jobs:
         env:
           TOPKOLIK_CONCURRENCY_TEST: '1'
         run: php scripts/check-ads-assignment-concurrency.php
+      - name: Verify multi-worker advertiser review reads versus revocation
+        env:
+          TOPKOLIK_CONCURRENCY_TEST: '1'
+        run: php scripts/check-ads-review-read-concurrency.php
       - name: Verify live Laravel HTTP endpoints
         run: bash scripts/check-api-http.sh
       - name: Verify real SMTP verification email delivery
