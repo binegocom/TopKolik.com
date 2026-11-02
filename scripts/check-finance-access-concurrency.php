@@ -564,7 +564,7 @@ try {
         throw new RuntimeException('Finance request/offboarding replay mutated audit or staff state.');
     }
 
-    echo "PASS: four-worker finance approval/revocation, offboarding, residual-grant and request-creation races; stale MFA, audit and replay.\\n";
+    echo "PASS: four-worker finance approval/revocation, offboarding, residual-grant and request-creation races; stale MFA, audit and replay.\n";
 } catch (Throwable $exception) {
     fwrite(STDERR, 'FAIL: finance HTTP concurrency: '.$exception->getMessage()."\n");
     $exit = 1;
