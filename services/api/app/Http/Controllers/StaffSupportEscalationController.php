@@ -118,13 +118,18 @@ final class StaffSupportEscalationController extends Controller
         $token = $this->presentedToken($request);
 
         $record = DB::transaction(function () use ($staff, $token, $ticket, $data, $audit, $request): SupportTicket {
+            // Lock the reviewer and presented bearer before the ticket. This
+            // serializes revocation, logout and reviewer writes in one order.
+            $actor = $this->lockReviewerForMutation($staff);
+            $currentToken = $this->lockReviewerTokenForMutation($token, $actor);
+
             $record = SupportTicket::query()
                 ->whereKey($ticket)
-                ->where('escalation_reviewer_staff_id', $staff->getKey())
+                ->where('escalation_reviewer_staff_id', $actor->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            Gate::forUser($staff)->authorize('staff-support-escalation-review', [$record, $token]);
+            Gate::forUser($actor)->authorize('staff-support-escalation-review', [$record, $currentToken]);
 
             $record->forceFill([
                 'escalation_reviewed_at' => now(),
@@ -177,13 +182,18 @@ final class StaffSupportEscalationController extends Controller
         $token = $this->presentedToken($request);
 
         $replacementAssigned = DB::transaction(function () use ($staff, $token, $ticket, $audit, $request): bool {
+            // Lock the reviewer and presented bearer before the ticket. This
+            // serializes revocation, logout and reviewer writes in one order.
+            $actor = $this->lockReviewerForMutation($staff);
+            $currentToken = $this->lockReviewerTokenForMutation($token, $actor);
+
             $record = SupportTicket::query()
                 ->whereKey($ticket)
-                ->where('escalation_reviewer_staff_id', $staff->getKey())
+                ->where('escalation_reviewer_staff_id', $actor->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            Gate::forUser($staff)->authorize('staff-support-escalation-review', [$record, $token]);
+            Gate::forUser($actor)->authorize('staff-support-escalation-review', [$record, $currentToken]);
 
             // Select the least-loaded eligible independent reviewer.
             // A transaction advisory lock also coordinates initial escalation
@@ -220,6 +230,30 @@ final class StaffSupportEscalationController extends Controller
             'Cache-Control' => 'no-store, private',
             'Pragma' => 'no-cache',
         ]);
+    }
+
+    private function lockReviewerForMutation(StaffMember $staff): StaffMember
+    {
+        return StaffMember::query()->whereKey($staff->getKey())->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * Middleware can authenticate a bearer that is revoked while a request
+     * waits on a row lock. Recheck the persisted bearer in the write transaction.
+     */
+    private function lockReviewerTokenForMutation(?PersonalAccessToken $token, StaffMember $staff): PersonalAccessToken
+    {
+        $current = $token
+            ? PersonalAccessToken::query()->whereKey($token->getKey())->lockForUpdate()->first()
+            : null;
+
+        if (! $current || $current->expires_at === null || $current->expires_at->isPast()
+            || $current->tokenable_type !== $staff->getMorphClass()
+            || (string) $current->tokenable_id !== (string) $staff->getKey()) {
+            abort(401, 'Unauthenticated.');
+        }
+
+        return $current;
     }
 
     private function presentedToken(Request $request): ?PersonalAccessToken
