@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\StaffMember;
 use App\Models\SupportTicket;
 use App\Models\User;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
@@ -280,5 +281,101 @@ final class StaffSupportEscalationReviewTest extends TestCase
 
         $this->assertNull($ticket->fresh()->escalation_reviewed_at);
         $this->assertDatabaseCount('security_audit_events', 1);
+    }
+
+    public function test_reviewer_writes_lock_staff_then_bearer_then_ticket(): void
+    {
+        $this->withoutMiddleware(ThrottleRequests::class);
+        $assignee = $this->staff();
+        $reviewer = $this->staff();
+        $approveTicket = $this->ticket($assignee);
+        $relinquishTicket = $this->ticket($assignee);
+
+        $this->withToken($this->token($assignee));
+        $this->postJson($this->escalate($approveTicket))->assertOk();
+        $this->postJson($this->escalate($relinquishTicket))->assertOk();
+
+        app('auth')->forgetGuards();
+        $this->withToken($this->token($reviewer));
+        $locks = [];
+        DB::listen(static function (QueryExecuted $query) use (&$locks): void {
+            $sql = strtolower($query->sql);
+            if (! str_contains($sql, 'for update')) {
+                return;
+            }
+            if (str_contains($sql, 'from "staff_members"')) {
+                $locks[] = 'staff';
+            } elseif (str_contains($sql, 'from "personal_access_tokens"')) {
+                $locks[] = 'token';
+            } elseif (str_contains($sql, 'from "support_tickets"')) {
+                $locks[] = 'ticket';
+            }
+        });
+
+        $this->postJson($this->approve($approveTicket), [
+            'review_note' => 'Reviewed independently.',
+        ])->assertOk();
+        $this->assertSame(['staff', 'token', 'ticket'], array_slice($locks, 0, 3));
+
+        $locks = [];
+        $this->postJson($this->review($relinquishTicket).'/relinquish')
+            ->assertOk();
+        $this->assertSame(['staff', 'token', 'ticket'], array_slice($locks, 0, 3));
+
+        $this->assertNotNull($approveTicket->fresh()->escalation_reviewed_at);
+        $this->assertNull($relinquishTicket->fresh()->escalation_reviewer_staff_id);
+        $this->assertDatabaseCount('security_audit_events', 4);
+    }
+
+    public function test_revoked_reviewer_role_cannot_approve_or_relinquish_with_existing_bearer(): void
+    {
+        $this->withoutMiddleware(ThrottleRequests::class);
+        $assignee = $this->staff();
+        $reviewer = $this->staff();
+        $approveTicket = $this->ticket($assignee);
+        $relinquishTicket = $this->ticket($assignee);
+        $this->withToken($this->token($assignee));
+        $this->postJson($this->escalate($approveTicket))->assertOk();
+        $this->postJson($this->escalate($relinquishTicket))->assertOk();
+
+        $bearer = $this->token($reviewer);
+        StaffMember::query()->whereKey($reviewer->getKey())->update(['role' => 'editor']);
+        app('auth')->forgetGuards();
+        $this->withToken($bearer);
+        $this->postJson($this->approve($approveTicket), [
+            'review_note' => 'Must not commit.',
+        ])->assertForbidden();
+        $this->postJson($this->review($relinquishTicket).'/relinquish')
+            ->assertForbidden();
+
+        $this->assertNull($approveTicket->fresh()->escalation_reviewed_at);
+        $this->assertSame($reviewer->getKey(), $relinquishTicket->fresh()->escalation_reviewer_staff_id);
+        $this->assertDatabaseCount('security_audit_events', 2);
+    }
+
+    public function test_logged_out_reviewer_bearer_cannot_commit_approval_or_relinquishment(): void
+    {
+        $this->withoutMiddleware(ThrottleRequests::class);
+        $assignee = $this->staff();
+        $reviewer = $this->staff();
+        $approveTicket = $this->ticket($assignee);
+        $relinquishTicket = $this->ticket($assignee);
+        $this->withToken($this->token($assignee));
+        $this->postJson($this->escalate($approveTicket))->assertOk();
+        $this->postJson($this->escalate($relinquishTicket))->assertOk();
+
+        $bearer = $this->token($reviewer);
+        app('auth')->forgetGuards();
+        $this->withToken($bearer)->postJson('/api/v1/staff/auth/logout')->assertOk();
+        app('auth')->forgetGuards();
+        $this->withToken($bearer)->postJson($this->approve($approveTicket), [
+            'review_note' => 'Revoked session.',
+        ])->assertUnauthorized();
+        $this->postJson($this->review($relinquishTicket).'/relinquish')
+            ->assertUnauthorized();
+
+        $this->assertNull($approveTicket->fresh()->escalation_reviewed_at);
+        $this->assertSame($reviewer->getKey(), $relinquishTicket->fresh()->escalation_reviewer_staff_id);
+        $this->assertDatabaseCount('security_audit_events', 3);
     }
 }
