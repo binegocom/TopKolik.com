@@ -510,6 +510,10 @@ try {
                 // PostgreSQL reports the other connection waiting for our
                 // locked staff row; this is a verified overlap, not a sleep
                 // based guess about scheduling.
+                // PostgreSQL caches statistics snapshots inside a transaction.
+                // Clear that snapshot before polling other backends, otherwise
+                // the first empty result can remain stale for the entire lock.
+                DB::selectOne('SELECT pg_stat_clear_snapshot()');
                 $waiting = (int) DB::selectOne(
                     "SELECT count(*) AS waiting FROM pg_stat_activity ".
                     "WHERE pid <> pg_backend_pid() AND wait_event_type = 'Lock' ".
