@@ -563,3 +563,24 @@
 - Four new PostgreSQL feature regressions verify active staff and advertiser responses, wrong-role or wrong-ability denial, immediate account deactivation and rejection of non-expiring legacy bearer sessions. Existing 401/403 semantics, staff MFA and advertiser tenancy remain unchanged.
 - **Verified code SHA `bcb5417668c25e0036c5e4004f8fd9558e857209`:** [Laravel CI 41385284550](https://github.com/binegocom/TopKolik.com/actions/runs/41385284550) passed **342 tests / 3,088 assertions** on disposable PostgreSQL/Redis, real four-worker HTTP races, HTTP/SMTP, Composer audit and 17 editorial publication guards. [Editorial/roadmap CI 41385284498](https://github.com/binegocom/TopKolik.com/actions/runs/41385284498) passed.
 - [PR #81](https://github.com/binegocom/TopKolik.com/pull/81) requires successful CI on its final evidence commit before merge. `P03-007` remains **in_progress**; full RBAC/BOLA acceptance, production proxy verification, licensed sports data and release are not claimed.
+
+## P03-007 — atomic editorial authorization for draft writes (PR #82)
+
+- Editorial draft creation, update and review submission now acquire a
+  PostgreSQL `FOR UPDATE` lock on the persisted editor identity inside the
+  same transaction as the write, before re-checking current staff policy.
+  Existing draft ownership, revision guards, encryption and no-publish
+  restrictions remain unchanged. Lock order is staff identity then draft.
+- Two new PostgreSQL-backed feature regressions verify all three staff-row
+  write locks and denial of a submitted draft after the editor's role is
+  revoked. No migration, external data, new permission or client locale.
+- **Verified code SHA `39b67e4d9e21e1c3e33b6e244ae57929aefaa98a`:**
+  [Laravel CI 41390909115](https://github.com/binegocom/TopKolik.com/actions/runs/41390909115)
+  passed **344 tests / 3,098 assertions** with disposable PostgreSQL/Redis,
+  four-worker HTTP races, real HTTP/SMTP, Composer audit and 17 editorial
+  guard cases. [Editorial/roadmap CI 41390909138](https://github.com/binegocom/TopKolik.com/actions/runs/41390909138)
+  passed. Final documentation commit requires its own successful CI before
+  merge.
+- `P03-007` stays **in_progress**: full RBAC/BOLA coverage, external
+  concurrency review, licensed sports integrations and production release
+  remain unverified.
