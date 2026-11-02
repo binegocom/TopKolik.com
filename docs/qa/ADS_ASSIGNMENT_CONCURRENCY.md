@@ -75,3 +75,30 @@ approval/grant revocation scenarios, PostgreSQL/Redis, real HTTP/SMTP,
 Composer audit and 17 editorial guards. [Editorial/roadmap CI 41364309196](https://github.com/binegocom/TopKolik.com/actions/runs/41364309196)
 passed. The final evidence commit requires its own successful CI before merge.
 No production verification is implied.
+
+## Requester emergency-offboarding race
+
+A finance-role security administrator can also hold a separately approved
+security-administrator grant. An independent operator may deactivate that
+finance staff account while an advertiser assignment request is being
+created. Request creation now locks the current administrator's persisted
+staff row after its security grant and rechecks active status, verified email,
+MFA enrollment and non-ads role within the transaction. This makes the
+account eligibility check part of the same serialization boundary as the
+one-way emergency deactivation. No new grant or role mutation is introduced.
+
+The third four-worker HTTP scenario races a new assignment request against
+emergency deactivation of its finance-role requester. If creation commits
+first, it leaves a pending request; if deactivation commits first, creation
+fails closed. In both outcomes the staff account, its security grant and
+existing tokens remain revoked. Any pending request is rejected at the
+separate second-person approval step. The harness checks actor-attributed,
+unique audit events, replay denial and the absence of target advertiser access.
+
+The Laravel feature suite also checks revoked and newly issued tokens after
+emergency deactivation. The race harness runs only in isolated CI with the
+existing strict environment guards and does not delete production data.
+
+CI verification and final PR SHA must be recorded before this change is
+accepted. P03-007 remains in_progress; full RBAC and production validation
+are outside this incremental regression.
