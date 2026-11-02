@@ -18,9 +18,6 @@ final class StaffAdvertiserReviewController extends Controller
 {
     public function index(Request $request, int $organization): JsonResponse
     {
-        [$staff, $token] = $this->staffSession($request);
-        $this->assertReviewAssignment($staff, $token, $organization);
-
         $data = $request->validate([
             'limit' => ['sometimes', 'integer', 'between:1,50'],
             'before_id' => ['sometimes', 'integer', 'min:1'],
@@ -29,63 +26,72 @@ final class StaffAdvertiserReviewController extends Controller
             'status' => ['missing'],
         ]);
 
-        // Scoping is mandatory at the SQL boundary, not client-supplied.
-        // Only submitted campaigns may be seen, never advertiser drafts.
-        $query = AdvertiserCampaign::query()
-            ->where('advertiser_organization_id', $organization)
-            ->where('status', 'in_review');
+        return DB::transaction(function () use ($request, $organization, $data): JsonResponse {
+            // Hold staff, bearer, organization and assignment locks until the
+            // private response is serialized. A committed revocation cannot
+            // race an already-authorized campaign read.
+            $this->lockReviewAccess($request, $organization);
 
-        if (array_key_exists('before_id', $data)) {
-            $query->where('id', '<', (int) $data['before_id']);
-        }
-        $limit = (int) ($data['limit'] ?? 20);
-        $rows = $query->orderByDesc('id')->limit($limit + 1)
-            ->get(['id', 'status', 'revision', 'updated_at']);
-        $hasMore = $rows->count() > $limit;
-        $page = $rows->take($limit)->map(static fn (AdvertiserCampaign $campaign): array => [
-            'id' => $campaign->getKey(),
-            'status' => $campaign->status,
-            'revision' => $campaign->revision,
-            'updated_at' => $campaign->updated_at?->toIso8601String(),
-        ])->values()->all();
+            // Only the assigned organization's submitted campaigns are visible.
+            $query = AdvertiserCampaign::query()
+                ->where('advertiser_organization_id', $organization)
+                ->where('status', 'in_review');
 
-        return $this->privateResponse([
-            'campaigns' => $page,
-            'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
-        ]);
+            if (array_key_exists('before_id', $data)) {
+                $query->where('id', '<', (int) $data['before_id']);
+            }
+            $limit = (int) ($data['limit'] ?? 20);
+            $rows = $query->orderByDesc('id')->limit($limit + 1)
+                ->lockForUpdate()
+                ->get(['id', 'status', 'revision', 'updated_at']);
+            $hasMore = $rows->count() > $limit;
+            $page = $rows->take($limit)->map(static fn (AdvertiserCampaign $campaign): array => [
+                'id' => $campaign->getKey(),
+                'status' => $campaign->status,
+                'revision' => $campaign->revision,
+                'updated_at' => $campaign->updated_at?->toIso8601String(),
+            ])->values()->all();
+
+            return $this->privateResponse([
+                'campaigns' => $page,
+                'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
+            ]);
+        }, 3);
     }
 
     public function show(Request $request, int $organization, int $campaign): JsonResponse
     {
-        [$staff, $token] = $this->staffSession($request);
-        $this->assertReviewAssignment($staff, $token, $organization);
+        return DB::transaction(function () use ($request, $organization, $campaign): JsonResponse {
+            [$staff, $token] = $this->lockReviewAccess($request, $organization);
 
-        // The advertiser's organization ID is enforced before finding a
-        // resource, so foreign campaign IDs cannot disclose cross-tenant data.
-        $record = AdvertiserCampaign::query()
-            ->where('advertiser_organization_id', $organization)
-            ->where('status', 'in_review')
-            ->whereKey($campaign)
-            ->firstOrFail();
+            // Keep the organization and review state in the SQL predicate:
+            // foreign and draft campaign IDs must remain undiscoverable.
+            $record = AdvertiserCampaign::query()
+                ->where('advertiser_organization_id', $organization)
+                ->where('status', 'in_review')
+                ->whereKey($campaign)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        Gate::forUser($staff)->authorize('staff-resource', [
-            'advertising.campaign.read',
-            new StaffResourceContext(
-                (int) $record->getKey(),
-                'advertiser_campaign',
-                $record->status,
-                advertiserId: (int) $record->advertiser_organization_id,
-            ),
-            $token,
-        ]);
+            Gate::forUser($staff)->authorize('staff-resource', [
+                'advertising.campaign.read',
+                new StaffResourceContext(
+                    (int) $record->getKey(),
+                    'advertiser_campaign',
+                    $record->status,
+                    advertiserId: (int) $record->advertiser_organization_id,
+                ),
+                $token,
+            ]);
 
-        return $this->privateResponse(['campaign' => [
-            'id' => $record->getKey(),
-            'title' => $record->title,
-            'body' => $record->body,
-            'status' => $record->status,
-            'revision' => $record->revision,
-        ]]);
+            return $this->privateResponse(['campaign' => [
+                'id' => $record->getKey(),
+                'title' => $record->title,
+                'body' => $record->body,
+                'status' => $record->status,
+                'revision' => $record->revision,
+            ]]);
+        }, 3);
     }
 
     public function requestChanges(Request $request, int $organization, int $campaign): JsonResponse
@@ -168,6 +174,48 @@ final class StaffAdvertiserReviewController extends Controller
 
         // Requesting changes is not approval, delivery or publication.
         return $this->privateResponse($result);
+    }
+
+    /**
+     * Lock order: staff -> bearer -> organization -> assignment -> campaign.
+     * Revocation, deactivation and review-state transitions cannot commit
+     * between the persisted authorization check and private serialization.
+     *
+     * @return array{StaffMember, PersonalAccessToken}
+     */
+    private function lockReviewAccess(Request $request, int $organization): array
+    {
+        [$staff, $token] = $this->staffSession($request);
+
+        $actor = StaffMember::query()->whereKey($staff->getKey())
+            ->lockForUpdate()->first();
+        $currentToken = PersonalAccessToken::query()->whereKey($token->getKey())
+            ->lockForUpdate()->first();
+
+        if (! $actor || ! $currentToken
+            || $currentToken->expires_at === null || $currentToken->expires_at->isPast()
+            || $currentToken->tokenable_type !== $actor->getMorphClass()
+            || (string) $currentToken->tokenable_id !== (string) $actor->getKey()) {
+            abort(401, 'Unauthenticated.');
+        }
+
+        $advertiser = DB::table('advertiser_organizations')
+            ->where('id', $organization)->lockForUpdate()->first();
+        if (! $advertiser || ! $advertiser->is_active) {
+            abort(404);
+        }
+
+        $assignment = DB::table('staff_advertiser_assignments')
+            ->where('staff_member_id', $actor->getKey())
+            ->where('advertiser_organization_id', $organization)
+            ->lockForUpdate()->first();
+        if (! $assignment || ! $assignment->is_active) {
+            abort(404);
+        }
+
+        $this->assertReviewAssignment($actor, $currentToken, $organization);
+
+        return [$actor, $currentToken];
     }
 
     private function assertReviewAssignment(StaffMember $staff, PersonalAccessToken $token, int $organization): void
