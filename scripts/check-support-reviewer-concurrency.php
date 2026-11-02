@@ -673,7 +673,11 @@ try {
             if (curl_error($handle) !== '' || curl_getinfo($handle, CURLINFO_RESPONSE_CODE) !== 403) {
                 throw new RuntimeException(
                     'Revoked reviewer performed '.$action.' after lock release: HTTP '.
-                    curl_getinfo($handle, CURLINFO_RESPONSE_CODE).' '.curl_error($handle),
+                    curl_getinfo($handle, CURLINFO_RESPONSE_CODE).' '.curl_error($handle).
+                    ', response='.substr((string) curl_multi_getcontent($handle), 0, 500).
+                    ', ticket='.json_encode(DB::table('support_tickets')->where('id', $raceId)->first(),
+                        JSON_THROW_ON_ERROR).
+                    ', server_log='.substr((string) @file_get_contents($log), -3000),
                 );
             }
         } finally {
