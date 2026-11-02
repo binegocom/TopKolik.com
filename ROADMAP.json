@@ -1717,7 +1717,7 @@
         "PR #86 serializes support escalation approval and relinquishment with staff identity, current bearer and ticket locks. Real four-worker reviewer-role revocation race passed code CI; final evidence commit CI, full RBAC/BOLA coverage, production operator access and deployment remain outstanding.",
         "PR #88 verifies support escalation recovery versus administrator logout and persisted bearer revocation with four-worker HTTP/PostgreSQL contention. P03-007 remains in_progress: full resource RBAC/BOLA matrix, independent security acceptance, final documentation-commit CI and production deployment are not verified.",
         "PR #89 rechecks the persisted Sanctum bearer under staff → token → draft locks for all editorial writes, with deterministic revocation-boundary tests. Full RBAC/BOLA matrix, independent four-worker editorial/logout race, final documentation-commit CI, provider licensing and production deployment remain unverified; P03-007 stays in_progress.",
-        "PR #92 serializes owner-scoped editorial list/detail reads with persisted staff and bearer revocation and adds PostgreSQL BOLA regressions. Independent simultaneous read-versus-role/logout HTTP worker races, full staff/finance RBAC, external security acceptance and production deployment remain unverified; P03-007 stays in_progress."
+        "PR #93 verified four-worker HTTP draft index/detail read races with logout and committed role revocation on disposable PostgreSQL, including SQL lock contention, bearer replay denial and cross-editor BOLA concealment. Full staff/finance RBAC matrix, independent security review, approved production controls and deployment remain unverified; P03-007 stays in_progress."
       ]
     },
     {
