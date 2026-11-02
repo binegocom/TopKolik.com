@@ -11,6 +11,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\PersonalAccessToken;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 final class ReaderPrivacyController extends Controller
 {
@@ -90,6 +92,59 @@ final class ReaderPrivacyController extends Controller
             ],
             'message' => 'Deletion request recorded; account data has not been deleted.',
         ], 202);
+    }
+
+    /**
+     * Self-scoped, read-only history of actual preference consent changes.
+     * The privacy-safe default does not create an event.
+     */
+    public function consentHistory(Request $request): JsonResponse
+    {
+        $reader = $this->authorizedReader($request, 'reader:read');
+
+        // Reject unknown query keys rather than silently ignoring attempted
+        // actor/account selectors or unsupported data exports.
+        $unexpected = array_diff(array_keys($request->query()), [
+            'limit', 'before_id', 'consent_key',
+        ]);
+        if ($unexpected !== []) {
+            throw ValidationException::withMessages([
+                'query' => 'Unsupported consent history query parameter.',
+            ]);
+        }
+
+        $filters = $request->validate([
+            'limit' => ['sometimes', 'integer', 'between:1,50'],
+            'before_id' => ['sometimes', 'integer', 'min:1'],
+            'consent_key' => ['sometimes', 'string', Rule::in([
+                'analytics_consent', 'personalized_news_enabled',
+            ])],
+        ]);
+        $limit = (int) ($filters['limit'] ?? 20);
+        $query = DB::table('reader_consent_events')
+            ->where('user_id', $reader->getKey());
+
+        if (isset($filters['consent_key'])) {
+            $query->where('consent_key', $filters['consent_key']);
+        }
+        if (isset($filters['before_id'])) {
+            $query->where('id', '<', (int) $filters['before_id']);
+        }
+
+        $rows = $query->orderByDesc('id')->limit($limit + 1)
+            ->get(['id', 'consent_key', 'granted', 'created_at']);
+        $hasMore = $rows->count() > $limit;
+        $page = $rows->take($limit)->map(static fn (object $event): array => [
+            'id' => (int) $event->id,
+            'consent_key' => $event->consent_key,
+            'granted' => (bool) $event->granted,
+            'recorded_at' => Carbon::parse($event->created_at)->toIso8601String(),
+        ])->values()->all();
+
+        return $this->privateResponse([
+            'consent_history' => $page,
+            'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
+        ]);
     }
 
     public function deletionStatus(Request $request): JsonResponse

@@ -8,6 +8,16 @@
 
 Sensitive POST operations require an expiring presented Sanctum bearer token bound to a verified `User` principal, `reader:write`, fresh account lookup, and password confirmation; IP and account rate limits apply. Reader-only read requires `reader:read`. IDs, status, email, and retention bypasses from clients are rejected. Data is locked/scoped by authenticated user ID. Responses use private no-store/no-cache headers.
 
+## Self-service consent history
+
+- `GET /api/v1/me/privacy/consent-history` returns **only the authenticated verified reader's** recorded consent transitions; no client-supplied user or actor scope is permitted.
+- Requires an expiring, presented `reader:read` Sanctum token bound to a `User` principal. Staff and advertiser tokens are denied even when they present a `reader:read` ability.
+- Descending ID keyset pagination: optional `limit` (1–50; default 20), `before_id` (positive integer), and `consent_key` (`analytics_consent` or `personalized_news_enabled`). Unknown query keys are rejected with HTTP 422 rather than silently applied.
+- The response contains only `id`, `consent_key`, `granted`, `recorded_at` and a pagination cursor. No identity, email, credentials, IP, device data, or cross-account events are returned.
+- Reads do not write to the append-only ledger and always return `Cache-Control: no-store, private`. No initial default opt-out record is manufactured. The password-reverified full JSON export remains available independently.
+
+This is a partial P03-009 transparency feature; legal retention decisions and execution of erasure requests remain blocked. It introduces no new migration, deletion, role, locale, third-party integration or production data change.
+
 ## Consent evidence
 
 Existing `PATCH /api/v1/me/preferences` remains compatible. It writes an append-only consent change record for real transitions of `analytics_consent` and `personalized_news_enabled` in the same transaction as preferences, serialized via a user row lock. Initial privacy-safe default is false and creates no tracking event. Unchanged submissions and locale-only updates create no event. PostgreSQL rejects updating or deleting past consent records.
