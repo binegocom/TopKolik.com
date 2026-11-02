@@ -1406,12 +1406,29 @@
           "type": "reference",
           "value": "https://github.com/binegocom/TopKolik.com/pull/74",
           "validation": "Approver grant revocation regression; P03-007 remains in_progress"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "324 Laravel tests passed, 2,869 assertions with disposable real PostgreSQL/Redis on feature SHA f68dd4fa27eccae358415e9a45fae97f2d08718f. Nine new finance inventory/history feature tests cover real two-person decisions, inactive entitlements, role drift, hidden pending entries, cursor paging, strict rejected actor filters, reader/advertiser denials, MFA/current security grant and read-only DB state.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41368850129"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && python3 scripts/status.py check",
+          "result": "Composer audit found zero security advisories; HTTP/SMTP smoke and editorial guard/roadmap checks passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41368850133"
+        },
+        {
+          "type": "revision",
+          "value": "f68dd4fa27eccae358415e9a45fae97f2d08718f",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/75"
         }
       ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/64",
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/75",
       "limitations": [
         "This policy foundation is not full P03-007 completion. Real article/ticket records, scoped controllers, advertiser/finance tenancy and BOLA integration are pending; no admin route grants yet.",
         "Support ticket read is an incremental slice only; editorial draft models, support reply/escalation, advertiser and finance scopes, security audit and full BOLA matrix remain open.",
