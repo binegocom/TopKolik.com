@@ -449,6 +449,123 @@ try {
         }
     }
 
+    // Prove role revocation wins against a request already waiting on the
+    // persisted staff row lock. A sequential 403 check alone cannot establish
+    // that a real HTTP worker re-authorizes after the lock is released.
+    foreach (['reply', 'escalate', 'resolve'] as $action) {
+        $operator = $makeStaff('support', 'role-revocation-'.$action);
+        $initialState = $action === 'resolve' ? 'pending' : 'open';
+        $raceTicket = SupportTicket::create([
+            'assigned_staff_id' => $operator->getKey(),
+            'subject' => 'Role revocation race '.$run.' '.$action,
+            'message' => 'Isolated authorization race regression',
+            'status' => $initialState,
+        ]);
+        $raceId = (int) $raceTicket->getKey();
+        $bearer = $operator->createToken(
+            'role-revocation-race', ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+        )->plainTextToken;
+        $path = '/api/v1/staff/support/tickets/'.$raceId;
+        $payload = match ($action) {
+            'reply' => ['idempotency_key' => (string) Str::uuid(), 'message' => 'Must not persist.'],
+            'resolve' => ['resolution_note' => 'Must not persist.'],
+            default => new stdClass(),
+        };
+        $mutationPath = match ($action) {
+            'reply' => $path.'/replies',
+            'escalate' => $path.'/escalate',
+            'resolve' => $path.'/resolve',
+        };
+
+        $multi = curl_multi_init();
+        $handle = curl_init($base.$mutationPath);
+        try {
+            // Simulate an authorized operator's role being revoked by a
+            // separate administrative transaction while a real worker waits.
+            DB::beginTransaction();
+            StaffMember::query()->whereKey($operator->getKey())
+                ->lockForUpdate()->firstOrFail();
+
+            curl_setopt_array($handle, [
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => json_encode($payload, JSON_THROW_ON_ERROR),
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer '.$bearer,
+                    'Accept: application/json',
+                    'Content-Type: application/json',
+                ],
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_TIMEOUT => 30,
+            ]);
+            curl_multi_add_handle($multi, $handle);
+
+            $waiting = false;
+            $active = null;
+            $deadline = microtime(true) + 10;
+            do {
+                if (curl_multi_exec($multi, $active) !== CURLM_OK) {
+                    throw new RuntimeException('Role-revocation HTTP transport failed to start.');
+                }
+                // PostgreSQL reports the other connection waiting for our
+                // locked staff row; this is a verified overlap, not a sleep
+                // based guess about scheduling.
+                $waiting = (int) DB::selectOne(
+                    "SELECT count(*) AS waiting FROM pg_stat_activity ".
+                    "WHERE pid <> pg_backend_pid() AND wait_event_type = 'Lock' ".
+                    "AND query ILIKE '%staff_members%' AND query ILIKE '%for update%'"
+                )->waiting > 0;
+                if (! $waiting) {
+                    usleep(50000);
+                }
+            } while (! $waiting && $active > 0 && microtime(true) < $deadline);
+
+            if (! $waiting) {
+                throw new RuntimeException('HTTP worker never contended for the locked support role.');
+            }
+
+            StaffMember::query()->whereKey($operator->getKey())->update(['role' => 'editor']);
+            DB::commit();
+
+            $deadline = microtime(true) + 30;
+            do {
+                if (curl_multi_exec($multi, $active) !== CURLM_OK || microtime(true) > $deadline) {
+                    throw new RuntimeException('Role-revocation HTTP request did not finish.');
+                }
+                if ($active > 0 && curl_multi_select($multi, 1.0) === -1) {
+                    usleep(10000);
+                }
+            } while ($active > 0);
+
+            if (curl_error($handle) !== '' || curl_getinfo($handle, CURLINFO_RESPONSE_CODE) !== 403) {
+                throw new RuntimeException(
+                    'Revoked support role performed '.$action.' after lock release: HTTP '.
+                    curl_getinfo($handle, CURLINFO_RESPONSE_CODE).' '.curl_error($handle),
+                );
+            }
+        } finally {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+            curl_multi_remove_handle($multi, $handle);
+            curl_close($handle);
+            curl_multi_close($multi);
+        }
+
+        DB::disconnect();
+        $fresh = $raceTicket->fresh();
+        if ($operator->fresh()->role !== 'editor' || $fresh->status !== $initialState
+            || $fresh->escalated_at !== null || $fresh->resolved_at !== null
+            || DB::table('support_ticket_replies')->where('support_ticket_id', $raceId)->exists()
+            || DB::table('security_audit_events')->where('staff_member_id', $operator->getKey())->exists()) {
+            throw new RuntimeException('Revoked role '.$action.' race changed ticket, reply or audit state.');
+        }
+        if ($parallelPosts([[$mutationPath, $bearer, $payload]]) !== [403]) {
+            throw new RuntimeException('Previously authorized bearer regained '.$action.' access.');
+        }
+    }
+
+    echo "PASS: real HTTP workers block on support staff row locks, then reject reply/escalate/resolve after committed role revocation.\n";
     echo "PASS: support logout versus reply, escalation and resolution races; token revocation, audit and state atomicity.\n";
     echo "PASS: escalation, relinquishment and recovery HTTP races; single commits, held-state safety, independent reassignment and atomic audit.\n";
 } catch (Throwable $exception) {
