@@ -606,3 +606,27 @@
   `P03-007` remains **in_progress**. No independent role-revocation
   versus support-write worker race, full RBAC/BOLA acceptance, licensed
   sports data or production release has been verified.
+
+## P03-007 — support ticket mutation / staff logout serialization (PR #84)
+
+- A support reply, escalation or resolution can no longer authorize against
+  a bearer token loaded before a concurrent logout. Each write locks the
+  persisted actor, then the presented token, then the assigned ticket, and
+  evaluates the current token and resource policy inside the transaction.
+- Staff logout uses the same actor-before-token PostgreSQL lock order and
+  commits token deletion and its security audit atomically. This prevents
+  token/staff lock inversion during simultaneous support writes.
+- A PostgreSQL feature regression checks the lock sequence for all three
+  support mutations and that logging out one bearer does not revoke another
+  active bearer. The CI-only four-worker HTTP harness races logout with
+  reply, escalation and resolution, validating either legal serial order,
+  immutable audit attribution and rejection of the revoked bearer.
+- [PR #84](https://github.com/binegocom/TopKolik.com/pull/84) is under
+  review. **CI verification is pending on the final commit; no passing test
+  result or merge is claimed here.** Run `php artisan test`,
+  `TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-support-reviewer-concurrency.php`
+  in isolated GitHub Actions, and both Laravel and editorial/roadmap workflows.
+- `P03-007` remains **in_progress**; independent staff-role revocation
+  versus ticket-write HTTP races, the complete RBAC/BOLA matrix and
+  production release are not verified. No new provider access, locale,
+  migration or runtime sports content is introduced.
