@@ -17,14 +17,6 @@ final class StaffSecurityAuditController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        /** @var StaffMember $staff */
-        $staff = $request->user();
-        $bearer = $request->bearerToken();
-        $token = $bearer ? PersonalAccessToken::findToken($bearer) : null;
-        if (! $token) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
-        }
-
         // Validate even the optional actor filter: no route/query parameter
         // may select another staff member. Unrecognized query keys are unused.
         $data = $request->validate([
@@ -38,42 +30,44 @@ final class StaffSecurityAuditController extends Controller
             'request_id' => ['sometimes', 'uuid'],
         ]);
 
-        Gate::forUser($staff)->authorize('staff-audit-self', [$token]);
+        return DB::transaction(function () use ($request, $data): JsonResponse {
+            $staff = $this->authorizeAuditReader($request);
 
-        $limit = (int) ($data['limit'] ?? 20);
-        $query = DB::table('security_audit_events')
-            ->where('staff_member_id', $staff->getKey());
+            $limit = (int) ($data['limit'] ?? 20);
+            $query = DB::table('security_audit_events')
+                ->where('staff_member_id', $staff->getKey());
 
-        foreach (['action', 'subject_type', 'subject_id', 'request_id'] as $field) {
-            if (array_key_exists($field, $data)) {
-                $query->where($field, $data[$field]);
+            foreach (['action', 'subject_type', 'subject_id', 'request_id'] as $field) {
+                if (array_key_exists($field, $data)) {
+                    $query->where($field, $data[$field]);
+                }
             }
-        }
-        if (array_key_exists('before_id', $data)) {
-            $query->where('id', '<', (int) $data['before_id']);
-        }
+            if (array_key_exists('before_id', $data)) {
+                $query->where('id', '<', (int) $data['before_id']);
+            }
 
-        // Keyset pagination avoids large offsets and keeps filtering scoped
-        // to the authenticated staff ID at the SQL boundary.
-        $rows = $query->orderByDesc('id')->limit($limit + 1)
-            ->get(['id', 'action', 'subject_type', 'subject_id', 'request_id', 'created_at']);
-        $hasMore = $rows->count() > $limit;
-        $page = $rows->take($limit)->map(static fn (object $event): array => [
-            'id' => (int) $event->id,
-            'action' => $event->action,
-            'subject_type' => $event->subject_type,
-            'subject_id' => (int) $event->subject_id,
-            'request_id' => $event->request_id,
-            'created_at' => $event->created_at,
-        ])->values()->all();
+            // Keyset pagination avoids large offsets and keeps filtering scoped
+            // to the authenticated staff ID at the SQL boundary.
+            $rows = $query->orderByDesc('id')->limit($limit + 1)
+                ->get(['id', 'action', 'subject_type', 'subject_id', 'request_id', 'created_at']);
+            $hasMore = $rows->count() > $limit;
+            $page = $rows->take($limit)->map(static fn (object $event): array => [
+                'id' => (int) $event->id,
+                'action' => $event->action,
+                'subject_type' => $event->subject_type,
+                'subject_id' => (int) $event->subject_id,
+                'request_id' => $event->request_id,
+                'created_at' => $event->created_at,
+            ])->values()->all();
 
-        return response()->json([
-            'events' => $page,
-            'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
-        ])->withHeaders([
-            'Cache-Control' => 'no-store, private',
-            'Pragma' => 'no-cache',
-        ]);
+            return response()->json([
+                'events' => $page,
+                'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
+            ])->withHeaders([
+                'Cache-Control' => 'no-store, private',
+                'Pragma' => 'no-cache',
+            ]);
+        }, 3);
     }
 
     /**
@@ -84,14 +78,6 @@ final class StaffSecurityAuditController extends Controller
      */
     public function authenticationFailures(Request $request): JsonResponse
     {
-        /** @var StaffMember $staff */
-        $staff = $request->user();
-        $bearer = $request->bearerToken();
-        $token = $bearer ? PersonalAccessToken::findToken($bearer) : null;
-        if (! $token) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
-        }
-
         // Do not accept an actor, email, or fingerprint from the client.
         // Never use the HMAC fingerprint as a public search key.
         $data = $request->validate([
@@ -109,38 +95,72 @@ final class StaffSecurityAuditController extends Controller
             'request_id' => ['sometimes', 'uuid'],
         ]);
 
+        return DB::transaction(function () use ($request, $data): JsonResponse {
+            $staff = $this->authorizeAuditReader($request);
+
+            $limit = (int) ($data['limit'] ?? 20);
+            $query = DB::table('security_auth_failures')
+                ->where('staff_member_id', $staff->getKey());
+
+            foreach (['action', 'request_id'] as $field) {
+                if (array_key_exists($field, $data)) {
+                    $query->where($field, $data[$field]);
+                }
+            }
+            if (array_key_exists('before_id', $data)) {
+                $query->where('id', '<', (int) $data['before_id']);
+            }
+
+            $rows = $query->orderByDesc('id')->limit($limit + 1)
+                ->get(['id', 'action', 'request_id', 'created_at']);
+            $hasMore = $rows->count() > $limit;
+            $page = $rows->take($limit)->map(static fn (object $event): array => [
+                'id' => (int) $event->id,
+                'action' => $event->action,
+                'request_id' => $event->request_id,
+                'created_at' => $event->created_at,
+            ])->values()->all();
+
+            return response()->json([
+                'failures' => $page,
+                'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
+            ])->withHeaders([
+                'Cache-Control' => 'no-store, private',
+                'Pragma' => 'no-cache',
+            ]);
+        }, 3);
+    }
+
+    /**
+     * Serialize the complete self-only audit read with logout, role changes,
+     * account deactivation and token revocation. Lock order matches staff
+     * mutations: persisted staff identity before the presented bearer.
+     */
+    private function authorizeAuditReader(Request $request): StaffMember
+    {
+        $principal = $request->user();
+        $bearer = $request->bearerToken();
+        $presented = $bearer ? PersonalAccessToken::findToken($bearer) : null;
+
+        if (! $principal instanceof StaffMember || ! $presented) {
+            abort(401, 'Unauthenticated.');
+        }
+
+        $staff = StaffMember::query()->whereKey($principal->getKey())
+            ->lockForUpdate()->first();
+        $token = PersonalAccessToken::query()->whereKey($presented->getKey())
+            ->lockForUpdate()->first();
+
+        if (! $staff || ! $token || $token->expires_at === null
+            || $token->expires_at->isPast()
+            || $token->tokenable_type !== $staff->getMorphClass()
+            || (string) $token->tokenable_id !== (string) $staff->getKey()) {
+            abort(401, 'Unauthenticated.');
+        }
+
         Gate::forUser($staff)->authorize('staff-audit-self', [$token]);
 
-        $limit = (int) ($data['limit'] ?? 20);
-        $query = DB::table('security_auth_failures')
-            ->where('staff_member_id', $staff->getKey());
-
-        foreach (['action', 'request_id'] as $field) {
-            if (array_key_exists($field, $data)) {
-                $query->where($field, $data[$field]);
-            }
-        }
-        if (array_key_exists('before_id', $data)) {
-            $query->where('id', '<', (int) $data['before_id']);
-        }
-
-        $rows = $query->orderByDesc('id')->limit($limit + 1)
-            ->get(['id', 'action', 'request_id', 'created_at']);
-        $hasMore = $rows->count() > $limit;
-        $page = $rows->take($limit)->map(static fn (object $event): array => [
-            'id' => (int) $event->id,
-            'action' => $event->action,
-            'request_id' => $event->request_id,
-            'created_at' => $event->created_at,
-        ])->values()->all();
-
-        return response()->json([
-            'failures' => $page,
-            'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
-        ])->withHeaders([
-            'Cache-Control' => 'no-store, private',
-            'Pragma' => 'no-cache',
-        ]);
+        return $staff;
     }
 
 }
