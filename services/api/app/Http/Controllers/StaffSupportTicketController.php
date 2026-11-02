@@ -34,93 +34,96 @@ final class StaffSupportTicketController extends Controller
         /** @var StaffMember $staff */
         $staff = $request->user();
         $token = $this->presentedStaffToken($request);
-        if (! $token) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
-        }
 
-        Gate::forUser($staff)->authorize('staff-support-tickets-self', [$token]);
+        return DB::transaction(function () use ($staff, $token, $filters): JsonResponse {
+            // Match logout and ticket mutation lock order. Authorization and
+            // private serialization must finish before revocation can commit.
+            $actor = $this->lockStaffForMutation($staff);
+            $currentToken = $this->lockStaffTokenForMutation($token, $actor);
+            Gate::forUser($actor)->authorize('staff-support-tickets-self', [$currentToken]);
 
-        // Apply the authenticated assignment at SQL level, not in memory.
-        // Keyset pagination avoids offset drift when tickets are added.
-        $limit = (int) ($filters['limit'] ?? 20);
-        $query = SupportTicket::query()->where('assigned_staff_id', $staff->getKey());
+            // Scope by the locked identity at SQL level; hold the selected
+            // tickets against reassignment until the response is assembled.
+            $limit = (int) ($filters['limit'] ?? 20);
+            $query = SupportTicket::query()->where('assigned_staff_id', $actor->getKey());
 
-        if (isset($filters['status'])) {
-            $query->where('status', $filters['status']);
-        }
-        if (isset($filters['before_id'])) {
-            $query->where('id', '<', (int) $filters['before_id']);
-        }
+            if (isset($filters['status'])) {
+                $query->where('status', $filters['status']);
+            }
+            if (isset($filters['before_id'])) {
+                $query->where('id', '<', (int) $filters['before_id']);
+            }
 
-        $rows = $query->orderByDesc('id')->limit($limit + 1)
-            ->get(['id', 'subject', 'status', 'created_at', 'updated_at', 'escalated_at']);
-        $hasMore = $rows->count() > $limit;
-        $page = $rows->take($limit)->map(static fn (SupportTicket $ticket): array => [
-            'id' => (int) $ticket->getKey(),
-            'subject' => $ticket->subject,
-            'status' => $ticket->status,
-            'created_at' => $ticket->created_at?->toIso8601String(),
-            'updated_at' => $ticket->updated_at?->toIso8601String(),
-            'escalated_at' => $ticket->escalated_at?->toIso8601String(),
-        ])->values()->all();
+            $rows = $query->orderByDesc('id')->limit($limit + 1)
+                ->lockForUpdate()
+                ->get(['id', 'subject', 'status', 'created_at', 'updated_at', 'escalated_at']);
+            $hasMore = $rows->count() > $limit;
+            $page = $rows->take($limit)->map(static fn (SupportTicket $ticket): array => [
+                'id' => (int) $ticket->getKey(),
+                'subject' => $ticket->subject,
+                'status' => $ticket->status,
+                'created_at' => $ticket->created_at?->toIso8601String(),
+                'updated_at' => $ticket->updated_at?->toIso8601String(),
+                'escalated_at' => $ticket->escalated_at?->toIso8601String(),
+            ])->values()->all();
 
-        return response()->json([
-            'tickets' => $page,
-            'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
-        ])->withHeaders([
-            'Cache-Control' => 'no-store, private',
-            'Pragma' => 'no-cache',
-        ]);
+            return response()->json([
+                'tickets' => $page,
+                'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
+            ])->withHeaders([
+                'Cache-Control' => 'no-store, private',
+                'Pragma' => 'no-cache',
+            ]);
+        }, 3);
     }
 
     public function show(Request $request, int $ticket): JsonResponse
     {
         /** @var StaffMember $staff */
         $staff = $request->user();
+        $token = $this->presentedStaffToken($request);
 
-        // Scope the SQL read before constructing authorization context.
-        // An unassigned or another operator's ticket is indistinguishable
-        // from a nonexistent ticket, including for staff with valid MFA.
-        $record = SupportTicket::query()
-            ->whereKey($ticket)
-            ->where('assigned_staff_id', $staff->getKey())
-            ->firstOrFail();
+        return DB::transaction(function () use ($staff, $token, $ticket): JsonResponse {
+            $actor = $this->lockStaffForMutation($staff);
+            $currentToken = $this->lockStaffTokenForMutation($token, $actor);
 
-        // Never trust a potentially cached guard token for authorization.
-        $bearer = $request->bearerToken();
-        $token = $bearer ? PersonalAccessToken::findToken($bearer) : null;
-        if (! $token) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
-        }
+            // Foreign or unassigned tickets remain indistinguishable from
+            // nonexistent tickets, even when a staff role has changed.
+            $record = SupportTicket::query()
+                ->whereKey($ticket)
+                ->where('assigned_staff_id', $actor->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        Gate::forUser($staff)->authorize('staff-resource', [
-            'support.ticket.view',
-            new StaffResourceContext(
-                id: (int) $record->getKey(),
-                kind: 'support_ticket',
-                state: $record->status,
-                assignedStaffId: (int) $record->assigned_staff_id,
-            ),
-            $token,
-        ]);
+            Gate::forUser($actor)->authorize('staff-resource', [
+                'support.ticket.view',
+                new StaffResourceContext(
+                    id: (int) $record->getKey(),
+                    kind: 'support_ticket',
+                    state: $record->status,
+                    assignedStaffId: (int) $record->assigned_staff_id,
+                ),
+                $currentToken,
+            ]);
 
-        return response()->json([
-            'ticket' => [
-                'id' => $record->getKey(),
-                'subject' => $record->subject,
-                'message' => $record->message,
-                'status' => $record->status,
-                'created_at' => $record->created_at?->toIso8601String(),
-                'updated_at' => $record->updated_at?->toIso8601String(),
-                'escalated_at' => $record->escalated_at?->toIso8601String(),
-                'replies' => $record->replies()->orderBy('id')->get()
-                    ->map(static fn (SupportTicketReply $reply): array => [
-                        'id' => $reply->getKey(),
-                        'message' => $reply->message,
-                        'created_at' => $reply->created_at?->toIso8601String(),
-                    ])->all(),
-            ],
-        ])->header('Cache-Control', 'no-store, private');
+            return response()->json([
+                'ticket' => [
+                    'id' => $record->getKey(),
+                    'subject' => $record->subject,
+                    'message' => $record->message,
+                    'status' => $record->status,
+                    'created_at' => $record->created_at?->toIso8601String(),
+                    'updated_at' => $record->updated_at?->toIso8601String(),
+                    'escalated_at' => $record->escalated_at?->toIso8601String(),
+                    'replies' => $record->replies()->orderBy('id')->get()
+                        ->map(static fn (SupportTicketReply $reply): array => [
+                            'id' => $reply->getKey(),
+                            'message' => $reply->message,
+                            'created_at' => $reply->created_at?->toIso8601String(),
+                        ])->all(),
+                ],
+            ])->header('Cache-Control', 'no-store, private');
+        }, 3);
     }
 
     public function reply(Request $request, int $ticket, SecurityAuditRecorder $audit): JsonResponse
