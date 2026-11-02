@@ -345,8 +345,8 @@ final class StaffSupportEscalationRecoveryTest extends TestCase
         $this->postJson($this->recoverUrl($ticket))->assertOk();
         $this->assertSame(
             ['staff_members', 'personal_access_tokens', 'staff_security_admin_grants', 'support_tickets'],
-            $lockedTables,
-            'Recovery must serialize with role changes, logout, independent grant revocation and ticket writes.',
+            array_slice($lockedTables, 0, 4),
+            'Recovery must lock actor, bearer, grant and ticket before the selector locks eligible reviewers.',
         );
         $this->assertSame($reviewer->id, $ticket->fresh()->escalation_reviewer_staff_id);
         $this->assertDatabaseCount('security_audit_events', 2);
