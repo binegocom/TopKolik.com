@@ -515,8 +515,12 @@ try {
                     "WHERE pid <> pg_backend_pid() AND wait_event_type = 'Lock' ".
                     "AND query ILIKE '%staff_members%' AND query ILIKE '%for update%'"
                 )->waiting > 0;
-                if (! $waiting) {
-                    usleep(50000);
+                if (! $waiting && $active > 0) {
+                    // Drive libcurl's socket readiness as well as its state
+                    // machine; without select the request can remain queued.
+                    if (curl_multi_select($multi, 0.1) === -1) {
+                        usleep(10000);
+                    }
                 }
             } while (! $waiting && $active > 0 && microtime(true) < $deadline);
 
