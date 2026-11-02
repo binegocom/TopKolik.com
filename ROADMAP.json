@@ -1554,6 +1554,23 @@
           "value": "71f5f258d39076f556d4c2dc64569712bf238575",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/86",
           "validation": "Partial reviewer role and bearer revocation hardening; full RBAC/BOLA matrix and production authorization not yet verified."
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test; php scripts/check-support-reviewer-concurrency.php",
+          "result": "352 Laravel tests / 3,162 assertions passed on isolated PostgreSQL/Redis. Real four-worker HTTP recovery waited on staff-role and independent security-grant locks, then rejected revoked operators; ticket and audit state remained unchanged.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41424516334"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction; bash scripts/check-api-http.sh; bash scripts/check-reader-email-delivery.sh; bash scripts/test-editorial-guard.sh; python3 scripts/status.py check",
+          "result": "No Composer advisories; HTTP/SMTP, 17 editorial guard scenarios and roadmap integrity passed on code commit 6f93971c0b78e7a447dd718dbe8f71de3294a5d4.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41424516326"
+        },
+        {
+          "type": "revision",
+          "value": "6f93971c0b78e7a447dd718dbe8f71de3294a5d4",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/87"
         }
       ],
       "verified_at": null,
