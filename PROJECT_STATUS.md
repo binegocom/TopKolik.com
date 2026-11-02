@@ -621,11 +621,15 @@
   active bearer. The CI-only four-worker HTTP harness races logout with
   reply, escalation and resolution, validating either legal serial order,
   immutable audit attribution and rejection of the revoked bearer.
-- [PR #84](https://github.com/binegocom/TopKolik.com/pull/84) is under
-  review. **CI verification is pending on the final commit; no passing test
-  result or merge is claimed here.** Run `php artisan test`,
-  `TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-support-reviewer-concurrency.php`
-  in isolated GitHub Actions, and both Laravel and editorial/roadmap workflows.
+- [PR #84](https://github.com/binegocom/TopKolik.com/pull/84) code SHA
+  `d62c64d134d31e8bf6b7d01a44227641e1d632c8` passed
+  [Laravel CI 41402257757](https://github.com/binegocom/TopKolik.com/actions/runs/41402257757):
+  **347 tests / 3,122 assertions** on disposable PostgreSQL/Redis; all
+  four-worker support logout/write, reviewer, finance and ads races passed,
+  with real HTTP/SMTP, Composer audit and 17 editorial guard cases.
+  [Editorial/roadmap CI 41402257805](https://github.com/binegocom/TopKolik.com/actions/runs/41402257805)
+  also passed. This documentation/evidence update requires fresh CI on
+  the final PR commit before merge.
 - `P03-007` remains **in_progress**; independent staff-role revocation
   versus ticket-write HTTP races, the complete RBAC/BOLA matrix and
   production release are not verified. No new provider access, locale,
