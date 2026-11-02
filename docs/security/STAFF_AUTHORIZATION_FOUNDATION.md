@@ -37,3 +37,14 @@ Policy unit/feature tests use isolated PostgreSQL test records and internal type
 - Responses contain only the assigned ticket's content and status, and are marked `Cache-Control: no-store, private`. There is no ticket list, create, reply, reassignment, export, or public API yet.
 - Feature tests cover assignment IDOR, role changes, deactivation, expired sessions, reader tokens and non-cacheability against disposable PostgreSQL in CI.
 - This is a partial P03-007 deliverable, not RBAC completion. No claim of production readiness, legal retention approval or P03-GATE closure.
+
+## Bounded staff sessions (P03-007 hardening)
+
+All staff HTTP endpoints now reject bearer tokens with a null `expires_at`,
+including legacy tokens that carry `staff:session` or `staff:step-up`
+abilities. Resource-level editor and support gates also reject such tokens
+independently of middleware. Only freshly issued, expiring MFA-authenticated
+staff sessions may proceed; no implicit lifetime or exception is granted.
+Existing non-expiring tokens must be replaced by a normal staff login.
+Regression tests exercise both the HTTP middleware and direct policy gates.
+This is a partial RBAC security hardening, not full P03-007 acceptance.

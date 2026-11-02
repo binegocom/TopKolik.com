@@ -36,6 +36,12 @@ final class EnsureStaffSession
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 
+        // Keep cross-principal tokens forbidden, but reject a matched staff
+        // bearer without an expiry as an invalid session.
+        if ($token->expires_at === null) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
         if (! $token->can('staff:session')) {
             $this->auditDeniedStepUp($request, $member);
 

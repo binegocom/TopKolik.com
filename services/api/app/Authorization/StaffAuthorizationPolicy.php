@@ -27,7 +27,7 @@ final class StaffAuthorizationPolicy
         ?PersonalAccessToken $token,
     ): bool {
         if (! $principal instanceof StaffMember || $resource->id < 1
-            || ! $token || $token->expires_at?->isPast()
+            || ! $token || $token->expires_at === null || $token->expires_at->isPast()
             || ! $token->can('staff:session')
             || $token->tokenable_type !== $principal->getMorphClass()
             || (string) $token->tokenable_id !== (string) $principal->getKey()) {
@@ -122,7 +122,7 @@ final class StaffAuthorizationPolicy
     public function canCreateDraft(Authenticatable $principal, ?PersonalAccessToken $token): bool
     {
         if (! $principal instanceof StaffMember || ! $token
-            || $token->expires_at?->isPast()
+            || $token->expires_at === null || $token->expires_at->isPast()
             || ! $token->can('staff:session')
             || $token->tokenable_type !== $principal->getMorphClass()
             || (string) $token->tokenable_id !== (string) $principal->getKey()) {

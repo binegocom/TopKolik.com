@@ -525,3 +525,28 @@
 - Added authenticated, owner-only `GET /api/v1/me/privacy/consent-history`, reading the existing append-only PostgreSQL consent ledger with verified reader bearer tokens, bounded descending keyset pagination and optional allowlisted consent type. Unexpected query selectors are rejected, and staff/advertiser principals cannot read history. Responses contain only consent metadata and use private no-store headers.
 - A new six-case PostgreSQL feature suite covers real opt-in/withdrawal transitions, default opt-out, cross-reader isolation, pagination, invalid selectors, expired/revoked/unverified reader sessions and non-reader token rejection.
 - **in_progress / verified code CI:** [PR #78](https://github.com/binegocom/TopKolik.com/pull/78) code SHA `526a9d0ffab29957995b7d2c0ae3c47703e5cae1` passed [Laravel CI 41376334613](https://github.com/binegocom/TopKolik.com/actions/runs/41376334613): **331 tests / 2,972 assertions**, six new consent-history feature tests on PostgreSQL/Redis, real four-worker support/finance/ads races, HTTP/SMTP and clean Composer audit. [Editorial/roadmap CI 41376334692](https://github.com/binegocom/TopKolik.com/actions/runs/41376334692) passed 17 editorial guard scenarios and tracking integrity. Final evidence-commit CI must pass before merge. P03-009 stays in_progress until legal retention and erasure processing are approved and verified. No destructive migration, live sports provider, new locale or deployment.
+
+## P03-007 — expiring staff bearer sessions (PR #79)
+
+- Fixed an authorization gap: a legacy persisted staff bearer token with no
+  `expires_at` could previously pass the staff session middleware and
+  editor/support resource Gates. All staff HTTP sessions and both resource
+  authorization paths now require an explicit unexpired token timestamp.
+- Preserved existing cross-principal isolation: a reader bearer token on a
+  staff route remains HTTP 403, while a matched non-expiring staff bearer is
+  HTTP 401. Expired and revoked tokens continue to fail closed.
+- Added two PostgreSQL-backed regression tests for HTTP staff profile,
+  editorial draft index, MFA step-up, editor draft creation and support
+  resource authorization. No new role, permission, provider, migration or
+  runtime sports data was added.
+- The initial PR CI failed because the first middleware change returned
+  HTTP 401 instead of the established HTTP 403 for non-staff principals;
+  the root cause was fixed before re-running the full suite.
+- **Verified code commit `ee49d6034a4e0c9853cd1537336bc868b512106d`:**
+  [Laravel CI 41379579709](https://github.com/binegocom/TopKolik.com/actions/runs/41379579709)
+  passed **333 tests / 2,982 assertions** with disposable PostgreSQL/Redis,
+  real four-worker HTTP races, live HTTP/SMTP and Composer audit.
+  [Editorial/roadmap CI 41379579682](https://github.com/binegocom/TopKolik.com/actions/runs/41379579682)
+  passed. The final documentation-evidence commit must pass CI before merge.
+- `P03-007` remains **in_progress**; the full RBAC/BOLA matrix and production
+  release are not accepted.
