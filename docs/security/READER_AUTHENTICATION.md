@@ -19,6 +19,15 @@ Mobile bearer tokens should only be stored in Android Keystore/iOS Keychain usin
 
 Email verification links are valid for an hour and use a signed GET URL. Email scanners can visit links; the future web confirmation flow should require explicit user interaction before confirmation. No frontend exists yet.
 
+
+## Explicit reader principal/session boundary
+
+All `/api/v1/auth/me`, `/api/v1/auth/logout`, and `/api/v1/me/*` account routes now require `auth:sanctum` **plus** `reader.session`. That middleware checks the presented persisted bearer token on each request, requires an exact `User` polymorphic principal binding, a non-null unexpired token timestamp, and current persisted email verification. `reader:read` / `reader:write` abilities remain separately enforced by the existing route middleware; ability names alone never authorize a staff or advertiser principal. Overlapping numeric primary keys across separate identity tables cannot be confused.
+
+Reader responses now use `Cache-Control: no-store, private` and `Pragma: no-cache`. Legacy unbounded tokens must reauthenticate to obtain the existing 30-day limited token; this does not create a new token endpoint or renew a legacy session. Guests and revoked/expired reader bearers return 401, cross-principal or unverified users return 403, and insufficient route abilities remain 403. No web cookie-auth capability is introduced.
+
+Regression coverage includes cross-principal read/write/logout attempts, overlapping identity IDs, expired/non-expiring/revoked/wrong-scope sessions, current verification and standard reader read/write flows. No production token deletion, migration, locale change, third-party provider or new privilege is introduced.
+
 ## Pending
 
 Backend auth features tested here do not mean a complete end-user app; production SMTP and polished verification presentation are part of the web/mobile launch gates.
