@@ -318,4 +318,66 @@ final class StaffSupportEscalationRecoveryTest extends TestCase
         $this->assertSame('pending', $ticket->fresh()->status);
         $this->assertDatabaseCount('security_audit_events', 1);
     }
+
+    public function test_recovery_locks_actor_bearer_grant_and_ticket_in_a_single_order(): void
+    {
+        $assignee = $this->staff();
+        $admin = $this->admin();
+        $ticket = $this->held($assignee);
+        $reviewer = $this->staff();
+        $this->asStaff($admin);
+
+        $lockedTables = [];
+        DB::listen(static function ($query) use (&$lockedTables): void {
+            $sql = strtolower($query->sql);
+            if (! str_contains($sql, 'for update')) {
+                return;
+            }
+
+            foreach (['staff_members', 'personal_access_tokens', 'staff_security_admin_grants', 'support_tickets'] as $table) {
+                if (str_contains($sql, $table)) {
+                    $lockedTables[] = $table;
+                    break;
+                }
+            }
+        });
+
+        $this->postJson($this->recoverUrl($ticket))->assertOk();
+        $this->assertSame(
+            ['staff_members', 'personal_access_tokens', 'staff_security_admin_grants', 'support_tickets'],
+            array_slice($lockedTables, 0, 4),
+            'Recovery must lock actor, bearer, grant and ticket before the selector locks eligible reviewers.',
+        );
+        $this->assertSame($reviewer->id, $ticket->fresh()->escalation_reviewer_staff_id);
+        $this->assertDatabaseCount('security_audit_events', 2);
+    }
+
+    public function test_revoked_admin_bearer_and_role_cannot_recover_a_held_ticket(): void
+    {
+        $assignee = $this->staff();
+        $admin = $this->admin();
+        $ticket = $this->held($assignee);
+        $this->staff();
+
+        $bearer = $this->token($admin);
+        app('auth')->forgetGuards();
+        $this->withToken($bearer);
+        $this->postJson('/api/v1/staff/auth/logout')->assertOk();
+
+        app('auth')->forgetGuards();
+        $this->withToken($bearer);
+        $this->postJson($this->recoverUrl($ticket))->assertUnauthorized();
+
+        $this->asStaff($admin);
+        $admin->forceFill(['role' => 'ads'])->save();
+        app('auth')->forgetGuards();
+        $this->postJson($this->recoverUrl($ticket))->assertForbidden();
+
+        $this->assertNull($ticket->fresh()->escalation_reviewer_staff_id);
+        $this->assertDatabaseCount('security_audit_events', 2);
+        $this->assertDatabaseMissing('security_audit_events', [
+            'action' => 'support.ticket.escalation_reviewer_recovered',
+            'subject_id' => $ticket->id,
+        ]);
+    }
 }
