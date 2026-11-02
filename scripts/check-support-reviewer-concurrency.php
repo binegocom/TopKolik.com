@@ -533,7 +533,8 @@ try {
                     'HTTP worker never contended for the locked support role; action='.$action.
                     ', active='.$active.', HTTP='.curl_getinfo($handle, CURLINFO_RESPONSE_CODE).
                     ', curl='.curl_error($handle).', response='.substr((string) curl_multi_getcontent($handle), 0, 200).
-                    ', activity='.json_encode($activity, JSON_THROW_ON_ERROR),
+                    ', activity='.json_encode($activity, JSON_THROW_ON_ERROR).
+                    ', server_log='.substr((string) @file_get_contents($log), -4000),
                 );
             }
 
