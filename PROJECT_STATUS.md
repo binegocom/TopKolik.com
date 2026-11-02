@@ -2,9 +2,9 @@
 
 > **NOT A WORKING PUBLIC PRODUCT.** The Laravel 13 API, verified reader auth and reader preferences/favorites are implemented; consumer web/mobile/admin, live sports data, AI publishing and production deployment are not.
 
-**As of:** 2026-11-01  
+**As of:** 2026-11-02  
 **Release:** Not started  
-**Tracked tasks:** 147 | **Documentation tasks done:** 3 | **Implementation done:** 8
+**Tracked tasks:** 147 | **Documentation tasks done:** 3 | **Implementation done:** 9
 
 ## Phase status
 
@@ -684,3 +684,9 @@
 - After lock release all three writes return HTTP 403. No new draft, revision, status transition or audit event is allowed; the unexpired bearer remains a valid staff session but cannot regain editor permissions on replay.
 - **Verified implementation SHA `3391483c2e0a4b2640a75d1c159062dc03da7751`:** [Laravel API CI 41456997486](https://github.com/binegocom/TopKolik.com/actions/runs/41456997486) passed **354 tests / 3,179 assertions**, six real editorial HTTP races (three logout, three role revocation), disposable PostgreSQL/Redis, existing support/finance/ads races, HTTP/SMTP, Composer audit and 17 editorial publication guards. [Editorial/roadmap CI 41456997395](https://github.com/binegocom/TopKolik.com/actions/runs/41456997395) passed.
 - This evidence/workflow commit requires its own successful CI before merge. `P03-007` stays **in_progress** pending full resource RBAC/BOLA matrix and independent production security acceptance. `P00-004` remains **blocked** on owner/legal/provider decisions. No production data, licensed feed, locale, migration or runtime sports content was changed.
+
+## P03-007 editorial read authorization — PR #92
+
+- Editorial draft list and detail now serialize persisted staff identity and Sanctum bearer validation with logout/role revocation using PostgreSQL `FOR UPDATE`, matching the existing staff → token lock order. SQL owner scoping, draft visibility filtering and private cache headers are preserved.
+- [PR #92](https://github.com/binegocom/TopKolik.com/pull/92), implementation/test commit `eb6d1de18bf5132e0722f2e329f3525e480737ab`: [Laravel API CI](https://github.com/binegocom/TopKolik.com/actions/runs/41466901366) passed 357 tests / 3,205 assertions, including 3 new PostgreSQL feature regressions for read locks, cross-editor BOLA, role/token revocation and pagination. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41466901275) passed. Existing four-worker write races, SMTP/HTTP checks, Composer audit and 17 editorial guard scenarios also passed.
+- `P03-007` remains **in_progress**: no independent four-worker read-versus-revocation race has been tested; complete staff/finance RBAC, independent security review and production deployment are still outstanding. No sports API access or publication permission was added.
