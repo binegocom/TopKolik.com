@@ -583,6 +583,126 @@ try {
         }
     }
 
+    // The independent escalation reviewer must re-authorize after a real
+    // concurrent role revocation, not merely after a sequential role change.
+    // Both approval and relinquishment use the same staff -> bearer -> ticket
+    // lock order as support writes and logout.
+    foreach (['approve', 'relinquish'] as $action) {
+        $assignee = $makeStaff('support', 'reviewer-race-assignee-'.$action);
+        $reviewer = $makeStaff('support', 'reviewer-race-actor-'.$action);
+        $raceTicket = SupportTicket::create([
+            'assigned_staff_id' => $assignee->getKey(),
+            'subject' => 'Reviewer revocation race '.$run.' '.$action,
+            'message' => 'Isolated reviewer authorization regression',
+            'status' => 'pending',
+            'escalated_at' => now(),
+            'escalated_by_staff_id' => $assignee->getKey(),
+            'escalation_reviewer_staff_id' => $reviewer->getKey(),
+        ]);
+        $raceId = (int) $raceTicket->getKey();
+        $bearer = $reviewer->createToken(
+            'reviewer-role-revocation', ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+        )->plainTextToken;
+        $mutationPath = '/api/v1/staff/support/escalations/'.$raceId.'/'
+            .($action === 'approve' ? 'approve' : 'relinquish');
+        $payload = $action === 'approve'
+            ? ['review_note' => 'Must not persist after revocation.']
+            : new stdClass();
+
+        $multi = curl_multi_init();
+        $handle = curl_init($base.$mutationPath);
+        try {
+            DB::beginTransaction();
+            StaffMember::query()->whereKey($reviewer->getKey())
+                ->lockForUpdate()->firstOrFail();
+
+            curl_setopt_array($handle, [
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => json_encode($payload, JSON_THROW_ON_ERROR),
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer '.$bearer,
+                    'Accept: application/json',
+                    'Content-Type: application/json',
+                ],
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_TIMEOUT => 30,
+            ]);
+            curl_multi_add_handle($multi, $handle);
+
+            $waiting = false;
+            $active = null;
+            $deadline = microtime(true) + 10;
+            do {
+                if (curl_multi_exec($multi, $active) !== CURLM_OK) {
+                    throw new RuntimeException('Reviewer revocation HTTP transport failed to start.');
+                }
+                DB::selectOne('SELECT pg_stat_clear_snapshot()');
+                $waiting = (int) DB::selectOne(
+                    "SELECT count(*) AS waiting FROM pg_stat_activity ".
+                    "WHERE pid <> pg_backend_pid() AND wait_event_type = 'Lock' ".
+                    "AND query ILIKE '%staff_members%' AND query ILIKE '%for update%'"
+                )->waiting > 0;
+                if (! $waiting && $active > 0 && curl_multi_select($multi, 0.1) === -1) {
+                    usleep(10000);
+                }
+            } while (! $waiting && $active > 0 && microtime(true) < $deadline);
+
+            if (! $waiting) {
+                throw new RuntimeException(
+                    'Reviewer '.$action.' HTTP worker did not wait for staff lock: '.
+                    'HTTP='.curl_getinfo($handle, CURLINFO_RESPONSE_CODE).
+                    ', response='.substr((string) curl_multi_getcontent($handle), 0, 200).
+                    ', log='.substr((string) @file_get_contents($log), -2000),
+                );
+            }
+
+            StaffMember::query()->whereKey($reviewer->getKey())->update(['role' => 'editor']);
+            DB::commit();
+
+            $deadline = microtime(true) + 30;
+            do {
+                if (curl_multi_exec($multi, $active) !== CURLM_OK || microtime(true) > $deadline) {
+                    throw new RuntimeException('Reviewer '.$action.' HTTP request timed out.');
+                }
+                if ($active > 0 && curl_multi_select($multi, 1.0) === -1) {
+                    usleep(10000);
+                }
+            } while ($active > 0);
+
+            if (curl_error($handle) !== '' || curl_getinfo($handle, CURLINFO_RESPONSE_CODE) !== 403) {
+                throw new RuntimeException(
+                    'Revoked reviewer performed '.$action.' after lock release: HTTP '.
+                    curl_getinfo($handle, CURLINFO_RESPONSE_CODE).' '.curl_error($handle),
+                );
+            }
+        } finally {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+            curl_multi_remove_handle($multi, $handle);
+            curl_close($handle);
+            curl_multi_close($multi);
+        }
+
+        DB::disconnect();
+        $fresh = $raceTicket->fresh();
+        if ($reviewer->fresh()->role !== 'editor'
+            || $fresh->status !== 'pending'
+            || (int) $fresh->escalation_reviewer_staff_id !== (int) $reviewer->getKey()
+            || $fresh->escalation_reviewed_at !== null
+            || $fresh->escalation_reviewed_by_staff_id !== null
+            || $fresh->escalation_review_note !== null
+            || DB::table('security_audit_events')->where('subject_type', 'support_ticket')
+                ->where('subject_id', $raceId)->exists()) {
+            throw new RuntimeException('Revoked reviewer '.$action.' changed ticket or audit state.');
+        }
+        if ($parallelPosts([[$mutationPath, $bearer, $payload]]) !== [403]) {
+            throw new RuntimeException('Revoked reviewer regained '.$action.' permission.');
+        }
+    }
+
+    echo "PASS: real HTTP reviewer approval/relinquishment blocked on staff locks and denied after role revocation.\n";
     echo "PASS: real HTTP workers block on support staff row locks, then reject reply/escalate/resolve after committed role revocation.\n";
     echo "PASS: support logout versus reply, escalation and resolution races; token revocation, audit and state atomicity.\n";
     echo "PASS: escalation, relinquishment and recovery HTTP races; single commits, held-state safety, independent reassignment and atomic audit.\n";
