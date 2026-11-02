@@ -26,26 +26,26 @@ final class EnsureStaffSession
         $token = $presented ? PersonalAccessToken::findToken($presented) : null;
 
         if (! $token || $token->expires_at?->isPast()) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            return $this->privateResponse(response()->json(['message' => 'Unauthenticated.'], 401));
         }
 
         $member = $request->user();
         if (! $member instanceof StaffMember
             || $member->getMorphClass() !== $token->tokenable_type
             || (string) $member->getKey() !== (string) $token->tokenable_id) {
-            return response()->json(['message' => 'Forbidden.'], 403);
+            return $this->privateResponse(response()->json(['message' => 'Forbidden.'], 403));
         }
 
         // Keep cross-principal tokens forbidden, but reject a matched staff
         // bearer without an expiry as an invalid session.
         if ($token->expires_at === null) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            return $this->privateResponse(response()->json(['message' => 'Unauthenticated.'], 401));
         }
 
         if (! $token->can('staff:session')) {
             $this->auditDeniedStepUp($request, $member);
 
-            return response()->json(['message' => 'Forbidden.'], 403);
+            return $this->privateResponse(response()->json(['message' => 'Forbidden.'], 403));
         }
 
         $fresh = StaffMember::query()->whereKey($member->getKey())->first();
@@ -58,10 +58,20 @@ final class EnsureStaffSession
                 $this->auditDeniedStepUp($request, $fresh);
             }
 
-            return response()->json(['message' => 'Forbidden.'], 403);
+            return $this->privateResponse(response()->json(['message' => 'Forbidden.'], 403));
         }
 
-        return $next($request);
+        return $this->privateResponse($next($request));
+    }
+
+    private function privateResponse(Response $response): Response
+    {
+        // Staff identities, MFA state and authorization failures must never
+        // be stored by shared proxies or client caches.
+        $response->headers->set('Cache-Control', 'no-store, private');
+        $response->headers->set('Pragma', 'no-cache');
+
+        return $response;
     }
 
     private function auditDeniedStepUp(Request $request, StaffMember $member): void
