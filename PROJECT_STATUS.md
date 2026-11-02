@@ -584,3 +584,25 @@
 - `P03-007` stays **in_progress**: full RBAC/BOLA coverage, external
   concurrency review, licensed sports integrations and production release
   remain unverified.
+
+## P03-007 — support ticket actor-row authorization locks (PR #83)
+
+- Reply, escalation and resolution now lock the persisted acting support staff row
+  before the SQL-assigned ticket row, and re-authorize the locked actor inside
+  the write transaction. This serializes ticket mutations against compliant
+  role-revocation/deactivation writers that lock the same staff row.
+- Two PostgreSQL feature regressions verify staff-before-ticket lock order
+  for all three writes, committed audit events and rejection of all three
+  mutations after a role downgrade with an otherwise valid MFA bearer.
+- **Verified code SHA `2596ecabf89576a165ab20825fb3d99c3811531d`:**
+  [Laravel CI 41396330449](https://github.com/binegocom/TopKolik.com/actions/runs/41396330449)
+  passed **346 tests / 3,116 assertions**, disposable PostgreSQL/Redis,
+  four-worker support/finance/ads HTTP races, real HTTP/SMTP, Composer audit
+  and 17 editorial guard scenarios.
+  [Editorial/roadmap CI 41396330875](https://github.com/binegocom/TopKolik.com/actions/runs/41396330875)
+  passed. The final evidence-documentation commit must pass both workflows
+  before merge.
+- [PR #83](https://github.com/binegocom/TopKolik.com/pull/83).
+  `P03-007` remains **in_progress**. No independent role-revocation
+  versus support-write worker race, full RBAC/BOLA acceptance, licensed
+  sports data or production release has been verified.
