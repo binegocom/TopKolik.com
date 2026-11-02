@@ -393,6 +393,233 @@ try {
         }
         echo 'PASS editorial role-revocation/'.$action." (HTTP 403 after SQL lock)\n";
     }
+
+    // Read endpoints must obey the same staff -> bearer serialization as writes.
+    // Race each private response against a real logout; only a read completed
+    // before revocation may return the owner's data.
+    foreach (['index', 'detail'] as $action) {
+        $editor = StaffMember::create([
+            'name' => 'Editorial read logout '.$action,
+            'email' => $run.'-read-logout-'.$action.'@example.test',
+            'password' => Str::random(40),
+            'role' => 'editor',
+        ]);
+        $editor->forceFill([
+            'is_active' => true,
+            'email_verified_at' => now(),
+            'mfa_enrolled_at' => now(),
+        ])->save();
+        $other = StaffMember::create([
+            'name' => 'Foreign editorial owner',
+            'email' => $run.'-foreign-logout-'.$action.'@example.test',
+            'password' => Str::random(40),
+            'role' => 'editor',
+        ]);
+        $owned = EditorialArticle::create([
+            'owner_staff_id' => $editor->getKey(),
+            'title' => 'Private owner read draft',
+            'body' => 'Owner-only editorial content must remain private during logout.',
+        ]);
+        $foreign = EditorialArticle::create([
+            'owner_staff_id' => $other->getKey(),
+            'title' => 'Private foreign read draft',
+            'body' => 'Another editor must never see this confidential draft.',
+        ]);
+        $bearer = $editor->createToken(
+            'editorial-read-logout-race', ['staff:session'], now()->addMinutes(5),
+        )->plainTextToken;
+        $path = '/api/v1/staff/editorial/drafts';
+        if ($action === 'detail') {
+            $path .= '/'.$owned->getKey();
+        }
+
+        $responses = $parallel([
+            'logout' => ['POST', '/api/v1/staff/auth/logout', $bearer, new stdClass()],
+            'read' => ['GET', $path, $bearer, new stdClass()],
+        ]);
+        if ($responses['logout']['code'] !== 200
+            || ! in_array($responses['read']['code'], [200, 401], true)) {
+            throw new RuntimeException(
+                'Unexpected editorial read/logout race: '.json_encode($responses, JSON_THROW_ON_ERROR),
+            );
+        }
+        $body = json_decode($responses['read']['body'], true, 512, JSON_THROW_ON_ERROR);
+        if ($responses['read']['code'] === 200) {
+            if ($action === 'index') {
+                if (count($body['drafts'] ?? []) !== 1
+                    || ($body['drafts'][0]['id'] ?? null) !== $owned->getKey()
+                    || array_key_exists('body', $body['drafts'][0])) {
+                    throw new RuntimeException('Editorial list disclosed foreign or full draft data.');
+                }
+            } elseif (($body['draft']['id'] ?? null) !== $owned->getKey()
+                || ($body['draft']['body'] ?? null) !== $owned->body) {
+                throw new RuntimeException('Editorial detail returned the wrong owner content.');
+            }
+        } elseif (str_contains($responses['read']['body'], $owned->body)
+            || str_contains($responses['read']['body'], $foreign->body)) {
+            throw new RuntimeException('Revoked editorial read leaked private content.');
+        }
+
+        DB::disconnect();
+        if (PersonalAccessToken::findToken($bearer) !== null
+            || EditorialArticle::query()->whereKey($owned->getKey())->firstOrFail()->revision !== 1
+            || EditorialArticle::query()->whereKey($foreign->getKey())->firstOrFail()->revision !== 1) {
+            throw new RuntimeException('Editorial read/logout altered token or draft state.');
+        }
+        $events = DB::table('security_audit_events')
+            ->where('staff_member_id', $editor->getKey())->get();
+        if ($events->count() !== 1
+            || $events->first()->action !== 'staff.session.ended'
+            || $events->first()->request_id === null) {
+            throw new RuntimeException('Editorial read/logout audit was not unique and attributed.');
+        }
+        $replay = $parallel([
+            'index' => ['GET', '/api/v1/staff/editorial/drafts', $bearer, new stdClass()],
+            'owned' => ['GET', '/api/v1/staff/editorial/drafts/'.$owned->getKey(), $bearer, new stdClass()],
+            'foreign' => ['GET', '/api/v1/staff/editorial/drafts/'.$foreign->getKey(), $bearer, new stdClass()],
+        ]);
+        foreach ($replay as $response) {
+            if ($response['code'] !== 401) {
+                throw new RuntimeException('Logged-out editor retained editorial read access.');
+            }
+        }
+        DB::disconnect();
+        if (DB::table('security_audit_events')
+            ->where('staff_member_id', $editor->getKey())->count() !== 1) {
+            throw new RuntimeException('Read replay changed editorial security audit.');
+        }
+        echo 'PASS editorial read/logout/'.$action.' (read HTTP '.$responses['read']['code'].")\n";
+    }
+
+    // Deterministically block a real read worker on the staff row, commit
+    // a role downgrade, and require the worker to fail closed after release.
+    foreach (['index', 'detail'] as $action) {
+        $editor = StaffMember::create([
+            'name' => 'Editorial read role revocation '.$action,
+            'email' => $run.'-read-role-'.$action.'@example.test',
+            'password' => Str::random(40),
+            'role' => 'editor',
+        ]);
+        $editor->forceFill([
+            'is_active' => true,
+            'email_verified_at' => now(),
+            'mfa_enrolled_at' => now(),
+        ])->save();
+        $other = StaffMember::create([
+            'name' => 'Other read role owner',
+            'email' => $run.'-foreign-role-'.$action.'@example.test',
+            'password' => Str::random(40),
+            'role' => 'editor',
+        ]);
+        $owned = EditorialArticle::create([
+            'owner_staff_id' => $editor->getKey(),
+            'title' => 'Role revocation owner draft',
+            'body' => 'An editor role downgrade must deny this confidential content.',
+        ]);
+        $foreign = EditorialArticle::create([
+            'owner_staff_id' => $other->getKey(),
+            'title' => 'Role revocation foreign draft',
+            'body' => 'Cross-editor private content is not accessible after downgrade.',
+        ]);
+        $bearer = $editor->createToken(
+            'editorial-read-role-race', ['staff:session'], now()->addMinutes(5),
+        )->plainTextToken;
+        $path = '/api/v1/staff/editorial/drafts';
+        if ($action === 'detail') {
+            $path .= '/'.$owned->getKey();
+        }
+
+        $multi = curl_multi_init();
+        $handle = curl_init($base.$path);
+        try {
+            DB::beginTransaction();
+            StaffMember::query()->whereKey($editor->getKey())
+                ->lockForUpdate()->firstOrFail();
+            curl_setopt_array($handle, [
+                CURLOPT_CUSTOMREQUEST => 'GET',
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer '.$bearer,
+                    'Accept: application/json',
+                ],
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_TIMEOUT => 30,
+            ]);
+            curl_multi_add_handle($multi, $handle);
+            $waiting = false;
+            $active = null;
+            $deadline = microtime(true) + 10;
+            do {
+                if (curl_multi_exec($multi, $active) !== CURLM_OK) {
+                    throw new RuntimeException('Editorial read role HTTP request failed to start.');
+                }
+                DB::selectOne('SELECT pg_stat_clear_snapshot()');
+                $waiting = (int) DB::selectOne(
+                    "SELECT count(*) AS waiting FROM pg_stat_activity ".
+                    "WHERE pid <> pg_backend_pid() AND wait_event_type = 'Lock' ".
+                    "AND query ILIKE '%staff_members%' AND query ILIKE '%for update%'"
+                )->waiting > 0;
+                if (! $waiting && $active > 0 && curl_multi_select($multi, 0.1) === -1) {
+                    usleep(10000);
+                }
+            } while (! $waiting && $active > 0 && microtime(true) < $deadline);
+            if (! $waiting) {
+                throw new RuntimeException('Editorial '.$action.' read did not wait on staff lock.');
+            }
+
+            StaffMember::query()->whereKey($editor->getKey())->update(['role' => 'support']);
+            DB::commit();
+
+            $deadline = microtime(true) + 30;
+            do {
+                if (curl_multi_exec($multi, $active) !== CURLM_OK || microtime(true) > $deadline) {
+                    throw new RuntimeException('Editorial role-revoked read did not finish.');
+                }
+                if ($active > 0 && curl_multi_select($multi, 1.0) === -1) {
+                    usleep(10000);
+                }
+            } while ($active > 0);
+
+            if (curl_error($handle) !== ''
+                || curl_getinfo($handle, CURLINFO_RESPONSE_CODE) !== 403
+                || str_contains((string) curl_multi_getcontent($handle), $owned->body)) {
+                throw new RuntimeException(
+                    'Role-revoked editor read private data: HTTP '.
+                    curl_getinfo($handle, CURLINFO_RESPONSE_CODE).' '.curl_error($handle),
+                );
+            }
+        } finally {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+            curl_multi_remove_handle($multi, $handle);
+            curl_close($handle);
+            curl_multi_close($multi);
+        }
+
+        DB::disconnect();
+        if ($editor->fresh()->role !== 'support'
+            || PersonalAccessToken::findToken($bearer) === null
+            || EditorialArticle::query()->whereKey($owned->getKey())->firstOrFail()->revision !== 1
+            || EditorialArticle::query()->whereKey($foreign->getKey())->firstOrFail()->revision !== 1
+            || DB::table('security_audit_events')->where('staff_member_id', $editor->getKey())->exists()) {
+            throw new RuntimeException('Editorial read role race altered token, draft or audit.');
+        }
+        $replay = $parallel([
+            'index' => ['GET', '/api/v1/staff/editorial/drafts', $bearer, new stdClass()],
+            'owned' => ['GET', '/api/v1/staff/editorial/drafts/'.$owned->getKey(), $bearer, new stdClass()],
+            'foreign' => ['GET', '/api/v1/staff/editorial/drafts/'.$foreign->getKey(), $bearer, new stdClass()],
+        ]);
+        if ($replay['index']['code'] !== 403
+            || $replay['owned']['code'] !== 403
+            || $replay['foreign']['code'] !== 404) {
+            throw new RuntimeException(
+                'Editorial role-revoked read replay broke RBAC/BOLA: '.
+                json_encode($replay, JSON_THROW_ON_ERROR),
+            );
+        }
+        echo 'PASS editorial read/role-revocation/'.$action." (HTTP 403 after SQL lock)\n";
+    }
 } catch (Throwable $error) {
     $exit = 1;
     fwrite(STDERR, $error->getMessage()."\n");
