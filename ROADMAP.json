@@ -1560,14 +1560,32 @@
           "type": "revision",
           "value": "0f1fbfc17ff5b8e2b7e763bc890b730b2b03529b",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/35"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "331 Laravel tests passed, 2,972 assertions on disposable PostgreSQL/Redis, including six new ReaderConsentHistoryTest cases for private token scopes, consent transitions, cursor bounds, query validation, revocation and cross-principal isolation.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41376334613"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && python3 scripts/status.py check",
+          "result": "Composer reported no security advisories; concurrent HTTP races, live HTTP/SMTP, 17 editorial guard tests and roadmap validation passed on feature SHA 526a9d0ffab29957995b7d2c0ae3c47703e5cae1. Final documentation commit requires fresh CI.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41376334692"
+        },
+        {
+          "type": "revision",
+          "value": "526a9d0ffab29957995b7d2c0ae3c47703e5cae1",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/78"
         }
       ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/35",
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/78",
       "limitations": [
-        "Password-reverified privacy export, append-only consent transitions and pending-only deletion request API were merged in PR #35 after verified CI. Actual erasure, accounting/legal retention exceptions, third-party backup policy and production deployment require approved privacy/finance rules; no record is deleted."
+        "Password-reverified privacy export, append-only consent transitions and pending-only deletion request API were merged in PR #35 after verified CI. Actual erasure, accounting/legal retention exceptions, third-party backup policy and production deployment require approved privacy/finance rules; no record is deleted.",
+        "Reader-owned, paginated consent history API passed isolated CI in PR #78 (331 tests / 2,972 assertions). Final evidence commit CI, owner-approved legal retention/deletion workflow, production privacy validation and verified deployment remain pending."
       ]
     },
     {
