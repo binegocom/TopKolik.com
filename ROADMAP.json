@@ -1768,15 +1768,33 @@
           "type": "revision",
           "value": "ad9e14b703400734fe2985beaf22729ea6e39a25",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/25"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "338 Laravel tests / 3,048 assertions passed on disposable PostgreSQL/Redis, including five new reader principal/expiry regressions and existing auth, profile, consent, privacy and role tests (feature SHA 98be6a7894910d0d52cfd832394a8a2b712de6b3).",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41380400999"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && python3 scripts/status.py check",
+          "result": "No Composer security advisories; four-worker finance/ads/support races, real HTTP/SMTP, 17 editorial guard tests and roadmap validation passed on code SHA 98be6a7894910d0d52cfd832394a8a2b712de6b3. Final evidence commit CI remains required.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41380401006"
+        },
+        {
+          "type": "revision",
+          "value": "98be6a7894910d0d52cfd832394a8a2b712de6b3",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/80"
         }
       ],
-      "verified_at": "2026-10-31",
+      "verified_at": "2026-11-02",
       "owner": null,
       "issue_url": null,
-      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/25",
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/80",
       "limitations": [
         "Automated security regression tests cover the backend attack cases; no independent external penetration test or deployed production environment was verified.",
-        "Production trusted-proxy IP handling, shared Redis rate limiting, WAF policy and monitoring require deployment validation. P03-GATE remains open."
+        "Production trusted-proxy IP handling, shared Redis rate limiting, WAF policy and monitoring require deployment validation. P03-GATE remains open.",
+        "Reader session boundary hardening in PR #80 validated against five new regressions: type-safe verified reader principal and explicit expiring bearer enforced on all reader-only account routes; final evidence-commit CI/merge pending. Legacy non-expiring reader tokens require reauthentication; production rollout and independent security validation not verified."
       ]
     },
     {

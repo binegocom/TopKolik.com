@@ -23,7 +23,7 @@ final class ReaderProfilePreferencesTest extends TestCase
 
     private function withReaderToken(User $user, array $abilities = ['reader:read', 'reader:write']): self
     {
-        $token = $user->createToken('reader-test', $abilities)->plainTextToken;
+        $token = $user->createToken('reader-test', $abilities, now()->addMinutes(30))->plainTextToken;
         app('auth')->forgetGuards();
         $this->withToken($token);
 

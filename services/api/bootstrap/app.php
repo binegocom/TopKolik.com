@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Middleware\AttachRequestId;
 use App\Http\Middleware\EnsureStaffSession;
+use App\Http\Middleware\EnsureReaderSession;
 use App\Http\Middleware\EnsureAdvertiserSession;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -24,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'ability' => CheckForAnyAbility::class,
             'staff.session' => EnsureStaffSession::class,
+            'reader.session' => EnsureReaderSession::class,
             'advertiser.session' => EnsureAdvertiserSession::class,
         ]);
     })

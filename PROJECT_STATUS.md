@@ -550,3 +550,9 @@
   passed. The final documentation-evidence commit must pass CI before merge.
 - `P03-007` remains **in_progress**; the full RBAC/BOLA matrix and production
   release are not accepted.
+
+## P03-011 — reader bearer principal/expiry boundary (review pending)
+
+- Added `reader.session` middleware to existing reader auth-self, logout and all `/me` account routes. The persisted bearer must bind to a verified `User` principal, not merely possess a reader ability; a missing or expired `expires_at` denies access. Reader responses become private/no-store.
+- Five PostgreSQL feature regressions cover authenticated flows, overlapping reader/staff/advertiser ID denial, legacy non-expiring tokens, changed email-verification state, expired/revoked/wrong-scope tokens. Existing profile tests now issue expiring tokens to match the login contract.
+- **Verified code CI:** [PR #80](https://github.com/binegocom/TopKolik.com/pull/80), code SHA `98be6a7894910d0d52cfd832394a8a2b712de6b3`, passed [Laravel API CI 41380400999](https://github.com/binegocom/TopKolik.com/actions/runs/41380400999): **338 Laravel tests / 3,048 assertions** on disposable PostgreSQL/Redis, real four-worker ads/finance/support races, HTTP/SMTP and clean Composer audit. [Editorial/roadmap CI 41380401006](https://github.com/binegocom/TopKolik.com/actions/runs/41380401006) passed 17 editorial guard cases. The first CI attempt failed on a test-only assumption that identity-table numeric ID sequences match; the fixture now explicitly constructs the overlap and tests passed. Final evidence commit CI and merge remain required. P03-GATE remains incomplete; no migration, production token revocation job, provider access or release is claimed.
