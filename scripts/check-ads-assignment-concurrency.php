@@ -524,7 +524,7 @@ try {
         curl_close($thirdAdsHandle);
     }
 
-    fwrite(STDOUT, "Ads requester/approver grant and emergency offboarding four-worker HTTP races passed.\\n");
+    fwrite(STDOUT, "Ads requester/approver grant and emergency offboarding four-worker HTTP races passed.\n");
 } catch (Throwable $error) {
     $exit = 1;
     fwrite(STDERR, $error->getMessage()."\n");
