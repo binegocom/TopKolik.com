@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Four-worker HTTP regression for support ticket reads versus staff deactivation and role revocation.
+ * Four-worker HTTP regression for support ticket reads versus logout, staff deactivation and role revocation.
  * Runs only on the isolated GitHub Actions PostgreSQL development database.
  */
 
@@ -272,6 +272,167 @@ try {
         echo 'PASS support read/'.$scenario.'/'.$action." (HTTP 403 after SQL lock, 401 after token revocation)\n";
     }
     }
+
+    // A support read and logout may overlap, but the committed logout must
+    // revoke the exact bearer and prevent all subsequent private reads.
+    // A successful read is allowed only if it serialized before revocation.
+    foreach (['index', 'detail'] as $action) {
+        $staff = StaffMember::create([
+            'name' => 'Support read logout '.$action,
+            'email' => $run.'-logout-'.$action.'@example.test',
+            'password' => Str::random(40),
+            'role' => 'support',
+        ]);
+        $staff->forceFill([
+            'is_active' => true,
+            'email_verified_at' => now(),
+            'mfa_enrolled_at' => now(),
+        ])->save();
+        $other = StaffMember::create([
+            'name' => 'Other support owner',
+            'email' => $run.'-logout-other-'.$action.'@example.test',
+            'password' => Str::random(40),
+            'role' => 'support',
+        ]);
+        $owned = SupportTicket::create([
+            'assigned_staff_id' => $staff->getKey(),
+            'subject' => 'Private logout owner ticket',
+            'message' => 'Confidential owner ticket during logout.',
+            'status' => 'open',
+        ]);
+        $foreign = SupportTicket::create([
+            'assigned_staff_id' => $other->getKey(),
+            'subject' => 'Private logout foreign ticket',
+            'message' => 'Confidential foreign ticket during logout.',
+            'status' => 'open',
+        ]);
+        $bearer = $staff->createToken(
+            'support-read-logout-race', ['staff:session'], now()->addMinutes(5),
+        )->plainTextToken;
+        $path = '/api/v1/staff/support/tickets';
+        if ($action === 'detail') {
+            $path .= '/'.$owned->getKey();
+        }
+
+        $multi = curl_multi_init();
+        $handles = [];
+        try {
+            foreach ([
+                'logout' => ['POST', '/api/v1/staff/auth/logout'],
+                'read' => ['GET', $path],
+            ] as $name => [$method, $requestPath]) {
+                $handle = curl_init($base.$requestPath);
+                curl_setopt_array($handle, [
+                    CURLOPT_CUSTOMREQUEST => $method,
+                    CURLOPT_HTTPHEADER => [
+                        'Authorization: Bearer '.$bearer,
+                        'Accept: application/json',
+                        'Content-Type: application/json',
+                    ],
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_CONNECTTIMEOUT => 5,
+                    CURLOPT_TIMEOUT => 30,
+                ]);
+                if ($method === 'POST') {
+                    curl_setopt($handle, CURLOPT_POSTFIELDS, '{}');
+                }
+                curl_multi_add_handle($multi, $handle);
+                $handles[$name] = $handle;
+            }
+
+            $active = null;
+            $deadline = microtime(true) + 40;
+            do {
+                if (curl_multi_exec($multi, $active) !== CURLM_OK || microtime(true) > $deadline) {
+                    throw new RuntimeException('Support read/logout HTTP race timed out.');
+                }
+                if ($active > 0 && curl_multi_select($multi, 1.0) === -1) {
+                    usleep(10000);
+                }
+            } while ($active > 0);
+
+            $responses = [];
+            foreach ($handles as $name => $handle) {
+                if (curl_error($handle) !== '') {
+                    throw new RuntimeException('Support read/logout transport error: '.curl_error($handle));
+                }
+                $responses[$name] = [
+                    'code' => curl_getinfo($handle, CURLINFO_RESPONSE_CODE),
+                    'body' => (string) curl_multi_getcontent($handle),
+                ];
+            }
+        } finally {
+            foreach ($handles as $handle) {
+                curl_multi_remove_handle($multi, $handle);
+                curl_close($handle);
+            }
+            curl_multi_close($multi);
+        }
+
+        if ($responses['logout']['code'] !== 200
+            || ! in_array($responses['read']['code'], [200, 401], true)) {
+            throw new RuntimeException(
+                'Unexpected support read/logout ordering: '.json_encode($responses, JSON_THROW_ON_ERROR),
+            );
+        }
+
+        $body = json_decode($responses['read']['body'], true, 512, JSON_THROW_ON_ERROR);
+        if ($responses['read']['code'] === 200) {
+            if ($action === 'index') {
+                if (count($body['tickets'] ?? []) !== 1
+                    || ($body['tickets'][0]['id'] ?? null) !== $owned->getKey()
+                    || array_key_exists('message', $body['tickets'][0])) {
+                    throw new RuntimeException('Support inbox disclosed foreign or full ticket content.');
+                }
+            } elseif (($body['ticket']['id'] ?? null) !== $owned->getKey()
+                || ($body['ticket']['message'] ?? null) !== $owned->message) {
+                throw new RuntimeException('Support detail returned wrong owner content.');
+            }
+            if (str_contains($responses['read']['body'], $foreign->subject)
+                || str_contains($responses['read']['body'], $foreign->message)) {
+                throw new RuntimeException('Support read/logout disclosed foreign ticket content.');
+            }
+        } elseif (str_contains($responses['read']['body'], $owned->subject)
+            || str_contains($responses['read']['body'], $owned->message)
+            || str_contains($responses['read']['body'], $foreign->subject)
+            || str_contains($responses['read']['body'], $foreign->message)) {
+            throw new RuntimeException('Logged-out support read disclosed private ticket data.');
+        }
+
+        DB::disconnect();
+        $events = DB::table('security_audit_events')
+            ->where('staff_member_id', $staff->getKey())->get();
+        if (PersonalAccessToken::findToken($bearer) !== null
+            || $events->count() !== 1
+            || $events->first()->action !== 'staff.session.ended'
+            || $events->first()->request_id === null
+            || $owned->fresh()->status !== 'open'
+            || $foreign->fresh()->status !== 'open') {
+            throw new RuntimeException('Support read/logout violated bearer, audit or ticket invariants.');
+        }
+
+        foreach ([
+            '/api/v1/staff/support/tickets',
+            '/api/v1/staff/support/tickets/'.$owned->getKey(),
+            '/api/v1/staff/support/tickets/'.$foreign->getKey(),
+        ] as $replayPath) {
+            $response = $read($replayPath, $bearer);
+            if ($response['code'] !== 401
+                || str_contains($response['body'], $owned->subject)
+                || str_contains($response['body'], $foreign->subject)) {
+                throw new RuntimeException('Logged-out support bearer retained ticket access.');
+            }
+        }
+        DB::disconnect();
+        if (DB::table('security_audit_events')
+            ->where('staff_member_id', $staff->getKey())->count() !== 1) {
+            throw new RuntimeException('Support read/logout replay altered security audit.');
+        }
+
+        echo 'PASS support read/logout/'.$action.
+            ' (read HTTP '.$responses['read']['code'].", bearer revoked, audit intact)\n";
+    }
+
 } catch (Throwable $error) {
     $exit = 1;
     fwrite(STDERR, $error->getMessage()."\n");
