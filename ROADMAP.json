@@ -1588,6 +1588,23 @@
           "type": "revision",
           "value": "616f6f5c60866a1c033b78388656e0c8d3d88a37",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/88"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test; php scripts/check-support-reviewer-concurrency.php; php scripts/check-finance-access-concurrency.php; php scripts/check-ads-assignment-concurrency.php",
+          "result": "354 Laravel tests / 3,179 assertions passed on disposable PostgreSQL/Redis. New editorial bearer lock-order and post-read revocation regressions passed, as did existing four-worker support/finance/ads races.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41440393165"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction; bash scripts/check-api-http.sh; bash scripts/check-reader-email-delivery.sh; bash scripts/test-editorial-guard.sh; python3 scripts/validate_blueprint.py; python3 scripts/status.py check",
+          "result": "Composer audit, live HTTP/SMTP, 17 editorial guard tests and roadmap validation passed on implementation commit dae1042f163444527e3103905eb5f226b3b03304.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41440393157"
+        },
+        {
+          "type": "revision",
+          "value": "dae1042f163444527e3103905eb5f226b3b03304",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/89"
         }
       ],
       "verified_at": null,
@@ -1634,7 +1651,8 @@
         "PR #82 serializes editorial draft creation/update/submit with a persisted staff row lock and fresh role check. Full RBAC/BOLA acceptance, independent concurrency security review, deployment and production release remain unverified; task stays in_progress.",
         "PR #83 verified support actor-row lock ordering and revoked-role denial on code CI; final documentation commit CI, independent multi-worker role-revocation-vs-support-write contention, complete RBAC/BOLA matrix, operational revocation path and production deployment remain unverified.",
         "PR #86 serializes support escalation approval and relinquishment with staff identity, current bearer and ticket locks. Real four-worker reviewer-role revocation race passed code CI; final evidence commit CI, full RBAC/BOLA coverage, production operator access and deployment remain outstanding.",
-        "PR #88 verifies support escalation recovery versus administrator logout and persisted bearer revocation with four-worker HTTP/PostgreSQL contention. P03-007 remains in_progress: full resource RBAC/BOLA matrix, independent security acceptance, final documentation-commit CI and production deployment are not verified."
+        "PR #88 verifies support escalation recovery versus administrator logout and persisted bearer revocation with four-worker HTTP/PostgreSQL contention. P03-007 remains in_progress: full resource RBAC/BOLA matrix, independent security acceptance, final documentation-commit CI and production deployment are not verified.",
+        "PR #89 rechecks the persisted Sanctum bearer under staff → token → draft locks for all editorial writes, with deterministic revocation-boundary tests. Full RBAC/BOLA matrix, independent four-worker editorial/logout race, final documentation-commit CI, provider licensing and production deployment remain unverified; P03-007 stays in_progress."
       ]
     },
     {
