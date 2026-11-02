@@ -550,3 +550,9 @@
   passed. The final documentation-evidence commit must pass CI before merge.
 - `P03-007` remains **in_progress**; the full RBAC/BOLA matrix and production
   release are not accepted.
+
+## P03-011 — reader bearer principal/expiry boundary (review pending)
+
+- Added `reader.session` middleware to existing reader auth-self, logout and all `/me` account routes. The persisted bearer must bind to a verified `User` principal, not merely possess a reader ability; a missing or expired `expires_at` denies access. Reader responses become private/no-store.
+- Five PostgreSQL feature regressions cover authenticated flows, overlapping reader/staff/advertiser ID denial, legacy non-expiring tokens, changed email-verification state, expired/revoked/wrong-scope tokens. Existing profile tests now issue expiring tokens to match the login contract.
+- **Review pending:** Full GitHub CI (disposable PostgreSQL/Redis, HTTP/SMTP, concurrency, Composer audit, editorial/roadmap) must pass on the final head. Existing `P03-011` remains done for its previously accepted scope; the new security hardening is not accepted until fresh CI. No migration, production token revocation job, provider access or release is claimed.
