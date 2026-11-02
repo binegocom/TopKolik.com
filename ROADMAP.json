@@ -1713,6 +1713,17 @@
           "type": "reference",
           "value": "https://github.com/binegocom/TopKolik.com/pull/98",
           "validation": "Implementation SHA df5eefdbb69223671c5b5ad31dd3a3978a8e08a7 passed Laravel CI 41513697053 and editorial/roadmap CI 41513697180. Final documentation commit requires its own CI; P03-007 remains in_progress."
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test && php scripts/check-finance-inventory-read-concurrency.php && composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh",
+          "result": "PR #99 implementation SHA 1b0fd240aaad679e0e808d3926b9386eaa04ed7 passed isolated Laravel API CI 41522245598 and editorial/roadmap CI 41522245527. Two finance metadata endpoints enforce staff, bearer and independent security-admin grant locking; eight four-worker revocation scenarios and feature regression passed. Final documentation head requires fresh CI before merge.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41522245598"
+        },
+        {
+          "type": "reference",
+          "value": "https://github.com/binegocom/TopKolik.com/pull/99",
+          "validation": "Finance entitlement inventory and decision-history read revocation races verified on implementation SHA 1b0fd240aaad679e0e808d3926b9386eaa04ed7; P03-007 remains in_progress pending full role/resource RBAC/BOLA matrix, independent review and production validation."
         }
       ],
       "verified_at": null,
@@ -1765,7 +1776,8 @@
         "PR #95 verifies editor account deactivation versus draft index/detail reads with real four-worker PostgreSQL lock contention; role/token/active-state replays deny private data. This is partial P03-007 acceptance only: full staff resource matrix, independent security review, deployment and production access controls are not verified.",
         "PR #96 verified support ticket index/detail read serialization with persisted staff/token/ticket locks and deterministic deactivation races; full cross-resource role matrix, independent security review and production deployment remain unverified. No sports feed, runtime fixture, locale or production schema changes.",
         "PR #97 verifies support ticket read index/detail versus committed role revocation in four-worker PostgreSQL HTTP races; complete role/resource RBAC/BOLA matrix, independent security review and production deployment remain unverified. No new grants, sports data, schema, locale or release.",
-        "PR #98 covers support ticket read/logout ordering with real four-worker HTTP and persisted bearer revocation; full role/resource RBAC/BOLA matrix, independent security review, production IAM and deployment remain unverified. No runtime sports data, provider license, schema, locale or release change."
+        "PR #98 covers support ticket read/logout ordering with real four-worker HTTP and persisted bearer revocation; full role/resource RBAC/BOLA matrix, independent security review, production IAM and deployment remain unverified. No runtime sports data, provider license, schema, locale or release change.",
+        "PR #99 covers concurrent security-admin grant, staff role, account and bearer revocation versus finance metadata reads, with eight isolated four-worker PostgreSQL HTTP races. This is not full finance transaction authorization, independent security review, operational administrator provisioning or production release."
       ]
     },
     {
