@@ -131,4 +131,43 @@ final class StaffEditorialReadRevocationTest extends TestCase
             ->assertOk()->assertJsonCount(1, 'drafts')
             ->assertJsonPath('last_page', 2);
     }
+
+    public function test_deactivated_editor_cannot_read_drafts_even_before_bearer_is_deleted(): void
+    {
+        $editor = $this->editor();
+        $other = $this->editor();
+        $owned = $this->draft($editor);
+        $foreign = $this->draft($other);
+        $bearer = $editor->createToken('editor', ['staff:session'], now()->addMinutes(15))
+            ->plainTextToken;
+
+        $this->withToken($bearer)
+            ->getJson('/api/v1/staff/editorial/drafts')
+            ->assertOk()->assertJsonCount(1, 'drafts');
+        $this->getJson('/api/v1/staff/editorial/drafts/'.$owned->id)
+            ->assertOk()->assertJsonPath('draft.id', $owned->id);
+
+        StaffMember::query()->whereKey($editor->id)->update(['is_active' => false]);
+        $this->assertNotNull(PersonalAccessToken::findToken($bearer));
+        app('auth')->forgetGuards();
+
+        $this->withToken($bearer)
+            ->getJson('/api/v1/staff/editorial/drafts')
+            ->assertForbidden()->assertJsonMissingPath('drafts');
+        $this->getJson('/api/v1/staff/editorial/drafts/'.$owned->id)
+            ->assertForbidden()->assertJsonMissingPath('draft');
+        $this->getJson('/api/v1/staff/editorial/drafts/'.$foreign->id)
+            ->assertForbidden()->assertJsonMissingPath('draft');
+
+        PersonalAccessToken::findToken($bearer)->delete();
+        app('auth')->forgetGuards();
+        $this->withToken($bearer)
+            ->getJson('/api/v1/staff/editorial/drafts')->assertUnauthorized();
+        $this->getJson('/api/v1/staff/editorial/drafts/'.$owned->id)
+            ->assertUnauthorized();
+        $this->assertSame(2, EditorialArticle::query()->count());
+        $this->assertSame(1, $owned->fresh()->revision);
+        $this->assertSame(1, $foreign->fresh()->revision);
+    }
+
 }
