@@ -453,6 +453,45 @@ final class StaffAdsAssignmentDualApprovalTest extends TestCase
         $this->assertDatabaseCount('staff_security_admin_grants', 2);
     }
 
+    public function test_emergency_deactivated_finance_requester_cannot_create_or_approve_ads_assignment(): void
+    {
+        $requester = $this->admin('finance');
+        $deactivator = $this->admin('support');
+        $approver = $this->admin('editor');
+        $target = $this->staff('ads');
+        $org = $this->org();
+        $oldToken = $requester->createToken(
+            'before-emergency-deactivation',
+            ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+        )->plainTextToken;
+
+        $this->asStaff($deactivator);
+        $this->postJson('/api/v1/staff/security/finance/staff/'.$requester->id.'/deactivate')
+            ->assertOk()->assertJsonPath('staff_status', 'deactivated');
+
+        app('auth')->forgetGuards();
+        $this->withToken($oldToken);
+        $this->postJson(self::API, $this->requestPayload($target, $org))
+            ->assertUnauthorized();
+        $this->asStaff($requester);
+        $this->postJson(self::API, $this->requestPayload($target, $org))
+            ->assertForbidden();
+        $this->asStaff($approver);
+        $this->getJson(self::API)->assertOk()->assertJsonCount(0, 'requests');
+
+        $this->assertDatabaseHas('staff_security_admin_grants', [
+            'staff_member_id' => $requester->id, 'is_active' => false,
+        ]);
+        $this->assertDatabaseCount('staff_ads_assignment_approvals', 0);
+        $this->assertDatabaseCount('staff_advertiser_assignments', 0);
+        $this->assertDatabaseHas('security_audit_events', [
+            'staff_member_id' => $deactivator->id,
+            'action' => 'staff.finance_access.staff_deactivated',
+            'subject_type' => 'staff_member',
+            'subject_id' => $requester->id,
+        ]);
+    }
+
     public function test_ineligible_target_and_unverified_admin_are_never_granted(): void
     {
         $admin = $this->admin();
