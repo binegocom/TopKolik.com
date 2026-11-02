@@ -25,7 +25,8 @@ final class EnsureStaffSession
         $presented = $request->bearerToken();
         $token = $presented ? PersonalAccessToken::findToken($presented) : null;
 
-        if (! $token || $token->expires_at?->isPast()) {
+        // A staff bearer token without an explicit expiry is never a session.
+        if (! $token || $token->expires_at === null || $token->expires_at->isPast()) {
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
