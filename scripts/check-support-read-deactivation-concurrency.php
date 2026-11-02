@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Four-worker HTTP regression for support ticket reads versus staff deactivation.
+ * Four-worker HTTP regression for support ticket reads versus staff deactivation and role revocation.
  * Runs only on the isolated GitHub Actions PostgreSQL development database.
  */
 
@@ -115,10 +115,11 @@ try {
     };
 
     $run = bin2hex(random_bytes(8));
+    foreach (['deactivation', 'role_revocation'] as $scenario) {
     foreach (['index', 'detail'] as $action) {
         $staff = StaffMember::create([
-            'name' => 'Support read deactivation '.$action,
-            'email' => $run.'-support-'.$action.'@example.test',
+            'name' => 'Support read '.$scenario.' '.$action,
+            'email' => $run.'-support-'.$scenario.'-'.$action.'@example.test',
             'password' => Str::random(40),
             'role' => 'support',
         ]);
@@ -130,14 +131,14 @@ try {
 
         $other = StaffMember::create([
             'name' => 'Other support owner',
-            'email' => $run.'-other-'.$action.'@example.test',
+            'email' => $run.'-other-'.$scenario.'-'.$action.'@example.test',
             'password' => Str::random(40),
             'role' => 'support',
         ]);
         $owned = SupportTicket::create([
             'assigned_staff_id' => $staff->getKey(),
             'subject' => 'Private owned ticket '.$action,
-            'message' => 'Private support case belonging to the deactivated operator.',
+            'message' => 'Private support case belonging to the assigned operator.',
             'status' => 'open',
         ]);
         $foreign = SupportTicket::create([
@@ -147,7 +148,7 @@ try {
             'status' => 'open',
         ]);
         $bearer = $staff->createToken(
-            'support-read-deactivation-race',
+            'support-read-'.$scenario.'-race',
             ['staff:session'],
             now()->addMinutes(5),
         )->plainTextToken;
@@ -195,14 +196,18 @@ try {
                 throw new RuntimeException('Support '.$action.' read did not wait on staff lock.');
             }
 
+            // Commit the revocation while the live HTTP worker is blocked on
+            // the staff row. Its subsequent authorization must use this state.
             StaffMember::query()->whereKey($staff->getKey())
-                ->update(['is_active' => false]);
+                ->update($scenario === 'deactivation'
+                    ? ['is_active' => false]
+                    : ['role' => 'ads']);
             DB::commit();
 
             $deadline = microtime(true) + 30;
             do {
                 if (curl_multi_exec($multi, $active) !== CURLM_OK || microtime(true) > $deadline) {
-                    throw new RuntimeException('Support deactivated read did not finish.');
+                    throw new RuntimeException('Support '.$scenario.' read did not finish.');
                 }
                 if ($active > 0 && curl_multi_select($multi, 1.0) === -1) {
                     usleep(10000);
@@ -217,7 +222,7 @@ try {
                 || str_contains($body, $foreign->subject)
                 || str_contains($body, $foreign->message)) {
                 throw new RuntimeException(
-                    'Deactivated support read disclosed data: HTTP '.
+                    'Revoked support read disclosed data: HTTP '.
                     curl_getinfo($handle, CURLINFO_RESPONSE_CODE).' '.curl_error($handle),
                 );
             }
@@ -231,7 +236,9 @@ try {
         }
 
         DB::disconnect();
-        if ($staff->fresh()->is_active
+        $persistedStaff = $staff->fresh();
+        if (($scenario === 'deactivation' && $persistedStaff->is_active)
+            || ($scenario === 'role_revocation' && (! $persistedStaff->is_active || $persistedStaff->role !== 'ads'))
             || PersonalAccessToken::findToken($bearer) === null
             || $owned->fresh()->status !== 'open'
             || $foreign->fresh()->status !== 'open'
@@ -245,10 +252,15 @@ try {
             '/api/v1/staff/support/tickets/'.$foreign->getKey(),
         ] as $replayPath) {
             $response = $read($replayPath, $bearer);
-            if ($response['code'] !== 403
+            // A foreign ticket remains concealed as 404 after role revocation;
+            // deactivated staff is rejected by the session middleware first.
+            $expected = $scenario === 'role_revocation'
+                && $replayPath === '/api/v1/staff/support/tickets/'.$foreign->getKey()
+                ? 404 : 403;
+            if ($response['code'] !== $expected
                 || str_contains($response['body'], $owned->subject)
                 || str_contains($response['body'], $foreign->subject)) {
-                throw new RuntimeException('Deactivated support staff retained private read access.');
+                throw new RuntimeException('Revoked support staff retained private read access ('.$scenario.', HTTP '.$response['code'].').');
             }
         }
 
@@ -257,7 +269,8 @@ try {
             throw new RuntimeException('Revoked support bearer retained access.');
         }
 
-        echo 'PASS support read/deactivation/'.$action." (HTTP 403 after SQL lock, 401 after token revocation)\n";
+        echo 'PASS support read/'.$scenario.'/'.$action." (HTTP 403 after SQL lock, 401 after token revocation)\n";
+    }
     }
 } catch (Throwable $error) {
     $exit = 1;
