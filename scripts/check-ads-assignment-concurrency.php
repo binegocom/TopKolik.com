@@ -410,7 +410,121 @@ try {
         curl_close($secondHandle);
     }
 
-    fwrite(STDOUT, "Ads approval/requester and approver revocation four-worker HTTP races passed.\n");
+    // A finance-role security administrator creating an ads assignment request
+    // races with independent emergency deactivation of that administrator.
+    // Either the request commits first or the disabled identity is denied;
+    // a subsequent approval must never grant access to the ads target.
+    $thirdRequester = $staff('finance', 'third-requester');
+    $thirdTarget = $staff('ads', 'third-target');
+    $thirdOrganization = AdvertiserOrganization::create(['name' => 'Ads offboarding race '.$run]);
+    $thirdOrganization->forceFill(['is_active' => true])->save();
+    DB::table('staff_security_admin_grants')->insert([
+        'staff_member_id' => $thirdRequester->getKey(),
+        'is_active' => true,
+        'authorization_reference' => 'isolated-ci-ads-requester-offboarding-race',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    $thirdToken = $thirdRequester->createToken(
+        'ads-requester-offboarding-race', ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+    )->plainTextToken;
+    $thirdTargetToken = $thirdTarget->createToken(
+        'ads-requester-offboarding-target', ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+    )->plainTextToken;
+    $thirdRevokePath = '/api/v1/staff/security/finance/staff/'.$thirdRequester->getKey().'/deactivate';
+    $thirdRace = $postTogether([
+        [$path, $thirdToken, [
+            'target_staff_member_id' => $thirdTarget->getKey(),
+            'advertiser_organization_id' => $thirdOrganization->getKey(),
+        ]],
+        [$thirdRevokePath, $tokens['revoker'], []],
+    ]);
+    $thirdCreated = $thirdRace[0]['code'] === 201;
+    if ($thirdRace[1]['code'] !== 200
+        || (! $thirdCreated && ! in_array($thirdRace[0]['code'], [401, 403], true))) {
+        throw new RuntimeException('Ads requester offboarding race returned invalid outcomes: '.json_encode($thirdRace));
+    }
+
+    DB::disconnect();
+    $thirdRequests = DB::table('staff_ads_assignment_approvals')
+        ->where('target_staff_member_id', $thirdTarget->getKey())
+        ->where('advertiser_organization_id', $thirdOrganization->getKey())->get();
+    $thirdGrantActive = DB::table('staff_security_admin_grants')
+        ->where('staff_member_id', $thirdRequester->getKey())
+        ->where('is_active', true)->exists();
+    $thirdMember = StaffMember::query()->find($thirdRequester->getKey());
+    $thirdTokenCount = $thirdRequester->tokens()->count();
+    if (! $thirdMember || $thirdMember->is_active || $thirdGrantActive
+        || $thirdTokenCount !== 0 || $thirdRequests->count() !== ($thirdCreated ? 1 : 0)
+        || ($thirdCreated && $thirdRequests[0]->status !== 'pending')) {
+        throw new RuntimeException('Ads requester offboarding persisted inconsistent identity or request state.');
+    }
+
+    $thirdEvents = DB::table('security_audit_events')
+        ->where(function ($query) use ($thirdRequester, $thirdOrganization): void {
+            $query->where(function ($inner) use ($thirdRequester): void {
+                $inner->where('subject_type', 'staff_member')
+                    ->where('subject_id', $thirdRequester->getKey());
+            })->orWhere(function ($inner) use ($thirdOrganization): void {
+                $inner->where('subject_type', 'advertiser_organization')
+                    ->where('subject_id', $thirdOrganization->getKey());
+            });
+        })
+        ->whereIn('action', [
+            'staff.advertiser_assignment.requested',
+            'staff.finance_access.staff_deactivated',
+        ])->get(['action', 'staff_member_id', 'request_id']);
+    $thirdExpected = [
+        'staff.finance_access.staff_deactivated' => (int) $revoker->getKey(),
+    ];
+    if ($thirdCreated) {
+        $thirdExpected['staff.advertiser_assignment.requested'] = (int) $thirdRequester->getKey();
+    }
+    if ($thirdEvents->count() !== count($thirdExpected)
+        || $thirdEvents->pluck('action')->unique()->count() !== count($thirdExpected)
+        || $thirdEvents->pluck('request_id')->filter()->unique()->count() !== count($thirdExpected)
+        || $thirdEvents->contains(static fn ($event): bool =>
+            ! isset($thirdExpected[$event->action])
+            || (int) $event->staff_member_id !== $thirdExpected[$event->action])) {
+        throw new RuntimeException('Ads requester offboarding audit missing, duplicated or misattributed.');
+    }
+
+    $thirdReplay = $postTogether([
+        [$path, $thirdToken, [
+            'target_staff_member_id' => $thirdTarget->getKey(),
+            'advertiser_organization_id' => $thirdOrganization->getKey(),
+        ]],
+        [$thirdRevokePath, $tokens['revoker'], []],
+    ]);
+    if ($thirdReplay[0]['code'] !== 401 || $thirdReplay[1]['code'] !== 404) {
+        throw new RuntimeException('Deactivated ads requester replay unexpectedly succeeded: '.json_encode($thirdReplay));
+    }
+
+    if ($thirdCreated) {
+        $thirdApprovalPath = $path.'/'.(int) $thirdRequests[0]->id.'/approve';
+        $thirdApproval = $postTogether([[$thirdApprovalPath, $tokens['approver'], []]]);
+        if ($thirdApproval[0]['code'] !== 409) {
+            throw new RuntimeException('Deactivated requester pending ads approval was not denied.');
+        }
+    }
+    $thirdAdsHandle = curl_init($base.'/api/v1/staff/ads/organizations/'.$thirdOrganization->getKey().'/campaigns');
+    curl_setopt_array($thirdAdsHandle, [
+        CURLOPT_HTTPHEADER => ['Authorization: Bearer '.$thirdTargetToken, 'Accept: application/json'],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_TIMEOUT => 15,
+    ]);
+    try {
+        curl_exec($thirdAdsHandle);
+        if (curl_errno($thirdAdsHandle) !== 0
+            || (int) curl_getinfo($thirdAdsHandle, CURLINFO_RESPONSE_CODE) !== 404) {
+            throw new RuntimeException('Offboarded requester incorrectly granted advertiser access.');
+        }
+    } finally {
+        curl_close($thirdAdsHandle);
+    }
+
+    fwrite(STDOUT, "Ads requester/approver grant and emergency offboarding four-worker HTTP races passed.\\n");
 } catch (Throwable $error) {
     $exit = 1;
     fwrite(STDERR, $error->getMessage()."\n");
