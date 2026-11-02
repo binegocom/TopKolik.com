@@ -249,6 +249,16 @@ final class StaffAdsAssignmentApprovalController extends Controller
             abort(403);
         }
 
+        // Serialize this decision with emergency staff deactivation. The
+        // security grant alone is not sufficient: the actor's persisted
+        // identity must remain eligible under the same transaction lock.
+        $current = StaffMember::query()
+            ->whereKey($admin->getKey())->lockForUpdate()->first();
+        if (! $current || ! $current->is_active || ! $current->email_verified_at
+            || ! $current->mfa_enrolled_at || $current->role === 'ads') {
+            abort(403);
+        }
+
         $raw = $request->bearerToken();
         $token = $raw ? PersonalAccessToken::findToken($raw) : null;
         if (! $token) {
