@@ -49,13 +49,19 @@ final class StaffEditorialDraftController extends Controller
         ]);
         /** @var StaffMember $staff */
         $staff = $request->user();
-        Gate::forUser($staff)->authorize('staff-create-draft', [$this->token($request)]);
+        $token = $this->token($request);
+        $draft = DB::transaction(function () use ($staff, $token, $data): EditorialArticle {
+            // Serialize role changes and deactivation with draft creation.
+            // The policy must be re-evaluated after locking persisted staff.
+            $this->lockEditor($staff);
+            Gate::forUser($staff)->authorize('staff-create-draft', [$token]);
 
-        $draft = EditorialArticle::query()->create([
-            'owner_staff_id' => $staff->getKey(),
-            'title' => $data['title'],
-            'body' => $data['body'],
-        ]);
+            return EditorialArticle::query()->create([
+                'owner_staff_id' => $staff->getKey(),
+                'title' => $data['title'],
+                'body' => $data['body'],
+            ]);
+        }, 3);
 
         return $this->privateResponse(['draft' => $this->payload($draft)], 201);
     }
@@ -89,6 +95,7 @@ final class StaffEditorialDraftController extends Controller
         $token = $this->token($request);
 
         $record = DB::transaction(function () use ($staff, $token, $draft, $data): EditorialArticle {
+            $this->lockEditor($staff);
             $record = $this->scopedRecord($staff, $draft, true);
             $this->authorizeDraft($staff, $record, 'editorial.draft.edit', $token);
             if ((int) $record->revision !== (int) $data['revision']) {
@@ -121,6 +128,7 @@ final class StaffEditorialDraftController extends Controller
         $token = $this->token($request);
 
         $record = DB::transaction(function () use ($staff, $token, $draft, $data): EditorialArticle {
+            $this->lockEditor($staff);
             $record = $this->scopedRecord($staff, $draft, true);
             $this->authorizeDraft($staff, $record, 'editorial.draft.submit', $token);
 
@@ -140,6 +148,16 @@ final class StaffEditorialDraftController extends Controller
         // This is a review request only: publication, ingestion and indexing
         // are neither invoked nor authorized by this endpoint.
         return $this->privateResponse(['draft' => $this->payload($record)]);
+    }
+
+    private function lockEditor(StaffMember $staff): void
+    {
+        // Consistent lock order: staff identity first, then the owned draft.
+        // An administrator's concurrent staff update must not interleave
+        // between authorization and the editorial write.
+        if (! StaffMember::query()->whereKey($staff->getKey())->lockForUpdate()->first()) {
+            abort(403);
+        }
     }
 
     private function scopedRecord(StaffMember $staff, int $id, bool $lock = false): EditorialArticle
