@@ -20,55 +20,57 @@ final class StaffFinanceAccessInventoryController extends Controller
      */
     public function active(Request $request): JsonResponse
     {
-        $this->authorizeAdministrator($request);
-        $filters = $request->validate([
-            'limit' => ['sometimes', 'integer', 'between:1,50'],
-            'before_id' => ['sometimes', 'integer', 'min:1'],
-            'staff_member_id' => ['missing'],
-            'target_staff_member_id' => ['missing'],
-            'requested_by_staff_member_id' => ['missing'],
-            'reviewed_by_staff_member_id' => ['missing'],
-            'request_id' => ['missing'],
-            'role' => ['missing'],
-            'status' => ['missing'],
-            'is_active' => ['missing'],
-            'include_inactive' => ['missing'],
-            'sort' => ['missing'],
-        ]);
+        return DB::transaction(function () use ($request): JsonResponse {
+            $this->authorizeAdministrator($request);
+            $filters = $request->validate([
+                'limit' => ['sometimes', 'integer', 'between:1,50'],
+                'before_id' => ['sometimes', 'integer', 'min:1'],
+                'staff_member_id' => ['missing'],
+                'target_staff_member_id' => ['missing'],
+                'requested_by_staff_member_id' => ['missing'],
+                'reviewed_by_staff_member_id' => ['missing'],
+                'request_id' => ['missing'],
+                'role' => ['missing'],
+                'status' => ['missing'],
+                'is_active' => ['missing'],
+                'include_inactive' => ['missing'],
+                'sort' => ['missing'],
+            ]);
 
-        $limit = (int) ($filters['limit'] ?? 20);
-        $query = DB::table('staff_finance_entitlements as e')
-            ->join('staff_members as s', 's.id', '=', 'e.staff_member_id')
-            ->where('e.is_active', true);
+            $limit = (int) ($filters['limit'] ?? 20);
+            $query = DB::table('staff_finance_entitlements as e')
+                ->join('staff_members as s', 's.id', '=', 'e.staff_member_id')
+                ->where('e.is_active', true);
 
-        if (isset($filters['before_id'])) {
-            $query->where('e.id', '<', (int) $filters['before_id']);
-        }
+            if (isset($filters['before_id'])) {
+                $query->where('e.id', '<', (int) $filters['before_id']);
+            }
 
-        // An active entitlement may be temporarily unusable if the staff
-        // member was demoted, disabled or lost MFA/email verification.
-        // Surface the discrepancy without exposing identity or factors.
-        $rows = $query->orderByDesc('e.id')->limit($limit + 1)->get([
-            'e.id', 'e.staff_member_id', 'e.last_approved_by_staff_id', 'e.updated_at',
-            DB::raw("CASE WHEN s.is_active = true AND s.role = 'finance' ".
-                'AND s.email_verified_at IS NOT NULL '.
-                'AND s.mfa_enrolled_at IS NOT NULL THEN 1 ELSE 0 END AS staff_eligible'),
-        ]);
+            // An active entitlement may be temporarily unusable if the staff
+            // member was demoted, disabled or lost MFA/email verification.
+            // Surface the discrepancy without exposing identity or factors.
+            $rows = $query->orderByDesc('e.id')->limit($limit + 1)->get([
+                'e.id', 'e.staff_member_id', 'e.last_approved_by_staff_id', 'e.updated_at',
+                DB::raw("CASE WHEN s.is_active = true AND s.role = 'finance' ".
+                    'AND s.email_verified_at IS NOT NULL '.
+                    'AND s.mfa_enrolled_at IS NOT NULL THEN 1 ELSE 0 END AS staff_eligible'),
+            ]);
 
-        $hasMore = $rows->count() > $limit;
-        $page = $rows->take($limit)->map(static fn (object $row): array => [
-            'id' => (int) $row->id,
-            'staff_member_id' => (int) $row->staff_member_id,
-            'last_approved_by_staff_id' => $row->last_approved_by_staff_id === null
-                ? null : (int) $row->last_approved_by_staff_id,
-            'staff_eligible' => (bool) $row->staff_eligible,
-            'updated_at' => $row->updated_at,
-        ])->values()->all();
+            $hasMore = $rows->count() > $limit;
+            $page = $rows->take($limit)->map(static fn (object $row): array => [
+                'id' => (int) $row->id,
+                'staff_member_id' => (int) $row->staff_member_id,
+                'last_approved_by_staff_id' => $row->last_approved_by_staff_id === null
+                    ? null : (int) $row->last_approved_by_staff_id,
+                'staff_eligible' => (bool) $row->staff_eligible,
+                'updated_at' => $row->updated_at,
+            ])->values()->all();
 
-        return $this->privateResponse([
-            'entitlements' => $page,
-            'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
-        ]);
+            return $this->privateResponse([
+                'entitlements' => $page,
+                'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
+            ]);
+        }, 3);
     }
 
     /**
@@ -77,66 +79,87 @@ final class StaffFinanceAccessInventoryController extends Controller
      */
     public function decisions(Request $request): JsonResponse
     {
-        $this->authorizeAdministrator($request);
-        $filters = $request->validate([
-            'limit' => ['sometimes', 'integer', 'between:1,50'],
-            'before_id' => ['sometimes', 'integer', 'min:1'],
-            'status' => ['sometimes', 'string', Rule::in(['approved', 'rejected'])],
-            'staff_member_id' => ['missing'],
-            'target_staff_member_id' => ['missing'],
-            'requested_by_staff_member_id' => ['missing'],
-            'reviewed_by_staff_member_id' => ['missing'],
-            'request_id' => ['missing'],
-            'sort' => ['missing'],
-        ]);
+        return DB::transaction(function () use ($request): JsonResponse {
+            $this->authorizeAdministrator($request);
+            $filters = $request->validate([
+                'limit' => ['sometimes', 'integer', 'between:1,50'],
+                'before_id' => ['sometimes', 'integer', 'min:1'],
+                'status' => ['sometimes', 'string', Rule::in(['approved', 'rejected'])],
+                'staff_member_id' => ['missing'],
+                'target_staff_member_id' => ['missing'],
+                'requested_by_staff_member_id' => ['missing'],
+                'reviewed_by_staff_member_id' => ['missing'],
+                'request_id' => ['missing'],
+                'sort' => ['missing'],
+            ]);
 
-        $limit = (int) ($filters['limit'] ?? 20);
-        $query = DB::table('staff_finance_access_requests')
-            ->whereIn('status', ['approved', 'rejected']);
+            $limit = (int) ($filters['limit'] ?? 20);
+            $query = DB::table('staff_finance_access_requests')
+                ->whereIn('status', ['approved', 'rejected']);
 
-        if (isset($filters['status'])) {
-            $query->where('status', $filters['status']);
-        }
-        if (isset($filters['before_id'])) {
-            $query->where('id', '<', (int) $filters['before_id']);
-        }
+            if (isset($filters['status'])) {
+                $query->where('status', $filters['status']);
+            }
+            if (isset($filters['before_id'])) {
+                $query->where('id', '<', (int) $filters['before_id']);
+            }
 
-        $rows = $query->orderByDesc('id')->limit($limit + 1)->get([
-            'id', 'target_staff_member_id', 'requested_by_staff_member_id',
-            'reviewed_by_staff_member_id', 'status', 'created_at', 'decided_at',
-        ]);
+            $rows = $query->orderByDesc('id')->limit($limit + 1)->get([
+                'id', 'target_staff_member_id', 'requested_by_staff_member_id',
+                'reviewed_by_staff_member_id', 'status', 'created_at', 'decided_at',
+            ]);
 
-        $hasMore = $rows->count() > $limit;
-        $page = $rows->take($limit)->map(static fn (object $row): array => [
-            'id' => (int) $row->id,
-            'target_staff_member_id' => (int) $row->target_staff_member_id,
-            'requested_by_staff_member_id' => (int) $row->requested_by_staff_member_id,
-            'reviewed_by_staff_member_id' => (int) $row->reviewed_by_staff_member_id,
-            'status' => $row->status,
-            'created_at' => $row->created_at,
-            'decided_at' => $row->decided_at,
-        ])->values()->all();
+            $hasMore = $rows->count() > $limit;
+            $page = $rows->take($limit)->map(static fn (object $row): array => [
+                'id' => (int) $row->id,
+                'target_staff_member_id' => (int) $row->target_staff_member_id,
+                'requested_by_staff_member_id' => (int) $row->requested_by_staff_member_id,
+                'reviewed_by_staff_member_id' => (int) $row->reviewed_by_staff_member_id,
+                'status' => $row->status,
+                'created_at' => $row->created_at,
+                'decided_at' => $row->decided_at,
+            ])->values()->all();
 
-        return $this->privateResponse([
-            'decisions' => $page,
-            'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
-        ]);
+            return $this->privateResponse([
+                'decisions' => $page,
+                'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
+            ]);
+        }, 3);
     }
 
     private function authorizeAdministrator(Request $request): void
     {
         $staff = $request->user();
         $bearer = $request->bearerToken();
-        $token = $bearer ? PersonalAccessToken::findToken($bearer) : null;
+        $presented = $bearer ? PersonalAccessToken::findToken($bearer) : null;
 
-        if (! $staff instanceof StaffMember || ! $token
-            || $token->expires_at === null || $token->expires_at->isPast()
-            || $token->tokenable_type !== $staff->getMorphClass()
-            || (string) $token->tokenable_id !== (string) $staff->getKey()) {
+        if (! $staff instanceof StaffMember || ! $presented) {
+            abort(401, 'Unauthenticated.');
+        }
+
+        // Keep the same staff -> bearer lock order as logout. Both the
+        // independent administrator grant and the response are protected
+        // against concurrent revocation until this transaction commits.
+        $actor = StaffMember::query()->whereKey($staff->getKey())
+            ->lockForUpdate()->first();
+        $token = PersonalAccessToken::query()->whereKey($presented->getKey())
+            ->lockForUpdate()->first();
+
+        if (! $actor || ! $token || $token->expires_at === null
+            || $token->expires_at->isPast()
+            || $token->tokenable_type !== $actor->getMorphClass()
+            || (string) $token->tokenable_id !== (string) $actor->getKey()) {
+            abort(401, 'Unauthenticated.');
+        }
+
+        $grant = DB::table('staff_security_admin_grants')
+            ->where('staff_member_id', $actor->getKey())
+            ->lockForUpdate()->first();
+        if (! $grant || ! $grant->is_active) {
             abort(403);
         }
 
-        Gate::forUser($staff)->authorize('staff-ads-assignments-admin', [$token]);
+        Gate::forUser($actor)->authorize('staff-ads-assignments-admin', [$token]);
     }
 
     private function privateResponse(array $payload): JsonResponse
