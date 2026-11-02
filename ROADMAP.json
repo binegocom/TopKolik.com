@@ -1451,6 +1451,23 @@
           "type": "reference",
           "value": "https://github.com/binegocom/TopKolik.com/pull/77",
           "validation": "Finance request creation/offboarding concurrency regression; P03-007 remains in_progress."
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test && TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-support-reviewer-concurrency.php && TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-finance-access-concurrency.php && TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-ads-assignment-concurrency.php",
+          "result": "PR #79 code SHA ee49d603: 333 Laravel tests / 2,982 assertions passed on disposable PostgreSQL/Redis; new non-expiring staff session and resource-gate regressions, four-worker HTTP races, HTTP/SMTP and clean Composer audit verified. Final evidence commit requires fresh CI.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41379579709"
+        },
+        {
+          "type": "verification",
+          "command": "bash scripts/test-editorial-guard.sh && python3 scripts/status.py check",
+          "result": "PR #79 code SHA ee49d603 editorial and roadmap CI passed; final evidence commit requires fresh CI.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41379579682"
+        },
+        {
+          "type": "reference",
+          "value": "https://github.com/binegocom/TopKolik.com/pull/79",
+          "validation": "Staff sessions and editor/support gates fail closed for tokens without expiry; P03-007 remains in_progress."
         }
       ],
       "verified_at": null,
