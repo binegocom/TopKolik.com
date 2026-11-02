@@ -1530,6 +1530,18 @@
           "value": "d62c64d134d31e8bf6b7d01a44227641e1d632c8",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/84",
           "validation": "Partial support bearer/logout race hardening only; full RBAC/BOLA matrix and independent role-revocation race remain open."
+        },
+        {
+          "type": "verification",
+          "command": "php scripts/check-support-reviewer-concurrency.php",
+          "result": "PR #85: four-worker real HTTP regression verifies reply/escalate/resolve deny (403) after PostgreSQL-serialized support role revocation; pg_stat_activity confirms an actual blocked worker. Ticket/reply/audit remain unchanged; revoked MFA bearer remains denied. Full Laravel API workflow: 347 tests / 3,122 assertions, PostgreSQL/Redis, finance/ads concurrency, real HTTP/SMTP, Composer audit and editorial guard passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41410906277"
+        },
+        {
+          "type": "revision",
+          "value": "4f84c73b53d2f0b39bbc382d57e31a8648b58156",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/85",
+          "validation": "Verified partial P03-007 security regression; full RBAC matrix and production verification remain pending."
         }
       ],
       "verified_at": null,
