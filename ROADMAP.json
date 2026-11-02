@@ -1542,6 +1542,18 @@
           "value": "4f84c73b53d2f0b39bbc382d57e31a8648b58156",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/85",
           "validation": "Verified partial P03-007 security regression; full RBAC matrix and production verification remain pending."
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test && php scripts/check-support-reviewer-concurrency.php",
+          "result": "PR #86 implementation commit 71f5f258: 350 Laravel feature tests / 3,146 assertions passed on disposable PostgreSQL/Redis; four-worker HTTP reviewer approval/relinquishment blocked on staff locks and rejected after role revocation (403), with ticket/audit integrity. Finance/ads concurrency, live HTTP/SMTP, Composer audit and 17 editorial guard cases passed. Final documentation-head CI pending.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41421623113"
+        },
+        {
+          "type": "revision",
+          "value": "71f5f258d39076f556d4c2dc64569712bf238575",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/86",
+          "validation": "Partial reviewer role and bearer revocation hardening; full RBAC/BOLA matrix and production authorization not yet verified."
         }
       ],
       "verified_at": null,
@@ -1586,7 +1598,8 @@
         "PR #77 verifies concurrent finance request creation versus one-way staff offboarding with isolated real HTTP workers; full resource-level RBAC, approved operator provisioning, offsite audit and production release remain unverified.",
         "PR #81 adds private/no-store headers at staff and advertiser session middleware boundaries, verified with PostgreSQL-backed feature tests. Full RBAC/BOLA matrix, unauthenticated outer auth middleware responses, production proxy caching configuration and external security review remain unverified.",
         "PR #82 serializes editorial draft creation/update/submit with a persisted staff row lock and fresh role check. Full RBAC/BOLA acceptance, independent concurrency security review, deployment and production release remain unverified; task stays in_progress.",
-        "PR #83 verified support actor-row lock ordering and revoked-role denial on code CI; final documentation commit CI, independent multi-worker role-revocation-vs-support-write contention, complete RBAC/BOLA matrix, operational revocation path and production deployment remain unverified."
+        "PR #83 verified support actor-row lock ordering and revoked-role denial on code CI; final documentation commit CI, independent multi-worker role-revocation-vs-support-write contention, complete RBAC/BOLA matrix, operational revocation path and production deployment remain unverified.",
+        "PR #86 serializes support escalation approval and relinquishment with staff identity, current bearer and ticket locks. Real four-worker reviewer-role revocation race passed code CI; final evidence commit CI, full RBAC/BOLA coverage, production operator access and deployment remain outstanding."
       ]
     },
     {
