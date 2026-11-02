@@ -606,3 +606,31 @@
   `P03-007` remains **in_progress**. No independent role-revocation
   versus support-write worker race, full RBAC/BOLA acceptance, licensed
   sports data or production release has been verified.
+
+## P03-007 — support ticket mutation / staff logout serialization (PR #84)
+
+- A support reply, escalation or resolution can no longer authorize against
+  a bearer token loaded before a concurrent logout. Each write locks the
+  persisted actor, then the presented token, then the assigned ticket, and
+  evaluates the current token and resource policy inside the transaction.
+- Staff logout uses the same actor-before-token PostgreSQL lock order and
+  commits token deletion and its security audit atomically. This prevents
+  token/staff lock inversion during simultaneous support writes.
+- A PostgreSQL feature regression checks the lock sequence for all three
+  support mutations and that logging out one bearer does not revoke another
+  active bearer. The CI-only four-worker HTTP harness races logout with
+  reply, escalation and resolution, validating either legal serial order,
+  immutable audit attribution and rejection of the revoked bearer.
+- [PR #84](https://github.com/binegocom/TopKolik.com/pull/84) code SHA
+  `d62c64d134d31e8bf6b7d01a44227641e1d632c8` passed
+  [Laravel CI 41402257757](https://github.com/binegocom/TopKolik.com/actions/runs/41402257757):
+  **347 tests / 3,122 assertions** on disposable PostgreSQL/Redis; all
+  four-worker support logout/write, reviewer, finance and ads races passed,
+  with real HTTP/SMTP, Composer audit and 17 editorial guard cases.
+  [Editorial/roadmap CI 41402257805](https://github.com/binegocom/TopKolik.com/actions/runs/41402257805)
+  also passed. This documentation/evidence update requires fresh CI on
+  the final PR commit before merge.
+- `P03-007` remains **in_progress**; independent staff-role revocation
+  versus ticket-write HTTP races, the complete RBAC/BOLA matrix and
+  production release are not verified. No new provider access, locale,
+  migration or runtime sports content is introduced.

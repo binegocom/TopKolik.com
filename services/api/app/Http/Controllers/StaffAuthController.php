@@ -112,10 +112,25 @@ final class StaffAuthController extends Controller
         }
 
         DB::transaction(static function () use ($token, $request, $audit): void {
-            $token->delete();
-            $staff = $request->user();
+            // Match support/editorial mutation lock order: staff, then bearer.
+            // This prevents logout from deleting a token while an authorized
+            // write is still in flight and avoids token/staff lock inversion.
+            $staff = StaffMember::query()
+                ->whereKey($request->user()->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+            $current = PersonalAccessToken::query()
+                ->whereKey($token->getKey())
+                ->lockForUpdate()
+                ->first();
+            if (! $current || $current->tokenable_type !== $staff->getMorphClass()
+                || (string) $current->tokenable_id !== (string) $staff->getKey()) {
+                abort(401, 'Unauthenticated.');
+            }
+
+            $current->delete();
             $audit->record($staff, 'staff.session.ended', 'staff_member', (int) $staff->getKey(), $request->attributes->get('request_id'));
-        });
+        }, attempts: 3);
 
         return response()->json(['message' => 'Signed out.']);
     }
