@@ -518,3 +518,10 @@
 - The first CI attempt exposed test-actor rate-limit exhaustion (HTTP 429) on a late approval; the regression now uses independently granted, fresh MFA test administrators rather than bypassing application throttles.
 - [PR #77 code SHA `0c36a263`](https://github.com/binegocom/TopKolik.com/pull/77) passed [Laravel CI 41374636095](https://github.com/binegocom/TopKolik.com/actions/runs/41374636095): **325 tests / 2,879 assertions**, disposable PostgreSQL/Redis, real four-worker finance/ads/support races, HTTP/SMTP, Composer audit and 17 editorial guards. [Editorial/roadmap CI 41374636088](https://github.com/binegocom/TopKolik.com/actions/runs/41374636088) passed.
 - The final documentation-evidence commit requires fresh successful CI before merge. `P03-007` remains `in_progress`; `P00-004` remains blocked on owner/legal/provider decisions. No production release, live finance operations, provider rights or full RBAC acceptance is claimed.
+
+
+## P03-009 — reader self-service consent history (PR review)
+
+- Added authenticated, owner-only `GET /api/v1/me/privacy/consent-history`, reading the existing append-only PostgreSQL consent ledger with verified reader bearer tokens, bounded descending keyset pagination and optional allowlisted consent type. Unexpected query selectors are rejected, and staff/advertiser principals cannot read history. Responses contain only consent metadata and use private no-store headers.
+- A new six-case PostgreSQL feature suite covers real opt-in/withdrawal transitions, default opt-out, cross-reader isolation, pagination, invalid selectors, expired/revoked/unverified reader sessions and non-reader token rejection.
+- **in_progress / CI not yet verified:** feature branch `feat/p03-009-reader-consent-history-20261102`. Run the full Laravel/PostgreSQL/Redis suite, API HTTP/SMTP checks, Composer audit and editorial/roadmap checks on the final PR commit. Do not mark P03-009 done until legal retention and erasure processing are approved and verified. No destructive migration, live sports provider, new locale or deployment is introduced.
