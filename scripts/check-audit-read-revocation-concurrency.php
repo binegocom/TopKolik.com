@@ -257,7 +257,7 @@ try {
                         'code' => curl_getinfo($handle, CURLINFO_RESPONSE_CODE),
                         'body' => (string) curl_multi_getcontent($handle),
                     ];
-                    if (curl_error($handle) !== '') || $response['code'] !== 403) {
+                    if (curl_error($handle) !== '' || $response['code'] !== 403) {
                         throw new RuntimeException('Audit deactivation read did not fail closed: '.json_encode($response, JSON_THROW_ON_ERROR).' '.curl_error($handle));
                     }
                 } finally {
