@@ -1623,6 +1623,24 @@
           "value": "46bc39eea3f0717e8e044cb6468a3612a9ec46a8",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/90",
           "validation": "Four-worker editorial logout regression verified; full RBAC/BOLA matrix remains in_progress."
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test && php scripts/check-editorial-logout-concurrency.php",
+          "result": "PR #91 implementation SHA 3391483: 354 Laravel tests / 3,179 assertions passed on disposable PostgreSQL/Redis; three new four-worker editorial create/update/submit versus committed role revocation races proved SQL lock contention and HTTP 403, no draft/audit mutation, replay denied.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41456997486"
+        },
+        {
+          "type": "verification",
+          "command": "python3 scripts/status.py check && bash scripts/test-editorial-guard.sh",
+          "result": "PR #91 implementation SHA 3391483 editorial/roadmap workflow passed, including 17 publication policy cases.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41456997395"
+        },
+        {
+          "type": "revision",
+          "value": "3391483c2e0a4b2640a75d1c159062dc03da7751",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/91",
+          "validation": "Editorial role downgrade versus real four-worker HTTP writes verified; full RBAC/BOLA matrix remains in_progress."
         }
       ],
       "verified_at": null,
