@@ -840,7 +840,7 @@ try {
         }
     }
 
-    echo "PASS: real HTTP recovery waits for staff role/grant locks and rejects revoked administrators.\\n";
+    echo "PASS: real HTTP recovery waits for staff role/grant locks and rejects revoked administrators.\n";
     echo "PASS: real HTTP reviewer approval/relinquishment blocked on staff locks and denied after role revocation.\n";
     echo "PASS: real HTTP workers block on support staff row locks, then reject reply/escalate/resolve after committed role revocation.\n";
     echo "PASS: support logout versus reply, escalation and resolution races; token revocation, audit and state atomicity.\n";
