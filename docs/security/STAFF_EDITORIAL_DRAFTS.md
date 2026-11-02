@@ -24,3 +24,10 @@
 - The test verifies the presented token is deleted, the logout audit event is written exactly once with request correlation, and a later replay of each write is rejected with 401 without additional persistence or audit.
 - Verified on PR #90 head `46bc39eea3f0717e8e044cb6468a3612a9ec46a8`: [Laravel API CI](https://github.com/binegocom/TopKolik.com/actions/runs/41448560623) (354 tests, 3,179 assertions and all three real HTTP races); [editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41448560710).
 - This is an isolated backend concurrency check, not production verification or completion of the full staff RBAC/BOLA matrix.
+
+## Editorial read / revocation HTTP concurrency (2026-11-02)
+
+- The isolated four-worker scripts/check-editorial-logout-concurrency.php harness now also races private draft index and detail reads against logout and a committed editor role downgrade.
+- Read-before-logout may return only the owner's own records (200); a revoked bearer must return 401 and cannot be replayed. One attributed logout audit event is required, with no draft changes.
+- Role-revocation tests hold a PostgreSQL staff row lock, observe a real HTTP worker blocked on FOR UPDATE, commit the downgrade, and require 403 on the resumed read. Foreign-owner detail stays concealed (404) on replay; audit and draft state remain unchanged.
+- Verified implementation commit 946a4c3e6c2e9daee681739e2ad6fbe2d0100517: [Laravel API CI 41476526869](https://github.com/binegocom/TopKolik.com/actions/runs/41476526869) and [editorial/roadmap CI 41476526891](https://github.com/binegocom/TopKolik.com/actions/runs/41476526891) both passed. This does not complete the full RBAC/BOLA acceptance matrix or authorize production release.
