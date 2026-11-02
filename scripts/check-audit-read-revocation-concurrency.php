@@ -297,7 +297,8 @@ try {
             DB::disconnect();
             if (str_contains($scenario === 'logout' ? $responses['read']['body'] : $response['body'], $foreignRequestId)
                 || ($scenario === 'deactivation' && str_contains($response['body'], $ownRequestId))
-                || DB::table($table)->where('staff_member_id', $staff->getKey())->count()\n                    !== $initialCount + ($scenario === 'logout' && $kind === 'events' ? 1 : 0)
+                || DB::table($table)->where('staff_member_id', $staff->getKey())->count()
+                    !== $initialCount + ($scenario === 'logout' && $kind === 'events' ? 1 : 0)
                 || DB::table($table)->where('staff_member_id', $foreign->getKey())->count() !== 1
                 || PersonalAccessToken::findToken($bearer) === null && $scenario === 'deactivation') {
                 throw new RuntimeException('Audit race leaked another principal or mutated an append-only ledger.');
