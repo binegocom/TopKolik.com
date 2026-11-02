@@ -1512,6 +1512,24 @@
           "type": "revision",
           "value": "2596ecabf89576a165ab20825fb3d99c3811531d",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/83"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test && TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-support-reviewer-concurrency.php",
+          "result": "347 Laravel tests / 3,122 assertions passed on disposable PostgreSQL/Redis; real four-worker support logout versus reply/escalate/resolve races, token revocation, audit atomicity, HTTP/SMTP, Composer audit and 17 editorial guard checks passed. P03-007 remains in_progress.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41402257757"
+        },
+        {
+          "type": "verification",
+          "command": "python3 scripts/validate_blueprint.py && python3 scripts/status.py check && bash scripts/test-editorial-guard.sh",
+          "result": "Editorial/roadmap workflow passed on PR #84 code/docs commit 44ed76bf6be8839d1718ac9ca4aeee7d97a3d744; final evidence commit requires CI.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41402257805"
+        },
+        {
+          "type": "revision",
+          "value": "d62c64d134d31e8bf6b7d01a44227641e1d632c8",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/84",
+          "validation": "Partial support bearer/logout race hardening only; full RBAC/BOLA matrix and independent role-revocation race remain open."
         }
       ],
       "verified_at": null,
