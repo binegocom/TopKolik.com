@@ -70,6 +70,8 @@ final class StaffSupportMutationLockTest extends TestCase
             }
             if (str_contains($sql, 'from "staff_members"')) {
                 $locks[] = 'staff';
+            } elseif (str_contains($sql, 'from "personal_access_tokens"')) {
+                $locks[] = 'token';
             } elseif (str_contains($sql, 'from "support_tickets"')) {
                 $locks[] = 'ticket';
             }
@@ -79,20 +81,20 @@ final class StaffSupportMutationLockTest extends TestCase
             'idempotency_key' => (string) Str::uuid(),
             'message' => 'We are reviewing the request.',
         ])->assertCreated();
-        $this->assertSame(['staff', 'ticket'], array_slice($locks, 0, 2));
+        $this->assertSame(['staff', 'token', 'ticket'], array_slice($locks, 0, 3));
         $this->assertSame('pending', $replyTicket->fresh()->status);
 
         $locks = [];
         $this->postJson('/api/v1/staff/support/tickets/'.$escalationTicket->id.'/escalate')
             ->assertOk();
-        $this->assertSame(['staff', 'ticket'], array_slice($locks, 0, 2));
+        $this->assertSame(['staff', 'token', 'ticket'], array_slice($locks, 0, 3));
         $this->assertNotNull($escalationTicket->fresh()->escalated_at);
 
         $locks = [];
         $this->postJson('/api/v1/staff/support/tickets/'.$resolutionTicket->id.'/resolve', [
             'resolution_note' => 'Verified resolution.',
         ])->assertOk();
-        $this->assertSame(['staff', 'ticket'], array_slice($locks, 0, 2));
+        $this->assertSame(['staff', 'token', 'ticket'], array_slice($locks, 0, 3));
         $this->assertSame('resolved', $resolutionTicket->fresh()->status);
 
         $this->assertDatabaseCount('support_ticket_replies', 1);
@@ -123,4 +125,39 @@ final class StaffSupportMutationLockTest extends TestCase
         $this->assertDatabaseCount('support_ticket_replies', 0);
         $this->assertDatabaseCount('security_audit_events', 0);
     }
+    public function test_logout_revokes_only_presented_bearer_and_blocks_future_ticket_mutations(): void
+    {
+        $this->withoutMiddleware(ThrottleRequests::class);
+        $staff = $this->support();
+        $ticket = $this->ticket($staff, 'open');
+        $revoked = $this->token($staff);
+        $stillValid = $this->token($staff);
+
+        $this->withToken($revoked)->postJson('/api/v1/staff/auth/logout')
+            ->assertOk();
+        app('auth')->forgetGuards();
+
+        $this->withToken($revoked)->postJson('/api/v1/staff/support/tickets/'.$ticket->id.'/replies', [
+            'idempotency_key' => (string) Str::uuid(),
+            'message' => 'This revoked bearer must not write.',
+        ])->assertUnauthorized();
+
+        app('auth')->forgetGuards();
+        $this->withToken($stillValid)->postJson('/api/v1/staff/support/tickets/'.$ticket->id.'/replies', [
+            'idempotency_key' => (string) Str::uuid(),
+            'message' => 'The independent bearer remains valid.',
+        ])->assertCreated();
+
+        $this->assertDatabaseCount('support_ticket_replies', 1);
+        $this->assertDatabaseHas('security_audit_events', [
+            'staff_member_id' => $staff->getKey(),
+            'action' => 'staff.session.ended',
+        ]);
+        $this->assertDatabaseHas('security_audit_events', [
+            'staff_member_id' => $staff->getKey(),
+            'action' => 'support.ticket.replied',
+            'subject_id' => $ticket->getKey(),
+        ]);
+    }
+
 }
