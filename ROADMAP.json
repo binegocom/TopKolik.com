@@ -1658,6 +1658,17 @@
           "type": "revision",
           "value": "eb6d1de18bf5132e0722f2e329f3525e480737ab",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/92"
+        },
+        {
+          "type": "verification",
+          "command": "php scripts/check-editorial-logout-concurrency.php",
+          "result": "Four-worker real HTTP regression passed on disposable PostgreSQL: editorial draft index/detail versus logout and deterministic editor role revocation, with bearer replay denial, owned-only BOLA and audit/state invariants; existing write races and API suite passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41476526869"
+        },
+        {
+          "type": "reference",
+          "value": "https://github.com/binegocom/TopKolik.com/pull/93",
+          "validation": "Read/logout and read/role-revocation regression CI green on implementation commit 946a4c3; task remains in_progress pending complete RBAC/BOLA matrix and independent production verification."
         }
       ],
       "verified_at": null,
