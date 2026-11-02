@@ -1994,6 +1994,18 @@
           "type": "file",
           "path": "services/api/tests/Feature/StaffSecurityAuditReadLockTest.php",
           "validation": "Regression asserts persisted staff and bearer FOR UPDATE locks on both self-audit read endpoints, and 401 after token revocation; final GitHub Actions verification pending."
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && composer audit --no-interaction",
+          "result": "PR #100 implementation/docs SHA 79dd1cca812fc48665dbabce84276d5c12298988: 363 Laravel tests / 3,292 assertions passed on isolated PostgreSQL/Redis, including StaffSecurityAuditReadLockTest; existing multi-worker concurrency, real HTTP/SMTP, Composer audit and 17 editorial guard checks passed. Final evidence commit CI still required.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41532195927"
+        },
+        {
+          "type": "verification",
+          "command": "python3 scripts/validate_blueprint.py && python3 scripts/status.py check && bash scripts/test-editorial-guard.sh",
+          "result": "PR #100 SHA 79dd1cca812fc48665dbabce84276d5c12298988 editorial/roadmap CI passed; final evidence commit CI still required.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41532195920"
         }
       ],
       "verified_at": null,
