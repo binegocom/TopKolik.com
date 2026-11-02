@@ -44,7 +44,7 @@ Route::prefix('auth')->group(function (): void {
         ->middleware(['signed', 'throttle:6,1'])
         ->name('verification.verify');
 
-    Route::middleware(['auth:sanctum', 'ability:reader:read'])->group(function (): void {
+    Route::middleware(['auth:sanctum', 'reader.session', 'ability:reader:read'])->group(function (): void {
         Route::get('/me', [ReaderAuthController::class, 'me']);
         Route::post('/logout', [ReaderAuthController::class, 'logout']);
     });
@@ -52,7 +52,7 @@ Route::prefix('auth')->group(function (): void {
 
 
 // Reader-only account resources: never accept a client-selected user ID.
-Route::middleware('auth:sanctum')->prefix('me')->group(function (): void {
+Route::middleware(['auth:sanctum', 'reader.session'])->prefix('me')->group(function (): void {
     Route::middleware('ability:reader:read')->group(function (): void {
         Route::get('/', [ReaderProfileController::class, 'show']);
         Route::get('/preferences', [ReaderProfileController::class, 'preferences']);
