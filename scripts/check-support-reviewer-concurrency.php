@@ -218,11 +218,13 @@ try {
         $multi = curl_multi_init();
         $handles = [];
         try {
-            foreach ($requests as [$path, $bearer]) {
+            foreach ($requests as $spec) {
+                [$path, $bearer] = $spec;
+                $payload = $spec[2] ?? new stdClass();
                 $handle = curl_init($base.$path);
                 curl_setopt_array($handle, [
                     CURLOPT_POST => true,
-                    CURLOPT_POSTFIELDS => '{}',
+                    CURLOPT_POSTFIELDS => json_encode($payload, JSON_THROW_ON_ERROR),
                     CURLOPT_HTTPHEADER => [
                         'Authorization: Bearer '.$bearer,
                         'Accept: application/json',
@@ -368,6 +370,86 @@ try {
         throw new RuntimeException('Concurrent reviewer transitions violated audit atomicity or actor attribution.');
     }
 
+    // The same staff bearer is used for a real four-worker HTTP logout/write
+    // race. A mutation may serialize before logout or fail after logout, but
+    // a revoked bearer may never commit a later write or duplicate audit.
+    foreach (['reply', 'escalate', 'resolve'] as $action) {
+        $operator = $makeStaff('support', 'logout-'.$action);
+        $initialState = $action === 'resolve' ? 'pending' : 'open';
+        $raceTicket = SupportTicket::create([
+            'assigned_staff_id' => $operator->getKey(),
+            'subject' => 'Logout race '.$run.' '.$action,
+            'message' => 'Isolated session revocation regression',
+            'status' => $initialState,
+        ]);
+        $raceId = (int) $raceTicket->getKey();
+        $bearer = $operator->createToken(
+            'logout-race', ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+        )->plainTextToken;
+        $path = '/api/v1/staff/support/tickets/'.$raceId;
+        $payload = match ($action) {
+            'reply' => ['idempotency_key' => (string) Str::uuid(), 'message' => 'Atomic support reply.'],
+            'resolve' => ['resolution_note' => 'Atomic support resolution.'],
+            default => new stdClass(),
+        };
+        $mutationPath = match ($action) {
+            'reply' => $path.'/replies',
+            'escalate' => $path.'/escalate',
+            'resolve' => $path.'/resolve',
+        };
+        $codes = $parallelPosts([
+            ['/api/v1/staff/auth/logout', $bearer],
+            [$mutationPath, $bearer, $payload],
+        ]);
+        $success = $action === 'reply' ? 201 : 200;
+        if ($codes !== [200, $success] && $codes !== [200, 401]) {
+            throw new RuntimeException('Logout/'.$action.' HTTP race returned invalid outcomes: '.json_encode($codes));
+        }
+
+        $mutationSucceeded = $codes === [200, $success];
+        DB::disconnect();
+        $fresh = $raceTicket->fresh();
+        $expectedState = $mutationSucceeded
+            ? match ($action) {
+                'reply', 'escalate' => 'pending',
+                'resolve' => 'resolved',
+            }
+            : $initialState;
+        if ($fresh->status !== $expectedState
+            || ($action === 'escalate' && ($fresh->escalated_at !== null) !== $mutationSucceeded)
+            || ($action === 'resolve' && ($fresh->resolved_at !== null) !== $mutationSucceeded)) {
+            throw new RuntimeException('Logout/'.$action.' race left inconsistent ticket state.');
+        }
+        $replyCount = DB::table('support_ticket_replies')
+            ->where('support_ticket_id', $raceId)->count();
+        if ($replyCount !== (int) ($mutationSucceeded && $action === 'reply')) {
+            throw new RuntimeException('Logout/'.$action.' race wrote unexpected support replies.');
+        }
+
+        $events = DB::table('security_audit_events')
+            ->where('staff_member_id', $operator->getKey())
+            ->whereIn('action', ['staff.session.ended', 'support.ticket.replied',
+                'support.ticket.escalated', 'support.ticket.resolved'])
+            ->get(['action', 'subject_id', 'request_id']);
+        $actionName = 'support.ticket.'.match ($action) {
+            'reply' => 'replied',
+            'escalate' => 'escalated',
+            'resolve' => 'resolved',
+        };
+        if ($events->count() !== ($mutationSucceeded ? 2 : 1)
+            || $events->where('action', 'staff.session.ended')->count() !== 1
+            || $events->where('action', $actionName)->count() !== (int) $mutationSucceeded
+            || $events->pluck('request_id')->filter()->unique()->count() !== $events->count()
+            || ($mutationSucceeded && (int) $events->firstWhere('action', $actionName)->subject_id !== $raceId)) {
+            throw new RuntimeException('Logout/'.$action.' race violated audit atomicity or attribution.');
+        }
+
+        if ($parallelPosts([[$mutationPath, $bearer, $payload]]) !== [401]) {
+            throw new RuntimeException('Revoked support bearer remained usable after logout/'.$action.'.');
+        }
+    }
+
+    echo "PASS: support logout versus reply, escalation and resolution races; token revocation, audit and state atomicity.\n";
     echo "PASS: escalation, relinquishment and recovery HTTP races; single commits, held-state safety, independent reassignment and atomic audit.\n";
 } catch (Throwable $exception) {
     fwrite(STDERR, 'FAIL: support reviewer HTTP concurrency: '.$exception->getMessage()."\n");
