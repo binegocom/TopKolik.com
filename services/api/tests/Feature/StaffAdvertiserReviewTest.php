@@ -10,6 +10,7 @@ use App\Models\AdvertiserCampaign;
 use App\Models\AdvertiserOrganization;
 use App\Models\StaffMember;
 use App\Models\User;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -295,4 +296,85 @@ final class StaffAdvertiserReviewTest extends TestCase
         $this->expectException(\Illuminate\Database\QueryException::class);
         $this->assign($staff, $org);
     }
+    public function test_private_review_reads_lock_staff_token_organization_assignment_and_campaign_in_order(): void
+    {
+        $staff = $this->staff();
+        $org = $this->org();
+        $this->assign($staff, $org);
+        $campaign = $this->campaign($org);
+        $bearer = $this->token($staff, true);
+        $lockOrder = [];
+
+        DB::listen(static function (QueryExecuted $query) use (&$lockOrder): void {
+            $sql = strtolower($query->sql);
+            if (! str_contains($sql, 'for update')) {
+                return;
+            }
+            foreach ([
+                'staff_members' => 'staff',
+                'personal_access_tokens' => 'token',
+                'advertiser_organizations' => 'organization',
+                'staff_advertiser_assignments' => 'assignment',
+                'advertiser_campaigns' => 'campaign',
+            ] as $table => $label) {
+                if (str_contains($sql, $table)) {
+                    $lockOrder[] = $label;
+                }
+            }
+        });
+
+        $this->withToken($bearer)
+            ->getJson($this->listUrl($org))
+            ->assertOk()->assertJsonPath('campaigns.0.id', $campaign->id)
+            ->assertJsonMissingPath('campaigns.0.body')
+            ->assertHeader('Cache-Control', 'no-store, private');
+        $this->getJson($this->listUrl($org).'/'.$campaign->id)
+            ->assertOk()->assertJsonPath('campaign.body', $campaign->body)
+            ->assertHeader('Cache-Control', 'no-store, private');
+
+        $expected = ['staff', 'token', 'organization', 'assignment', 'campaign'];
+        $this->assertSame([...$expected, ...$expected], $lockOrder);
+        $this->assertSame('in_review', $campaign->fresh()->status);
+        $this->assertDatabaseCount('security_audit_events', 0);
+    }
+
+    public function test_empty_review_list_still_locks_current_assignment_without_exposing_drafts(): void
+    {
+        $staff = $this->staff();
+        $org = $this->org();
+        $this->assign($staff, $org);
+        $draft = $this->campaign($org, 'draft');
+        $locked = [];
+
+        DB::listen(static function (QueryExecuted $query) use (&$locked): void {
+            $sql = strtolower($query->sql);
+            if (! str_contains($sql, 'for update')) {
+                return;
+            }
+            foreach (['staff_members', 'personal_access_tokens',
+                'advertiser_organizations', 'staff_advertiser_assignments'] as $table) {
+                if (str_contains($sql, $table)) {
+                    $locked[] = $table;
+                }
+            }
+        });
+
+        $this->withToken($this->token($staff))
+            ->getJson($this->listUrl($org))->assertOk()
+            ->assertJsonCount(0, 'campaigns')
+            ->assertJsonMissing(['body' => $draft->body]);
+        $this->assertSame([
+            'staff_members', 'personal_access_tokens',
+            'advertiser_organizations', 'staff_advertiser_assignments',
+        ], $locked);
+
+        DB::table('staff_advertiser_assignments')
+            ->where('staff_member_id', $staff->id)
+            ->where('advertiser_organization_id', $org->id)
+            ->update(['is_active' => false]);
+        $this->getJson($this->listUrl($org))->assertNotFound()
+            ->assertJsonMissingPath('campaigns');
+        $this->assertSame('draft', $draft->fresh()->status);
+    }
+
 }
