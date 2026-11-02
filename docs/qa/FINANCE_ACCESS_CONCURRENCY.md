@@ -77,3 +77,30 @@ An independent administrator revokes the target's security grant while a differe
 This is a CI-only regression for residual grants, not an advertiser assignment approval race: an ads assignment cannot legitimately be approved for a current finance role. No destructive migration, production credentials or new privileges are introduced.
 
 Code/docs verification: PR #72 commit `6805fe51` passed [Laravel CI 41353972644](https://github.com/binegocom/TopKolik.com/actions/runs/41353972644) (313 tests / 2,674 assertions, both real four-worker race harnesses, PostgreSQL/Redis, HTTP/SMTP, Composer audit) and [editorial CI 41353972632](https://github.com/binegocom/TopKolik.com/actions/runs/41353972632). The final evidence commit requires fresh CI before merge.
+
+## Finance request creation versus emergency staff offboarding
+
+The existing four-worker, CI-only harness now also races two authenticated
+finance-access request creations against one independent administrator's
+one-way emergency deactivation of the same eligible finance staff member.
+The two request attempts use the same authenticated administrator, while
+offboarding uses a different authorized MFA administrator. Valid serialized
+outcomes are one pending request with a duplicate conflict, one pending
+request with an inactive-target rejection, or two inactive-target rejections.
+The offboarding operation must commit exactly once.
+
+After the race, the staff account must be inactive, the pre-existing MFA
+bearer must be revoked, and no active finance entitlement may exist. A
+request committed before offboarding remains pending by design, but a
+subsequent approval by a third independent administrator must return 409
+without changing the request or restoring access. The audit ledger must
+contain one offboarding event and exactly one request event if and only if
+request creation committed, each with its correct actor and a unique
+server-issued request ID. Offboarding replay must return 404 without a
+second audit event.
+
+This regression uses disposable CI identities only. It adds no finance
+activation API, external provider, production fixture, migration or new
+permission. A pending request left behind by emergency offboarding remains
+visible for operational review, not silently deleted or approved. Task
+`P03-007` stays `in_progress` pending complete RBAC acceptance.

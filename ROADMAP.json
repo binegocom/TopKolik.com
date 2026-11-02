@@ -1434,12 +1434,29 @@
           "type": "reference",
           "value": "https://github.com/binegocom/TopKolik.com/pull/76",
           "validation": "Emergency offboarding race regression and acting-admin row lock; P03-007 remains in_progress"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test && TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-finance-access-concurrency.php",
+          "result": "PR #77 code SHA 0c36a263: 325 Laravel tests / 2,879 assertions passed on isolated PostgreSQL/Redis; four-worker finance request creation versus emergency offboarding, prior finance/ads/support races, HTTP/SMTP, Composer audit and 17 editorial guard scenarios passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41374636095"
+        },
+        {
+          "type": "verification",
+          "command": "python3 scripts/status.py check && bash scripts/test-editorial-guard.sh",
+          "result": "PR #77 code SHA 0c36a263 editorial/roadmap workflow succeeded; final evidence commit requires fresh CI.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41374636088"
+        },
+        {
+          "type": "reference",
+          "value": "https://github.com/binegocom/TopKolik.com/pull/77",
+          "validation": "Finance request creation/offboarding concurrency regression; P03-007 remains in_progress."
         }
       ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/76",
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/77",
       "limitations": [
         "This policy foundation is not full P03-007 completion. Real article/ticket records, scoped controllers, advertiser/finance tenancy and BOLA integration are pending; no admin route grants yet.",
         "Support ticket read is an incremental slice only; editorial draft models, support reply/escalation, advertiser and finance scopes, security audit and full BOLA matrix remain open.",
@@ -1474,7 +1491,8 @@
         "PR #73 code SHA 489d40945f3a4bca96c73d0228881a26ed081a85 passed 314 Laravel tests / 2,685 assertions, four-worker ads approval/requester-grant revocation HTTP race, PostgreSQL/Redis, HTTP/SMTP, Composer audit and 17 editorial guard tests (Laravel CI 41359323946; editorial CI 41359323964). Final evidence-documentation commit requires fresh CI before merge. Full RBAC matrix, licensed providers and production release remain unverified.",
         "Approver-grant revocation race passed isolated four-worker GitHub Actions on code SHA f2c26e7; final evidence commit CI required. Full RBAC matrix, operator provisioning and production security remain unverified.",
         "Finance access security inventory and terminal two-person decision history are implemented as MFA-gated read-only endpoints in a feature branch awaiting CI. They return only staff IDs, decision IDs/status/timestamps and active-entitlement eligibility, never private contact/payment data; actual finance resource RBAC, immutable offsite audit, production admin onboarding and finance operations remain unimplemented.",
-        "PR #76 adds transaction-scoped acting-admin identity locking and a guarded real HTTP emergency-offboarding/request-creation race; code SHA b3ec83f passed CI. Final evidence commit CI must pass before merge. Full role matrix, production deployment, sports provider licenses and operational approvals remain unverified."
+        "PR #76 adds transaction-scoped acting-admin identity locking and a guarded real HTTP emergency-offboarding/request-creation race; code SHA b3ec83f passed CI. Final evidence commit CI must pass before merge. Full role matrix, production deployment, sports provider licenses and operational approvals remain unverified.",
+        "PR #77 verifies concurrent finance request creation versus one-way staff offboarding with isolated real HTTP workers; full resource-level RBAC, approved operator provisioning, offsite audit and production release remain unverified."
       ]
     },
     {
