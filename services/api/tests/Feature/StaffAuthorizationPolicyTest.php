@@ -231,4 +231,32 @@ final class StaffAuthorizationPolicyTest extends TestCase
             $token,
         ]));
     }
+
+    public function test_non_expiring_tokens_cannot_bypass_editor_or_support_resource_gates(): void
+    {
+        $editor = $this->staff('editor');
+        $editorToken = $editor->createToken(
+            'legacy-editor', ['staff:session', 'staff:step-up'],
+        )->accessToken;
+        $this->assertFalse($this->permits(
+            $editor, 'editorial.draft.edit',
+            $this->article(15, $editor->getKey()), $editorToken,
+        ));
+        $this->assertFalse(Gate::forUser($editor)->allows(
+            'staff-create-draft', [$editorToken],
+        ));
+
+        $support = $this->staff('support');
+        $supportToken = $support->createToken(
+            'legacy-support', ['staff:session', 'staff:step-up'],
+        )->accessToken;
+        $this->assertFalse($this->permits(
+            $support, 'support.ticket.view',
+            $this->ticket(16, $support->getKey()), $supportToken,
+        ));
+        $this->assertFalse(Gate::forUser($support)->allows(
+            'staff-support-tickets-self', [$supportToken],
+        ));
+    }
+
 }
