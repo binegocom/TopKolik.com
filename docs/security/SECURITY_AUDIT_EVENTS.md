@@ -22,6 +22,12 @@ The Laravel API writes allowlisted staff authentication, MFA, activation and sup
 - The response contains `failures` with `id`, `action`, `request_id`, `created_at`, plus `next_before_id`. It never includes the staff ID, email or HMAC fingerprint; responses are non-cacheable and rate-limited to 30/minute.
 - Queries do not modify the audit ledger. The endpoint is a narrow investigative aid, not a complete incident-response console.
 
+## Audit self-read revocation serialization (verification pending)
+
+Both self-only read endpoints acquire a PostgreSQL transaction lock on the persisted staff identity and then the current Sanctum bearer, matching the staff → token order used by logout and privileged mutations. Gate authorization, actor-scoped SQL and private response serialization happen before the transaction releases those locks. Missing or expired tokens fail closed with HTTP 401; a current bearer without the necessary MFA/role remains HTTP 403. No cross-staff search capability is introduced.
+
+A PostgreSQL feature regression asserts both `FOR UPDATE` locks for each endpoint and post-revocation HTTP 401. The isolated multi-worker read/logout and read/deactivation races have **not yet** been proven by this feature-level check; full API CI and production security review remain pending. No claim of completed P03-010 acceptance is made.
+
 ## Named authentication throttling audit (PR #47)
 
 The existing staff login and MFA step-up rate limits retain both their IP and account/principal dimensions. Their named Laravel `Limit::response` callbacks now record a failure when the request is rejected with HTTP 429, before the controller executes. The callback preserves `Retry-After` and rate-limit headers and sends a generic, non-cacheable response. It does not weaken or reset throttling.
