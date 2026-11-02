@@ -102,3 +102,15 @@ existing strict environment guards and does not delete production data.
 CI verification and final PR SHA must be recorded before this change is
 accepted. P03-007 remains in_progress; full RBAC and production validation
 are outside this incremental regression.
+
+## Requester-offboarding CI evidence
+
+[PR #76](https://github.com/binegocom/TopKolik.com/pull/76), code SHA
+`b3ec83f25934a66234c01990815749ea9316b546`:
+[Laravel API CI 41369624509](https://github.com/binegocom/TopKolik.com/actions/runs/41369624509)
+passed 325 tests / 2,879 assertions, including the third real four-worker
+ads request/emergency-offboarding race and the existing ads, finance and
+support concurrency harnesses. Real PostgreSQL/Redis, HTTP/SMTP,
+Composer audit and 17 editorial guard cases passed.
+[Editorial/roadmap CI 41369624621](https://github.com/binegocom/TopKolik.com/actions/runs/41369624621)
+passed. The final evidence commit requires fresh CI before merge.
