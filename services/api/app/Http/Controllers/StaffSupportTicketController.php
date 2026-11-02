@@ -141,13 +141,17 @@ final class StaffSupportTicketController extends Controller
         [$reply, $replayed] = DB::transaction(function () use ($staff, $token, $ticket, $data, $audit, $request): array {
             // Lock the actual scoped record; authorization must be evaluated
             // against the persisted assignment and current state.
+            // Serialize role revocation/deactivation with the ticket write.
+            // Staff identity is locked before the ticket to keep lock order stable.
+            $actor = $this->lockStaffForMutation($staff);
+
             $record = SupportTicket::query()
                 ->whereKey($ticket)
                 ->where('assigned_staff_id', $staff->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            Gate::forUser($staff)->authorize('staff-resource', [
+            Gate::forUser($actor)->authorize('staff-resource', [
                 'support.ticket.reply',
                 new StaffResourceContext(
                     id: (int) $record->getKey(),
@@ -185,7 +189,7 @@ final class StaffSupportTicketController extends Controller
                 $record->forceFill(['status' => 'pending'])->save();
             }
 
-            $audit->record($staff, 'support.ticket.replied', 'support_ticket', (int) $record->getKey(), $request->attributes->get('request_id'));
+            $audit->record($actor, 'support.ticket.replied', 'support_ticket', (int) $record->getKey(), $request->attributes->get('request_id'));
 
             return [$created, false];
         }, 3); // Retry deadlocks with a fresh scoped row lock and policy check.
@@ -213,13 +217,17 @@ final class StaffSupportTicketController extends Controller
         $token = $this->presentedStaffToken($request);
 
         $record = DB::transaction(function () use ($staff, $token, $ticket, $audit, $request): SupportTicket {
+            // Serialize role revocation/deactivation with the ticket write.
+            // Staff identity is locked before the ticket to keep lock order stable.
+            $actor = $this->lockStaffForMutation($staff);
+
             $record = SupportTicket::query()
                 ->whereKey($ticket)
                 ->where('assigned_staff_id', $staff->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            Gate::forUser($staff)->authorize('staff-resource', [
+            Gate::forUser($actor)->authorize('staff-resource', [
                 'support.ticket.escalate',
                 new StaffResourceContext(
                     id: (int) $record->getKey(),
@@ -246,7 +254,7 @@ final class StaffSupportTicketController extends Controller
                 'escalated_by_staff_id' => $staff->getKey(),
             ])->save();
 
-            $audit->record($staff, 'support.ticket.escalated', 'support_ticket', (int) $record->getKey(), $request->attributes->get('request_id'));
+            $audit->record($actor, 'support.ticket.escalated', 'support_ticket', (int) $record->getKey(), $request->attributes->get('request_id'));
 
             return $record;
         }, 3); // Retry deadlocks; authorization and escalation state are rechecked.
@@ -280,13 +288,17 @@ final class StaffSupportTicketController extends Controller
         $token = $this->presentedStaffToken($request);
 
         $record = DB::transaction(function () use ($staff, $token, $ticket, $data, $audit, $request): SupportTicket {
+            // Serialize role revocation/deactivation with the ticket write.
+            // Staff identity is locked before the ticket to keep lock order stable.
+            $actor = $this->lockStaffForMutation($staff);
+
             $record = SupportTicket::query()
                 ->whereKey($ticket)
                 ->where('assigned_staff_id', $staff->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            Gate::forUser($staff)->authorize('staff-resource', [
+            Gate::forUser($actor)->authorize('staff-resource', [
                 'support.ticket.resolve',
                 new StaffResourceContext(
                     id: (int) $record->getKey(),
@@ -309,7 +321,7 @@ final class StaffSupportTicketController extends Controller
             ])->save();
 
             $audit->record(
-                $staff,
+                $actor,
                 'support.ticket.resolved',
                 'support_ticket',
                 (int) $record->getKey(),
@@ -326,6 +338,11 @@ final class StaffSupportTicketController extends Controller
                 'resolved_at' => $record->resolved_at?->toIso8601String(),
             ],
         ])->header('Cache-Control', 'no-store, private');
+    }
+
+    private function lockStaffForMutation(StaffMember $staff): StaffMember
+    {
+        return StaffMember::query()->whereKey($staff->getKey())->lockForUpdate()->firstOrFail();
     }
 
     private function presentedStaffToken(Request $request): ?PersonalAccessToken
