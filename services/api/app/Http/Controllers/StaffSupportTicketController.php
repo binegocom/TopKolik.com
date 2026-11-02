@@ -144,6 +144,7 @@ final class StaffSupportTicketController extends Controller
             // Serialize role revocation/deactivation with the ticket write.
             // Staff identity is locked before the ticket to keep lock order stable.
             $actor = $this->lockStaffForMutation($staff);
+            $currentToken = $this->lockStaffTokenForMutation($token, $actor);
 
             $record = SupportTicket::query()
                 ->whereKey($ticket)
@@ -159,7 +160,7 @@ final class StaffSupportTicketController extends Controller
                     state: $record->status,
                     assignedStaffId: (int) $record->assigned_staff_id,
                 ),
-                $token,
+                $currentToken,
             ]);
 
             $fingerprint = hash('sha256', $data['message']);
@@ -220,6 +221,7 @@ final class StaffSupportTicketController extends Controller
             // Serialize role revocation/deactivation with the ticket write.
             // Staff identity is locked before the ticket to keep lock order stable.
             $actor = $this->lockStaffForMutation($staff);
+            $currentToken = $this->lockStaffTokenForMutation($token, $actor);
 
             $record = SupportTicket::query()
                 ->whereKey($ticket)
@@ -235,7 +237,7 @@ final class StaffSupportTicketController extends Controller
                     state: $record->status,
                     assignedStaffId: (int) $record->assigned_staff_id,
                 ),
-                $token,
+                $currentToken,
             ]);
 
             if ($record->escalated_at !== null) {
@@ -291,6 +293,7 @@ final class StaffSupportTicketController extends Controller
             // Serialize role revocation/deactivation with the ticket write.
             // Staff identity is locked before the ticket to keep lock order stable.
             $actor = $this->lockStaffForMutation($staff);
+            $currentToken = $this->lockStaffTokenForMutation($token, $actor);
 
             $record = SupportTicket::query()
                 ->whereKey($ticket)
@@ -306,7 +309,7 @@ final class StaffSupportTicketController extends Controller
                     state: $record->status,
                     assignedStaffId: (int) $record->assigned_staff_id,
                 ),
-                $token,
+                $currentToken,
             ]);
 
             if ($record->escalated_at !== null && $record->escalation_reviewed_at === null) {
@@ -343,6 +346,26 @@ final class StaffSupportTicketController extends Controller
     private function lockStaffForMutation(StaffMember $staff): StaffMember
     {
         return StaffMember::query()->whereKey($staff->getKey())->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * A token can be revoked after middleware authorization but before a
+     * ticket mutation begins. Re-read and lock it inside the same transaction
+     * as the staff identity and ticket, in that order.
+     */
+    private function lockStaffTokenForMutation(?PersonalAccessToken $token, StaffMember $staff): PersonalAccessToken
+    {
+        $current = $token
+            ? PersonalAccessToken::query()->whereKey($token->getKey())->lockForUpdate()->first()
+            : null;
+
+        if (! $current || $current->expires_at === null || $current->expires_at->isPast()
+            || $current->tokenable_type !== $staff->getMorphClass()
+            || (string) $current->tokenable_id !== (string) $staff->getKey()) {
+            abort(401, 'Unauthenticated.');
+        }
+
+        return $current;
     }
 
     private function presentedStaffToken(Request $request): ?PersonalAccessToken
