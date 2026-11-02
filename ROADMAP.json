@@ -1406,12 +1406,29 @@
           "type": "reference",
           "value": "https://github.com/binegocom/TopKolik.com/pull/74",
           "validation": "Approver grant revocation regression; P03-007 remains in_progress"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test",
+          "result": "324 Laravel tests passed, 2,869 assertions with disposable real PostgreSQL/Redis on feature SHA f68dd4fa27eccae358415e9a45fae97f2d08718f. Nine new finance inventory/history feature tests cover real two-person decisions, inactive entitlements, role drift, hidden pending entries, cursor paging, strict rejected actor filters, reader/advertiser denials, MFA/current security grant and read-only DB state.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41368850129"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh && python3 scripts/status.py check",
+          "result": "Composer audit found zero security advisories; HTTP/SMTP smoke and editorial guard/roadmap checks passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41368850133"
+        },
+        {
+          "type": "revision",
+          "value": "f68dd4fa27eccae358415e9a45fae97f2d08718f",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/75"
         }
       ],
       "verified_at": null,
       "owner": null,
       "issue_url": null,
-      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/64",
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/75",
       "limitations": [
         "This policy foundation is not full P03-007 completion. Real article/ticket records, scoped controllers, advertiser/finance tenancy and BOLA integration are pending; no admin route grants yet.",
         "Support ticket read is an incremental slice only; editorial draft models, support reply/escalation, advertiser and finance scopes, security audit and full BOLA matrix remain open.",
@@ -1444,7 +1461,8 @@
         "Four-worker approval-versus-emergency-staff-deactivation HTTP race added for CI verification; final-commit GitHub Actions evidence pending. Full finance resource RBAC, approved operator bootstrap and production release remain open.",
         "Residual security-admin grant revocation versus emergency finance offboarding has an isolated four-worker HTTP regression on feature branch; final-commit CI evidence is pending. Ads-role assignment approval cannot be raced against finance-role offboarding under existing role eligibility. Full finance RBAC, operator provisioning and production verification remain open.",
         "PR #73 code SHA 489d40945f3a4bca96c73d0228881a26ed081a85 passed 314 Laravel tests / 2,685 assertions, four-worker ads approval/requester-grant revocation HTTP race, PostgreSQL/Redis, HTTP/SMTP, Composer audit and 17 editorial guard tests (Laravel CI 41359323946; editorial CI 41359323964). Final evidence-documentation commit requires fresh CI before merge. Full RBAC matrix, licensed providers and production release remain unverified.",
-        "Approver-grant revocation race passed isolated four-worker GitHub Actions on code SHA f2c26e7; final evidence commit CI required. Full RBAC matrix, operator provisioning and production security remain unverified."
+        "Approver-grant revocation race passed isolated four-worker GitHub Actions on code SHA f2c26e7; final evidence commit CI required. Full RBAC matrix, operator provisioning and production security remain unverified.",
+        "Finance access security inventory and terminal two-person decision history are implemented as MFA-gated read-only endpoints in a feature branch awaiting CI. They return only staff IDs, decision IDs/status/timestamps and active-entitlement eligibility, never private contact/payment data; actual finance resource RBAC, immutable offsite audit, production admin onboarding and finance operations remain unimplemented."
       ]
     },
     {
