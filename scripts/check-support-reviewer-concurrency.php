@@ -707,6 +707,140 @@ try {
         }
     }
 
+    // A recovery request must not outlive the security administrator's
+    // authority. Exercise two independent revocation paths with a real
+    // worker demonstrably waiting on the relevant PostgreSQL row lock.
+    foreach (['role', 'grant'] as $revocation) {
+        $assignee = $makeStaff('support', 'recovery-race-assignee-'.$revocation);
+        $admin = $makeStaff('finance', 'recovery-race-admin-'.$revocation);
+        $ticket = SupportTicket::create([
+            'assigned_staff_id' => $assignee->getKey(),
+            'subject' => 'Recovery revocation race '.$run.' '.$revocation,
+            'message' => 'Isolated authorization concurrency regression',
+            'status' => 'pending',
+        ]);
+        $ticket->forceFill([
+            'escalated_at' => now(),
+            'escalated_by_staff_id' => $assignee->getKey(),
+        ])->save();
+        DB::table('staff_security_admin_grants')->insert([
+            'staff_member_id' => $admin->getKey(),
+            'is_active' => true,
+            'authorization_reference' => 'isolated-recovery-revocation-ci',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $bearer = $admin->createToken(
+            'recovery-revocation-race', ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+        )->plainTextToken;
+        $path = '/api/v1/staff/security/support/escalations/'.$ticket->getKey().'/recover-reviewer';
+        $multi = curl_multi_init();
+        $handle = curl_init($base.$path);
+
+        try {
+            DB::beginTransaction();
+            if ($revocation === 'role') {
+                StaffMember::query()->whereKey($admin->getKey())
+                    ->lockForUpdate()->firstOrFail();
+            } else {
+                DB::table('staff_security_admin_grants')
+                    ->where('staff_member_id', $admin->getKey())
+                    ->lockForUpdate()->first();
+            }
+
+            curl_setopt_array($handle, [
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => '{}',
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer '.$bearer,
+                    'Accept: application/json',
+                    'Content-Type: application/json',
+                ],
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_TIMEOUT => 30,
+            ]);
+            curl_multi_add_handle($multi, $handle);
+
+            $lockedTable = $revocation === 'role' ? 'staff_members' : 'staff_security_admin_grants';
+            $waiting = false;
+            $active = null;
+            $deadline = microtime(true) + 10;
+            do {
+                if (curl_multi_exec($multi, $active) !== CURLM_OK) {
+                    throw new RuntimeException('Recovery '.$revocation.' worker failed to start.');
+                }
+                DB::selectOne('SELECT pg_stat_clear_snapshot()');
+                $waiting = (int) DB::selectOne(
+                    "SELECT count(*) AS waiting FROM pg_stat_activity ".
+                    "WHERE pid <> pg_backend_pid() AND wait_event_type = 'Lock' ".
+                    "AND query ILIKE ? AND query ILIKE '%for update%'",
+                    ['%'.$lockedTable.'%'],
+                )->waiting > 0;
+                if (! $waiting && $active > 0 && curl_multi_select($multi, 0.1) === -1) {
+                    usleep(10000);
+                }
+            } while (! $waiting && $active > 0 && microtime(true) < $deadline);
+
+            if (! $waiting) {
+                throw new RuntimeException(
+                    'Recovery '.$revocation.' did not wait on '.$lockedTable.
+                    '; HTTP='.curl_getinfo($handle, CURLINFO_RESPONSE_CODE).
+                    ', response='.substr((string) curl_multi_getcontent($handle), 0, 200).
+                    ', log='.substr((string) @file_get_contents($log), -2000),
+                );
+            }
+
+            if ($revocation === 'role') {
+                StaffMember::query()->whereKey($admin->getKey())->update(['role' => 'ads']);
+            } else {
+                DB::table('staff_security_admin_grants')
+                    ->where('staff_member_id', $admin->getKey())
+                    ->update(['is_active' => false, 'updated_at' => now()]);
+            }
+            DB::commit();
+
+            $deadline = microtime(true) + 30;
+            do {
+                if (curl_multi_exec($multi, $active) !== CURLM_OK || microtime(true) > $deadline) {
+                    throw new RuntimeException('Recovery '.$revocation.' worker timed out.');
+                }
+                if ($active > 0 && curl_multi_select($multi, 1.0) === -1) {
+                    usleep(10000);
+                }
+            } while ($active > 0);
+
+            if (curl_error($handle) !== '' || curl_getinfo($handle, CURLINFO_RESPONSE_CODE) !== 403) {
+                throw new RuntimeException(
+                    'Revoked recovery admin performed assignment after '.$revocation.' change: HTTP '.
+                    curl_getinfo($handle, CURLINFO_RESPONSE_CODE).
+                    ', response='.substr((string) curl_multi_getcontent($handle), 0, 200),
+                );
+            }
+        } finally {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+            curl_multi_remove_handle($multi, $handle);
+            curl_close($handle);
+            curl_multi_close($multi);
+        }
+
+        DB::disconnect();
+        $fresh = $ticket->fresh();
+        if ($fresh->status !== 'pending'
+            || $fresh->escalation_reviewer_staff_id !== null
+            || $fresh->escalation_reviewed_at !== null
+            || DB::table('security_audit_events')->where('subject_type', 'support_ticket')
+                ->where('subject_id', $ticket->getKey())->exists()) {
+            throw new RuntimeException('Recovery '.$revocation.' revocation changed ticket or audit state.');
+        }
+        if ($parallelPosts([[$path, $bearer]]) !== [403]) {
+            throw new RuntimeException('Revoked recovery administrator regained access after '.$revocation.'.');
+        }
+    }
+
+    echo "PASS: real HTTP recovery waits for staff role/grant locks and rejects revoked administrators.\\n";
     echo "PASS: real HTTP reviewer approval/relinquishment blocked on staff locks and denied after role revocation.\n";
     echo "PASS: real HTTP workers block on support staff row locks, then reject reply/escalate/resolve after committed role revocation.\n";
     echo "PASS: support logout versus reply, escalation and resolution races; token revocation, audit and state atomicity.\n";
