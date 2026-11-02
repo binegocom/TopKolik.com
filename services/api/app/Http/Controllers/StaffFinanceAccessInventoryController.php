@@ -20,6 +20,7 @@ final class StaffFinanceAccessInventoryController extends Controller
      */
     public function active(Request $request): JsonResponse
     {
+        return DB::transaction(function () use ($request): JsonResponse {
         $this->authorizeAdministrator($request);
         $filters = $request->validate([
             'limit' => ['sometimes', 'integer', 'between:1,50'],
@@ -69,6 +70,7 @@ final class StaffFinanceAccessInventoryController extends Controller
             'entitlements' => $page,
             'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
         ]);
+        }, 3);
     }
 
     /**
@@ -77,6 +79,7 @@ final class StaffFinanceAccessInventoryController extends Controller
      */
     public function decisions(Request $request): JsonResponse
     {
+        return DB::transaction(function () use ($request): JsonResponse {
         $this->authorizeAdministrator($request);
         $filters = $request->validate([
             'limit' => ['sometimes', 'integer', 'between:1,50'],
@@ -121,22 +124,42 @@ final class StaffFinanceAccessInventoryController extends Controller
             'decisions' => $page,
             'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
         ]);
+        }, 3);
     }
 
     private function authorizeAdministrator(Request $request): void
     {
         $staff = $request->user();
         $bearer = $request->bearerToken();
-        $token = $bearer ? PersonalAccessToken::findToken($bearer) : null;
+        $presented = $bearer ? PersonalAccessToken::findToken($bearer) : null;
 
-        if (! $staff instanceof StaffMember || ! $token
-            || $token->expires_at === null || $token->expires_at->isPast()
-            || $token->tokenable_type !== $staff->getMorphClass()
-            || (string) $token->tokenable_id !== (string) $staff->getKey()) {
+        if (! $staff instanceof StaffMember || ! $presented) {
+            abort(401, 'Unauthenticated.');
+        }
+
+        // Keep the same staff -> bearer lock order as logout. Both the
+        // independent administrator grant and the response are protected
+        // against concurrent revocation until this transaction commits.
+        $actor = StaffMember::query()->whereKey($staff->getKey())
+            ->lockForUpdate()->first();
+        $token = PersonalAccessToken::query()->whereKey($presented->getKey())
+            ->lockForUpdate()->first();
+
+        if (! $actor || ! $token || $token->expires_at === null
+            || $token->expires_at->isPast()
+            || $token->tokenable_type !== $actor->getMorphClass()
+            || (string) $token->tokenable_id !== (string) $actor->getKey()) {
+            abort(401, 'Unauthenticated.');
+        }
+
+        $grant = DB::table('staff_security_admin_grants')
+            ->where('staff_member_id', $actor->getKey())
+            ->lockForUpdate()->first();
+        if (! $grant || ! $grant->is_active) {
             abort(403);
         }
 
-        Gate::forUser($staff)->authorize('staff-ads-assignments-admin', [$token]);
+        Gate::forUser($actor)->authorize('staff-ads-assignments-admin', [$token]);
     }
 
     private function privateResponse(array $payload): JsonResponse
