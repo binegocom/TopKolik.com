@@ -468,7 +468,103 @@ try {
         throw new RuntimeException('Residual-grant/offboarding replay changed state or audit.');
     }
 
-    echo "PASS: four-worker finance approval/revocation, offboarding and residual-grant races; stale MFA, audit and replay.\n";
+    // Two identical finance access requests race emergency offboarding of
+    // the same eligible target. A request committed before offboarding may
+    // remain pending, but it must never activate the deactivated account.
+    $requestRaceFinance = $makeStaff('finance', 'request-offboarding');
+    $requestRaceToken = $requestRaceFinance->createToken(
+        'finance-request-offboarding-stale-session',
+        ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+    )->plainTextToken;
+    $requestRacePath = '/api/v1/staff/security/finance/staff/'
+        .$requestRaceFinance->getKey().'/deactivate';
+    $requestRace = $postTogether([
+        [$path, $tokens['requester'], [
+            'target_staff_member_id' => $requestRaceFinance->getKey(),
+        ]],
+        [$path, $tokens['requester'], [
+            'target_staff_member_id' => $requestRaceFinance->getKey(),
+        ]],
+        [$requestRacePath, $tokens['revoker'], []],
+    ]);
+    $requestCodes = [$requestRace[0]['code'], $requestRace[1]['code']];
+    sort($requestCodes);
+    $validRequestCodes = [[201, 409], [201, 404], [404, 404]];
+    if ($requestRace[2]['code'] !== 200
+        || ! in_array($requestCodes, $validRequestCodes, true)) {
+        throw new RuntimeException('Finance request/offboarding race returned invalid serial outcomes: '
+            .json_encode($requestRace));
+    }
+
+    DB::disconnect();
+    $requestRaceFinance->refresh();
+    $pendingRows = DB::table('staff_finance_access_requests')
+        ->where('target_staff_member_id', $requestRaceFinance->getKey())->get();
+    $requestCreated = in_array(201, $requestCodes, true);
+    if ($requestRaceFinance->is_active
+        || $pendingRows->count() !== ($requestCreated ? 1 : 0)
+        || ($requestCreated && $pendingRows->first()->status !== 'pending')
+        || DB::table('staff_finance_entitlements')
+            ->where('staff_member_id', $requestRaceFinance->getKey())
+            ->where('is_active', true)->exists()
+        || DB::table('personal_access_tokens')
+            ->where('tokenable_type', $requestRaceFinance->getMorphClass())
+            ->where('tokenable_id', $requestRaceFinance->getKey())->exists()
+        || $getFinanceAccess($requestRaceToken) !== 401) {
+        throw new RuntimeException('Finance request/offboarding left a usable account or inconsistent request.');
+    }
+
+    $requestRaceEvents = DB::table('security_audit_events')
+        ->where('subject_type', 'staff_member')
+        ->where('subject_id', $requestRaceFinance->getKey())
+        ->whereIn('action', [
+            'staff.finance_access.requested',
+            'staff.finance_access.staff_deactivated',
+        ])->get(['action', 'staff_member_id', 'request_id']);
+    $expectedRequestEvents = [
+        'staff.finance_access.staff_deactivated' => (int) $revoker->getKey(),
+    ];
+    if ($requestCreated) {
+        $expectedRequestEvents['staff.finance_access.requested'] = (int) $requester->getKey();
+    }
+    if ($requestRaceEvents->count() !== count($expectedRequestEvents)
+        || $requestRaceEvents->pluck('action')->unique()->count() !== count($expectedRequestEvents)
+        || $requestRaceEvents->pluck('request_id')->filter()->unique()->count() !== count($expectedRequestEvents)
+        || $requestRaceEvents->contains(static fn ($event): bool =>
+            ! isset($expectedRequestEvents[$event->action])
+            || (int) $event->staff_member_id !== $expectedRequestEvents[$event->action])) {
+        throw new RuntimeException('Finance request/offboarding audit was duplicated or misattributed.');
+    }
+
+    if ($requestCreated) {
+        $pendingId = (int) $pendingRows->first()->id;
+        $lateApproval = $postTogether([[
+            $path.'/'.$pendingId.'/approve', $tokens['approver'], [],
+        ]]);
+        if ($lateApproval[0]['code'] !== 409) {
+            throw new RuntimeException('Late finance approval reactivated offboarded staff: '
+                .json_encode($lateApproval));
+        }
+        DB::disconnect();
+        if (DB::table('staff_finance_access_requests')->where('id', $pendingId)
+                ->value('status') !== 'pending'
+            || DB::table('staff_finance_entitlements')
+                ->where('staff_member_id', $requestRaceFinance->getKey())
+                ->where('is_active', true)->exists()) {
+            throw new RuntimeException('Rejected late approval changed pending finance state.');
+        }
+    }
+
+    $requestRaceReplay = $postTogether([[$requestRacePath, $tokens['revoker'], []]]);
+    if ($requestRaceReplay[0]['code'] !== 404
+        || DB::table('security_audit_events')
+            ->where('subject_type', 'staff_member')
+            ->where('subject_id', $requestRaceFinance->getKey())
+            ->where('action', 'staff.finance_access.staff_deactivated')->count() !== 1) {
+        throw new RuntimeException('Finance request/offboarding replay mutated audit or staff state.');
+    }
+
+    echo "PASS: four-worker finance approval/revocation, offboarding, residual-grant and request-creation races; stale MFA, audit and replay.\\n";
 } catch (Throwable $exception) {
     fwrite(STDERR, 'FAIL: finance HTTP concurrency: '.$exception->getMessage()."\n");
     $exit = 1;
