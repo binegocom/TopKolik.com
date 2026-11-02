@@ -634,3 +634,9 @@
   versus ticket-write HTTP races, the complete RBAC/BOLA matrix and
   production release are not verified. No new provider access, locale,
   migration or runtime sports content is introduced.
+
+## P03-007 support role revocation / real HTTP worker race — PR #85
+
+- **Verified partial RBAC security slice (2026-11-02):** The existing four-worker HTTP concurrency harness now holds a PostgreSQL staff row lock, verifies an actual blocked HTTP worker through `pg_stat_activity`, commits a support-to-editor role revocation, then requires HTTP 403 for ticket reply, escalation and resolution. The old MFA bearer remains unusable for support mutations; ticket status, replies and audit records are unchanged.
+- **Evidence on implementation commit `4f84c73b53d2f0b39bbc382d57e31a8648b58156`:** [Laravel API checks](https://github.com/binegocom/TopKolik.com/actions/runs/41410906277) passed: 347 tests / 3,122 assertions, disposable PostgreSQL/Redis, real HTTP/SMTP, support/finance/ads concurrency, Composer audit and editorial guard. [Editorial/roadmap checks](https://github.com/binegocom/TopKolik.com/actions/runs/41410906336) passed.
+- **PR:** https://github.com/binegocom/TopKolik.com/pull/85. Documentation follow-up commits require their own final-head CI before merge. `P03-007` stays `in_progress`; full resource RBAC/BOLA matrix and production authorization verification remain open. No production data or provider-dependent functionality was changed.
