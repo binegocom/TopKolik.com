@@ -58,6 +58,8 @@ Route::middleware('auth:sanctum')->prefix('me')->group(function (): void {
         Route::get('/preferences', [ReaderProfileController::class, 'preferences']);
         Route::get('/favorites', [ReaderProfileController::class, 'favorites']);
         Route::get('/privacy/deletion-request', [ReaderPrivacyController::class, 'deletionStatus']);
+        Route::get('/privacy/consent-history', [ReaderPrivacyController::class, 'consentHistory'])
+            ->middleware('throttle:20,1');
     });
 
     Route::middleware('ability:reader:write')->group(function (): void {
