@@ -53,8 +53,9 @@ final class StaffEditorialDraftController extends Controller
         $draft = DB::transaction(function () use ($staff, $token, $data): EditorialArticle {
             // Serialize role changes and deactivation with draft creation.
             // The policy must be re-evaluated after locking persisted staff.
-            $this->lockEditor($staff);
-            Gate::forUser($staff)->authorize('staff-create-draft', [$token]);
+            $actor = $this->lockEditor($staff);
+            $currentToken = $this->lockEditorToken($token, $actor);
+            Gate::forUser($actor)->authorize('staff-create-draft', [$currentToken]);
 
             return EditorialArticle::query()->create([
                 'owner_staff_id' => $staff->getKey(),
@@ -95,9 +96,10 @@ final class StaffEditorialDraftController extends Controller
         $token = $this->token($request);
 
         $record = DB::transaction(function () use ($staff, $token, $draft, $data): EditorialArticle {
-            $this->lockEditor($staff);
-            $record = $this->scopedRecord($staff, $draft, true);
-            $this->authorizeDraft($staff, $record, 'editorial.draft.edit', $token);
+            $actor = $this->lockEditor($staff);
+            $currentToken = $this->lockEditorToken($token, $actor);
+            $record = $this->scopedRecord($actor, $draft, true);
+            $this->authorizeDraft($actor, $record, 'editorial.draft.edit', $currentToken);
             if ((int) $record->revision !== (int) $data['revision']) {
                 abort(409, 'Draft revision conflict.');
             }
@@ -128,9 +130,10 @@ final class StaffEditorialDraftController extends Controller
         $token = $this->token($request);
 
         $record = DB::transaction(function () use ($staff, $token, $draft, $data): EditorialArticle {
-            $this->lockEditor($staff);
-            $record = $this->scopedRecord($staff, $draft, true);
-            $this->authorizeDraft($staff, $record, 'editorial.draft.submit', $token);
+            $actor = $this->lockEditor($staff);
+            $currentToken = $this->lockEditorToken($token, $actor);
+            $record = $this->scopedRecord($actor, $draft, true);
+            $this->authorizeDraft($actor, $record, 'editorial.draft.submit', $currentToken);
 
             if ((int) $record->revision !== (int) $data['revision']) {
                 abort(409, 'Draft revision conflict.');
@@ -150,14 +153,28 @@ final class StaffEditorialDraftController extends Controller
         return $this->privateResponse(['draft' => $this->payload($record)]);
     }
 
-    private function lockEditor(StaffMember $staff): void
+    private function lockEditor(StaffMember $staff): StaffMember
     {
-        // Consistent lock order: staff identity first, then the owned draft.
-        // An administrator's concurrent staff update must not interleave
-        // between authorization and the editorial write.
-        if (! StaffMember::query()->whereKey($staff->getKey())->lockForUpdate()->first()) {
-            abort(403);
+        // Match staff logout's lock order: identity, bearer, then draft.
+        // Authorization must use the locked persisted identity and token.
+        return StaffMember::query()->whereKey($staff->getKey())->lockForUpdate()->firstOrFail();
+    }
+
+    private function lockEditorToken(?PersonalAccessToken $token, StaffMember $staff): PersonalAccessToken
+    {
+        // Middleware may have authenticated before a concurrent logout.
+        // A deleted or expired bearer must never authorize a draft write.
+        $current = $token
+            ? PersonalAccessToken::query()->whereKey($token->getKey())->lockForUpdate()->first()
+            : null;
+
+        if (! $current || $current->expires_at === null || $current->expires_at->isPast()
+            || $current->tokenable_type !== $staff->getMorphClass()
+            || (string) $current->tokenable_id !== (string) $staff->getKey()) {
+            abort(401, 'Unauthenticated.');
         }
+
+        return $current;
     }
 
     private function scopedRecord(StaffMember $staff, int $id, bool $lock = false): EditorialArticle
