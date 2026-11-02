@@ -313,4 +313,45 @@ final class StaffFinanceAccessInventoryTest extends TestCase
         ]);
         $this->assertSame($auditCount, DB::table('security_audit_events')->count());
     }
+
+    public function test_finance_metadata_reads_fail_closed_after_role_deactivation_and_token_revocation(): void
+    {
+        $requester = $this->admin();
+        $administrator = $this->admin();
+        $finance = $this->staff('finance');
+        $this->decision($requester, $administrator, $finance);
+
+        $this->asStaff($administrator);
+        foreach ([self::ACTIVE, self::HISTORY] as $endpoint) {
+            $this->getJson($endpoint)->assertOk()
+                ->assertHeader('Cache-Control', 'no-store, private');
+        }
+
+        $administrator->forceFill(['role' => 'ads'])->save();
+        foreach ([self::ACTIVE, self::HISTORY] as $endpoint) {
+            $this->getJson($endpoint)->assertForbidden()
+                ->assertHeader('Cache-Control', 'no-store, private');
+        }
+
+        $administrator->forceFill(['role' => 'support', 'is_active' => false])->save();
+        foreach ([self::ACTIVE, self::HISTORY] as $endpoint) {
+            $this->getJson($endpoint)->assertForbidden();
+        }
+
+        $administrator->forceFill(['is_active' => true])->save();
+        $token = \Laravel\Sanctum\PersonalAccessToken::query()
+            ->where('tokenable_type', $administrator->getMorphClass())
+            ->where('tokenable_id', $administrator->getKey())
+            ->latest('id')->firstOrFail();
+        $token->delete();
+
+        foreach ([self::ACTIVE, self::HISTORY] as $endpoint) {
+            $this->getJson($endpoint)->assertUnauthorized()
+                ->assertHeader('Cache-Control', 'no-store, private');
+        }
+
+        $this->assertDatabaseCount('staff_finance_entitlements', 1);
+        $this->assertDatabaseCount('staff_finance_access_requests', 1);
+        $this->assertDatabaseCount('security_audit_events', 2);
+    }
 }
