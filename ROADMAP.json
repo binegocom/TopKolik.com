@@ -1691,6 +1691,17 @@
           "type": "reference",
           "value": "https://github.com/binegocom/TopKolik.com/pull/96",
           "validation": "Implementation commit 0e1e0707c09ee7d0159a5c1dcbc31eadfc6474bf verified; P03-007 remains in_progress pending complete role/resource RBAC/BOLA matrix, independent security review and production release verification."
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test && php scripts/check-support-read-deactivation-concurrency.php",
+          "result": "361 Laravel tests / 3,251 assertions passed on disposable PostgreSQL/Redis. Four real HTTP worker races passed: support ticket index/detail versus committed account deactivation and support-to-ads role revocation; blocked PostgreSQL staff row observed, HTTP 403, foreign-ticket BOLA 404 on replay, HTTP 401 after bearer revocation. Existing support/editorial/finance/ads races, real HTTP/SMTP, Composer audit and 17 editorial guard scenarios passed.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41504780624"
+        },
+        {
+          "type": "reference",
+          "value": "https://github.com/binegocom/TopKolik.com/pull/97",
+          "validation": "Implementation SHA f7935c090b1860bcda08f705b69f7c7db139d9d2 verified by Laravel API CI 41504780624 and editorial/roadmap CI 41504780762; final documentation head requires separate CI. P03-007 remains in_progress."
         }
       ],
       "verified_at": null,
@@ -1741,7 +1752,8 @@
         "PR #89 rechecks the persisted Sanctum bearer under staff → token → draft locks for all editorial writes, with deterministic revocation-boundary tests. Full RBAC/BOLA matrix, independent four-worker editorial/logout race, final documentation-commit CI, provider licensing and production deployment remain unverified; P03-007 stays in_progress.",
         "PR #93 verified four-worker HTTP draft index/detail read races with logout and committed role revocation on disposable PostgreSQL, including SQL lock contention, bearer replay denial and cross-editor BOLA concealment. Full staff/finance RBAC matrix, independent security review, approved production controls and deployment remain unverified; P03-007 stays in_progress.",
         "PR #95 verifies editor account deactivation versus draft index/detail reads with real four-worker PostgreSQL lock contention; role/token/active-state replays deny private data. This is partial P03-007 acceptance only: full staff resource matrix, independent security review, deployment and production access controls are not verified.",
-        "PR #96 verified support ticket index/detail read serialization with persisted staff/token/ticket locks and deterministic deactivation races; full cross-resource role matrix, independent security review and production deployment remain unverified. No sports feed, runtime fixture, locale or production schema changes."
+        "PR #96 verified support ticket index/detail read serialization with persisted staff/token/ticket locks and deterministic deactivation races; full cross-resource role matrix, independent security review and production deployment remain unverified. No sports feed, runtime fixture, locale or production schema changes.",
+        "PR #97 verifies support ticket read index/detail versus committed role revocation in four-worker PostgreSQL HTTP races; complete role/resource RBAC/BOLA matrix, independent security review and production deployment remain unverified. No new grants, sports data, schema, locale or release."
       ]
     },
     {
