@@ -840,6 +840,191 @@ try {
         }
     }
 
+
+    // A real logout and held-escalation recovery may arrive on different PHP
+    // workers with the same step-up bearer. Either recovery commits before
+    // logout, or logout wins and recovery fails closed. No later replay works.
+    $logoutAssignee = $makeStaff('support', 'recovery-logout-assignee');
+    $logoutAdmin = $makeStaff('finance', 'recovery-logout-admin');
+    $logoutTicket = SupportTicket::create([
+        'assigned_staff_id' => $logoutAssignee->getKey(),
+        'subject' => 'Recovery logout race '.$run,
+        'message' => 'Isolated logout and recovery authorization regression',
+        'status' => 'pending',
+    ]);
+    $logoutTicket->forceFill([
+        'escalated_at' => now(),
+        'escalated_by_staff_id' => $logoutAssignee->getKey(),
+    ])->save();
+    DB::table('staff_security_admin_grants')->insert([
+        'staff_member_id' => $logoutAdmin->getKey(),
+        'is_active' => true,
+        'authorization_reference' => 'isolated-recovery-logout-ci',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    $logoutBearer = $logoutAdmin->createToken(
+        'recovery-logout-race', ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+    )->plainTextToken;
+    $logoutPath = '/api/v1/staff/security/support/escalations/'
+        .$logoutTicket->getKey().'/recover-reviewer';
+    $logoutCodes = $parallelPosts([
+        ['/api/v1/staff/auth/logout', $logoutBearer],
+        [$logoutPath, $logoutBearer],
+    ]);
+    $recoveryCommitted = $logoutCodes === [200, 200];
+    if (! $recoveryCommitted && $logoutCodes !== [200, 401] && $logoutCodes !== [200, 403]) {
+        throw new RuntimeException('Recovery/logout HTTP race returned unexpected statuses: '.json_encode($logoutCodes));
+    }
+
+    DB::disconnect();
+    $logoutFresh = $logoutTicket->fresh();
+    $logoutRecoveryEvents = DB::table('security_audit_events')
+        ->where('subject_type', 'support_ticket')
+        ->where('subject_id', $logoutTicket->getKey())
+        ->where('action', 'support.ticket.escalation_reviewer_recovered')
+        ->count();
+    $logoutSessionEvents = DB::table('security_audit_events')
+        ->where('staff_member_id', $logoutAdmin->getKey())
+        ->where('action', 'staff.session.ended')
+        ->count();
+    if ($logoutFresh->status !== 'pending'
+        || ($logoutFresh->escalation_reviewer_staff_id !== null) !== $recoveryCommitted
+        || $logoutFresh->escalation_reviewed_at !== null
+        || $logoutRecoveryEvents !== (int) $recoveryCommitted
+        || $logoutSessionEvents !== 1
+        || \Laravel\Sanctum\PersonalAccessToken::findToken($logoutBearer) !== null
+        || $parallelPosts([[$logoutPath, $logoutBearer]]) !== [401]) {
+        throw new RuntimeException('Recovery/logout race violated bearer revocation, ticket state or audit atomicity.');
+    }
+
+    // Hold the bearer row while the HTTP worker authenticates or rechecks
+    // the persisted token. Sanctum may first update last_used_at, before the
+    // controller reaches SELECT ... FOR UPDATE. Both lock waits are valid.
+    // Commit token deletion before releasing the worker; recovery must fail.
+    $tokenAssignee = $makeStaff('support', 'recovery-token-assignee');
+    $tokenAdmin = $makeStaff('finance', 'recovery-token-admin');
+    $tokenTicket = SupportTicket::create([
+        'assigned_staff_id' => $tokenAssignee->getKey(),
+        'subject' => 'Recovery token revocation race '.$run,
+        'message' => 'Isolated persisted bearer revocation regression',
+        'status' => 'pending',
+    ]);
+    $tokenTicket->forceFill([
+        'escalated_at' => now(),
+        'escalated_by_staff_id' => $tokenAssignee->getKey(),
+    ])->save();
+    DB::table('staff_security_admin_grants')->insert([
+        'staff_member_id' => $tokenAdmin->getKey(),
+        'is_active' => true,
+        'authorization_reference' => 'isolated-recovery-token-ci',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    $tokenBearer = $tokenAdmin->createToken(
+        'recovery-token-race', ['staff:session', 'staff:step-up'], now()->addMinutes(5),
+    )->plainTextToken;
+    $tokenRecord = \Laravel\Sanctum\PersonalAccessToken::findToken($tokenBearer);
+    if (! $tokenRecord) {
+        throw new RuntimeException('Recovery token race setup did not persist the bearer.');
+    }
+    $tokenPath = '/api/v1/staff/security/support/escalations/'
+        .$tokenTicket->getKey().'/recover-reviewer';
+    $multi = curl_multi_init();
+    $handle = curl_init($base.$tokenPath);
+    try {
+        DB::beginTransaction();
+        DB::table('personal_access_tokens')
+            ->where('id', $tokenRecord->getKey())
+            ->lockForUpdate()->first();
+
+        curl_setopt_array($handle, [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => '{}',
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer '.$tokenBearer,
+                'Accept: application/json',
+                'Content-Type: application/json',
+            ],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_TIMEOUT => 30,
+        ]);
+        curl_multi_add_handle($multi, $handle);
+
+        $waiting = false;
+        $active = null;
+        $deadline = microtime(true) + 10;
+        do {
+            if (curl_multi_exec($multi, $active) !== CURLM_OK) {
+                throw new RuntimeException('Recovery bearer-revocation HTTP worker failed to start.');
+            }
+            DB::selectOne('SELECT pg_stat_clear_snapshot()');
+            $waiting = (int) DB::selectOne(
+                "SELECT count(*) AS waiting FROM pg_stat_activity ".
+                "WHERE pid <> pg_backend_pid() AND wait_event_type = 'Lock' ".
+                "AND query ILIKE '%personal_access_tokens%'"
+            )->waiting > 0;
+            if (! $waiting && $active > 0 && curl_multi_select($multi, 0.1) === -1) {
+                usleep(10000);
+            }
+        } while (! $waiting && $active > 0 && microtime(true) < $deadline);
+
+        if (! $waiting) {
+            throw new RuntimeException(
+                'Recovery worker did not wait for bearer lock; HTTP='.
+                curl_getinfo($handle, CURLINFO_RESPONSE_CODE).
+                ', response='.substr((string) curl_multi_getcontent($handle), 0, 200).
+                ', log='.substr((string) @file_get_contents($log), -2000),
+            );
+        }
+
+        DB::table('personal_access_tokens')->where('id', $tokenRecord->getKey())->delete();
+        DB::commit();
+
+        $deadline = microtime(true) + 30;
+        do {
+            if (curl_multi_exec($multi, $active) !== CURLM_OK || microtime(true) > $deadline) {
+                throw new RuntimeException('Recovery bearer-revocation HTTP worker timed out.');
+            }
+            if ($active > 0 && curl_multi_select($multi, 1.0) === -1) {
+                usleep(10000);
+            }
+        } while ($active > 0);
+
+        // A worker blocked in Sanctum's token last_used_at update may reach
+        // the controller after deletion (403); a worker blocked in the
+        // controller's locked recheck returns 401. Neither may mutate.
+        if (curl_error($handle) !== ''
+            || ! in_array(curl_getinfo($handle, CURLINFO_RESPONSE_CODE), [401, 403], true)) {
+            throw new RuntimeException(
+                'Revoked bearer recovered a reviewer after lock release: HTTP '.
+                curl_getinfo($handle, CURLINFO_RESPONSE_CODE).
+                ', response='.substr((string) curl_multi_getcontent($handle), 0, 200),
+            );
+        }
+    } finally {
+        if (DB::transactionLevel() > 0) {
+            DB::rollBack();
+        }
+        curl_multi_remove_handle($multi, $handle);
+        curl_close($handle);
+        curl_multi_close($multi);
+    }
+
+    DB::disconnect();
+    $tokenFresh = $tokenTicket->fresh();
+    if ($tokenFresh->status !== 'pending'
+        || $tokenFresh->escalation_reviewer_staff_id !== null
+        || $tokenFresh->escalation_reviewed_at !== null
+        || DB::table('security_audit_events')->where('subject_type', 'support_ticket')
+            ->where('subject_id', $tokenTicket->getKey())->exists()
+        || $parallelPosts([[$tokenPath, $tokenBearer]]) !== [401]) {
+        throw new RuntimeException('Recovery after bearer revocation changed ticket or audit state.');
+    }
+
+    echo "PASS: real HTTP recovery/logout race and locked-bearer revocation preserve authorization and audit atomicity.\n";
+
     echo "PASS: real HTTP recovery waits for staff role/grant locks and rejects revoked administrators.\n";
     echo "PASS: real HTTP reviewer approval/relinquishment blocked on staff locks and denied after role revocation.\n";
     echo "PASS: real HTTP workers block on support staff row locks, then reject reply/escalate/resolve after committed role revocation.\n";
