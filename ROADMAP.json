@@ -1571,6 +1571,23 @@
           "type": "revision",
           "value": "6f93971c0b78e7a447dd718dbe8f71de3294a5d4",
           "reference": "https://github.com/binegocom/TopKolik.com/pull/87"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan migrate --force && php artisan test; php scripts/check-support-reviewer-concurrency.php",
+          "result": "352 Laravel tests / 3,162 assertions passed on disposable PostgreSQL/Redis. Real four-worker HTTP recovery/logout race and token-row revocation contention passed; revoked bearer replay rejected and ticket/audit atomicity preserved.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41432040148"
+        },
+        {
+          "type": "verification",
+          "command": "composer audit --no-interaction; bash scripts/check-api-http.sh; bash scripts/check-reader-email-delivery.sh; bash scripts/test-editorial-guard.sh; python3 scripts/status.py check",
+          "result": "Composer audit, HTTP, SMTP, 17 editorial guard scenarios and roadmap integrity passed on implementation commit 616f6f5c60866a1c033b78388656e0c8d3d88a37.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41432040146"
+        },
+        {
+          "type": "revision",
+          "value": "616f6f5c60866a1c033b78388656e0c8d3d88a37",
+          "reference": "https://github.com/binegocom/TopKolik.com/pull/88"
         }
       ],
       "verified_at": null,
@@ -1616,7 +1633,8 @@
         "PR #81 adds private/no-store headers at staff and advertiser session middleware boundaries, verified with PostgreSQL-backed feature tests. Full RBAC/BOLA matrix, unauthenticated outer auth middleware responses, production proxy caching configuration and external security review remain unverified.",
         "PR #82 serializes editorial draft creation/update/submit with a persisted staff row lock and fresh role check. Full RBAC/BOLA acceptance, independent concurrency security review, deployment and production release remain unverified; task stays in_progress.",
         "PR #83 verified support actor-row lock ordering and revoked-role denial on code CI; final documentation commit CI, independent multi-worker role-revocation-vs-support-write contention, complete RBAC/BOLA matrix, operational revocation path and production deployment remain unverified.",
-        "PR #86 serializes support escalation approval and relinquishment with staff identity, current bearer and ticket locks. Real four-worker reviewer-role revocation race passed code CI; final evidence commit CI, full RBAC/BOLA coverage, production operator access and deployment remain outstanding."
+        "PR #86 serializes support escalation approval and relinquishment with staff identity, current bearer and ticket locks. Real four-worker reviewer-role revocation race passed code CI; final evidence commit CI, full RBAC/BOLA coverage, production operator access and deployment remain outstanding.",
+        "PR #88 verifies support escalation recovery versus administrator logout and persisted bearer revocation with four-worker HTTP/PostgreSQL contention. P03-007 remains in_progress: full resource RBAC/BOLA matrix, independent security acceptance, final documentation-commit CI and production deployment are not verified."
       ]
     },
     {
