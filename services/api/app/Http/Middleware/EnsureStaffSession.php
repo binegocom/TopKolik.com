@@ -25,8 +25,7 @@ final class EnsureStaffSession
         $presented = $request->bearerToken();
         $token = $presented ? PersonalAccessToken::findToken($presented) : null;
 
-        // A staff bearer token without an explicit expiry is never a session.
-        if (! $token || $token->expires_at === null || $token->expires_at->isPast()) {
+        if (! $token || $token->expires_at?->isPast()) {
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
@@ -35,6 +34,12 @@ final class EnsureStaffSession
             || $member->getMorphClass() !== $token->tokenable_type
             || (string) $member->getKey() !== (string) $token->tokenable_id) {
             return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
+        // Keep cross-principal tokens forbidden, but reject a matched staff
+        // bearer without an expiry as an invalid session.
+        if ($token->expires_at === null) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
         if (! $token->can('staff:session')) {
