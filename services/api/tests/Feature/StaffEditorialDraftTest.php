@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\EditorialArticle;
 use App\Models\StaffMember;
 use App\Models\User;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -234,6 +235,51 @@ final class StaffEditorialDraftTest extends TestCase
         $this->patchJson($this->url($draft), [
             'revision' => 0, 'title' => 'Updated draft title',
         ])->assertUnprocessable()->assertJsonValidationErrors('revision');
+        $this->assertSame(1, $draft->fresh()->revision);
+    }
+
+    public function test_editorial_mutations_lock_persisted_staff_before_writing(): void
+    {
+        $editor = $this->staff();
+        $this->withToken($this->token($editor));
+
+        $staffLocks = [];
+        DB::listen(static function (QueryExecuted $query) use (&$staffLocks): void {
+            $sql = strtolower($query->sql);
+            if (str_contains($sql, 'staff_members') && str_contains($sql, 'for update')) {
+                $staffLocks[] = $sql;
+            }
+        });
+
+        $created = $this->postJson('/api/v1/staff/editorial/drafts', $this->data())
+            ->assertCreated();
+        $draftId = $created->json('draft.id');
+        $this->patchJson('/api/v1/staff/editorial/drafts/'.$draftId, [
+            'revision' => 1,
+            'title' => 'Revised verified editorial draft',
+        ])->assertOk()->assertJsonPath('draft.revision', 2);
+        $this->postJson('/api/v1/staff/editorial/drafts/'.$draftId.'/submit', [
+            'revision' => 2,
+        ])->assertOk()->assertJsonPath('draft.status', 'in_review');
+
+        // Each write must lock the staff row in its own transaction before
+        // checking its current role and the draft's persisted ownership.
+        $this->assertCount(3, $staffLocks);
+        $this->assertDatabaseCount('editorial_articles', 1);
+    }
+
+    public function test_revoked_editor_cannot_submit_existing_draft_with_old_token(): void
+    {
+        $editor = $this->staff();
+        $draft = $this->draft($editor);
+        $token = $this->token($editor);
+        $editor->forceFill(['role' => 'support'])->save();
+
+        $this->withToken($token)->postJson($this->url($draft).'/submit', [
+            'revision' => 1,
+        ])->assertForbidden();
+
+        $this->assertSame('draft', $draft->fresh()->status);
         $this->assertSame(1, $draft->fresh()->revision);
     }
 
