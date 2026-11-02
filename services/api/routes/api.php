@@ -16,6 +16,7 @@ use App\Http\Controllers\StaffAdvertiserReviewController;
 use App\Http\Controllers\StaffAdsAssignmentController;
 use App\Http\Controllers\StaffAdsAssignmentApprovalController;
 use App\Http\Controllers\StaffFinanceAccessApprovalController;
+use App\Http\Controllers\StaffFinanceAccessInventoryController;
 use App\Http\Controllers\StaffFinanceEntitlementController;
 use App\Http\Controllers\StaffFinanceEmergencyDeactivationController;
 use App\Http\Controllers\StaffSecurityAdminGrantController;
@@ -111,6 +112,15 @@ Route::prefix('staff')->group(function (): void {
 
         // Independently granted administrators must approve finance access
         // in two-person workflow; no payment, invoice or ledger operations.
+        // Metadata-only security administration views: independent grant
+        // and current MFA step-up; never return finance transactions.
+        Route::get('/security/finance/entitlements',
+            [StaffFinanceAccessInventoryController::class, 'active'])
+            ->middleware('throttle:20,1');
+        Route::get('/security/finance/access-requests/history',
+            [StaffFinanceAccessInventoryController::class, 'decisions'])
+            ->middleware('throttle:20,1');
+
         Route::get('/security/finance/access-requests',
             [StaffFinanceAccessApprovalController::class, 'index'])
             ->middleware('throttle:20,1');

@@ -1444,7 +1444,8 @@
         "Four-worker approval-versus-emergency-staff-deactivation HTTP race added for CI verification; final-commit GitHub Actions evidence pending. Full finance resource RBAC, approved operator bootstrap and production release remain open.",
         "Residual security-admin grant revocation versus emergency finance offboarding has an isolated four-worker HTTP regression on feature branch; final-commit CI evidence is pending. Ads-role assignment approval cannot be raced against finance-role offboarding under existing role eligibility. Full finance RBAC, operator provisioning and production verification remain open.",
         "PR #73 code SHA 489d40945f3a4bca96c73d0228881a26ed081a85 passed 314 Laravel tests / 2,685 assertions, four-worker ads approval/requester-grant revocation HTTP race, PostgreSQL/Redis, HTTP/SMTP, Composer audit and 17 editorial guard tests (Laravel CI 41359323946; editorial CI 41359323964). Final evidence-documentation commit requires fresh CI before merge. Full RBAC matrix, licensed providers and production release remain unverified.",
-        "Approver-grant revocation race passed isolated four-worker GitHub Actions on code SHA f2c26e7; final evidence commit CI required. Full RBAC matrix, operator provisioning and production security remain unverified."
+        "Approver-grant revocation race passed isolated four-worker GitHub Actions on code SHA f2c26e7; final evidence commit CI required. Full RBAC matrix, operator provisioning and production security remain unverified.",
+        "Finance access security inventory and terminal two-person decision history are implemented as MFA-gated read-only endpoints in a feature branch awaiting CI. They return only staff IDs, decision IDs/status/timestamps and active-entitlement eligibility, never private contact/payment data; actual finance resource RBAC, immutable offsite audit, production admin onboarding and finance operations remain unimplemented."
       ]
     },
     {
