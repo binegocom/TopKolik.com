@@ -20,20 +20,28 @@ final class StaffEditorialDraftController extends Controller
     {
         /** @var StaffMember $staff */
         $staff = $request->user();
-        Gate::forUser($staff)->authorize('staff-create-draft', [$this->token($request)]);
+        $token = $this->token($request);
 
-        // This query never considers another editor's records.
-        $drafts = EditorialArticle::query()
-            ->where('owner_staff_id', $staff->getKey())
-            ->whereIn('status', ['draft', 'in_review', 'held'])
-            ->orderByDesc('id')->paginate(20);
+        return DB::transaction(function () use ($staff, $token): JsonResponse {
+            // Match the write/logout lock order so revocation cannot complete
+            // while an authenticated draft listing is being assembled.
+            $actor = $this->lockEditor($staff);
+            $currentToken = $this->lockEditorToken($token, $actor);
+            Gate::forUser($actor)->authorize('staff-create-draft', [$currentToken]);
 
-        return $this->privateResponse([
-            'drafts' => $drafts->getCollection()
-                ->map(fn (EditorialArticle $draft) => $this->payload($draft, false))->all(),
-            'current_page' => $drafts->currentPage(),
-            'last_page' => $drafts->lastPage(),
-        ]);
+            // The owner constraint is part of SQL, not a post-query filter.
+            $drafts = EditorialArticle::query()
+                ->where('owner_staff_id', $actor->getKey())
+                ->whereIn('status', ['draft', 'in_review', 'held'])
+                ->orderByDesc('id')->paginate(20);
+
+            return $this->privateResponse([
+                'drafts' => $drafts->getCollection()
+                    ->map(fn (EditorialArticle $draft) => $this->payload($draft, false))->all(),
+                'current_page' => $drafts->currentPage(),
+                'last_page' => $drafts->lastPage(),
+            ]);
+        }, 3);
     }
 
     public function store(Request $request): JsonResponse
@@ -71,10 +79,16 @@ final class StaffEditorialDraftController extends Controller
     {
         /** @var StaffMember $staff */
         $staff = $request->user();
-        $record = $this->scopedRecord($staff, $draft);
-        $this->authorizeDraft($staff, $record, 'editorial.draft.view', $this->token($request));
+        $token = $this->token($request);
 
-        return $this->privateResponse(['draft' => $this->payload($record)]);
+        return DB::transaction(function () use ($staff, $token, $draft): JsonResponse {
+            $actor = $this->lockEditor($staff);
+            $currentToken = $this->lockEditorToken($token, $actor);
+            $record = $this->scopedRecord($actor, $draft);
+            $this->authorizeDraft($actor, $record, 'editorial.draft.view', $currentToken);
+
+            return $this->privateResponse(['draft' => $this->payload($record)]);
+        }, 3);
     }
 
     public function update(Request $request, int $draft): JsonResponse
