@@ -595,10 +595,14 @@ try {
             'subject' => 'Reviewer revocation race '.$run.' '.$action,
             'message' => 'Isolated reviewer authorization regression',
             'status' => 'pending',
+        ]);
+        // The model intentionally forbids mass assignment of escalation
+        // state; only this isolated CI fixture sets the persisted review fields.
+        $raceTicket->forceFill([
             'escalated_at' => now(),
             'escalated_by_staff_id' => $assignee->getKey(),
             'escalation_reviewer_staff_id' => $reviewer->getKey(),
-        ]);
+        ])->save();
         $raceId = (int) $raceTicket->getKey();
         $bearer = $reviewer->createToken(
             'reviewer-role-revocation', ['staff:session', 'staff:step-up'], now()->addMinutes(5),
@@ -674,10 +678,7 @@ try {
                 throw new RuntimeException(
                     'Revoked reviewer performed '.$action.' after lock release: HTTP '.
                     curl_getinfo($handle, CURLINFO_RESPONSE_CODE).' '.curl_error($handle).
-                    ', response='.substr((string) curl_multi_getcontent($handle), 0, 500).
-                    ', ticket='.json_encode(DB::table('support_tickets')->where('id', $raceId)->first(),
-                        JSON_THROW_ON_ERROR).
-                    ', server_log='.substr((string) @file_get_contents($log), -3000),
+                    ', response='.substr((string) curl_multi_getcontent($handle), 0, 200),
                 );
             }
         } finally {
