@@ -521,7 +521,16 @@ try {
             } while (! $waiting && $active > 0 && microtime(true) < $deadline);
 
             if (! $waiting) {
-                throw new RuntimeException('HTTP worker never contended for the locked support role.');
+                $activity = DB::select(
+                    "SELECT pid, state, wait_event_type, wait_event, left(query, 180) AS statement ".
+                    "FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND datname = current_database()"
+                );
+                throw new RuntimeException(
+                    'HTTP worker never contended for the locked support role; action='.$action.
+                    ', active='.$active.', HTTP='.curl_getinfo($handle, CURLINFO_RESPONSE_CODE).
+                    ', curl='.curl_error($handle).', response='.substr((string) curl_multi_getcontent($handle), 0, 200).
+                    ', activity='.json_encode($activity, JSON_THROW_ON_ERROR),
+                );
             }
 
             StaffMember::query()->whereKey($operator->getKey())->update(['role' => 'editor']);
