@@ -898,9 +898,10 @@ try {
         throw new RuntimeException('Recovery/logout race violated bearer revocation, ticket state or audit atomicity.');
     }
 
-    // Deterministically hold the bearer row while an HTTP recovery worker
-    // reaches SELECT ... FOR UPDATE. Commit token revocation before release:
-    // the worker must re-read the persisted bearer and refuse the mutation.
+    // Hold the bearer row while the HTTP worker authenticates or rechecks
+    // the persisted token. Sanctum may first update last_used_at, before the
+    // controller reaches SELECT ... FOR UPDATE. Both lock waits are valid.
+    // Commit token deletion before releasing the worker; recovery must fail.
     $tokenAssignee = $makeStaff('support', 'recovery-token-assignee');
     $tokenAdmin = $makeStaff('finance', 'recovery-token-admin');
     $tokenTicket = SupportTicket::create([
@@ -962,7 +963,7 @@ try {
             $waiting = (int) DB::selectOne(
                 "SELECT count(*) AS waiting FROM pg_stat_activity ".
                 "WHERE pid <> pg_backend_pid() AND wait_event_type = 'Lock' ".
-                "AND query ILIKE '%personal_access_tokens%' AND query ILIKE '%for update%'"
+                "AND query ILIKE '%personal_access_tokens%'"
             )->waiting > 0;
             if (! $waiting && $active > 0 && curl_multi_select($multi, 0.1) === -1) {
                 usleep(10000);
@@ -991,7 +992,11 @@ try {
             }
         } while ($active > 0);
 
-        if (curl_error($handle) !== '' || curl_getinfo($handle, CURLINFO_RESPONSE_CODE) !== 401) {
+        // A worker blocked in Sanctum's token last_used_at update may reach
+        // the controller after deletion (403); a worker blocked in the
+        // controller's locked recheck returns 401. Neither may mutate.
+        if (curl_error($handle) !== ''
+            || ! in_array(curl_getinfo($handle, CURLINFO_RESPONSE_CODE), [401, 403], true)) {
             throw new RuntimeException(
                 'Revoked bearer recovered a reviewer after lock release: HTTP '.
                 curl_getinfo($handle, CURLINFO_RESPONSE_CODE).
