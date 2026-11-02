@@ -10,6 +10,7 @@ on:
       - 'scripts/test-editorial-guard.sh'
       - 'scripts/check-support-reviewer-concurrency.php'
       - 'scripts/check-support-read-deactivation-concurrency.php'
+      - 'scripts/check-audit-read-revocation-concurrency.php'
       - 'scripts/check-editorial-logout-concurrency.php'
       - 'scripts/check-finance-access-concurrency.php'
       - 'scripts/check-finance-inventory-read-concurrency.php'
@@ -27,6 +28,7 @@ on:
       - 'scripts/test-editorial-guard.sh'
       - 'scripts/check-support-reviewer-concurrency.php'
       - 'scripts/check-support-read-deactivation-concurrency.php'
+      - 'scripts/check-audit-read-revocation-concurrency.php'
       - 'scripts/check-editorial-logout-concurrency.php'
       - 'scripts/check-finance-access-concurrency.php'
       - 'scripts/check-finance-inventory-read-concurrency.php'
@@ -76,6 +78,10 @@ jobs:
         env:
           TOPKOLIK_CONCURRENCY_TEST: '1'
         run: php scripts/check-support-read-deactivation-concurrency.php
+      - name: Verify multi-worker self-audit reads versus revocation
+        env:
+          TOPKOLIK_CONCURRENCY_TEST: '1'
+        run: php scripts/check-audit-read-revocation-concurrency.php
       - name: Verify multi-worker editorial logout, role-revocation and deactivation races
         env:
           TOPKOLIK_CONCURRENCY_TEST: '1'
