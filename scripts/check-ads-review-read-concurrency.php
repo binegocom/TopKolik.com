@@ -230,7 +230,10 @@ try {
 
                 $responseCode = curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
                 $body = (string) curl_multi_getcontent($handle);
-                $expected = $scenario === 'staff_deactivation' ? 403 : 404;
+                // Middleware saw the pre-commit active identity, but the
+                // locked policy rechecks the committed state and conceals
+                // the now-ineligible assignment as 404.
+                $expected = 404;
                 if (curl_error($handle) !== '' || $responseCode !== $expected
                     || str_contains($body, $owned->body)
                     || str_contains($body, $foreign->body)
