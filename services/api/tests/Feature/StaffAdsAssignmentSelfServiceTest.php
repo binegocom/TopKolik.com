@@ -421,7 +421,7 @@ final class StaffAdsAssignmentSelfServiceTest extends TestCase
         $this->postJson('/api/v1/staff/ads/assignments/'.$org->id.'/grant')->assertNotFound();
     }
 
-    public function test_reassigned_bearer_identity_cannot_relinquish_or_read_original_staff_assignments(): void
+    public function test_reassigned_bearer_identity_cannot_access_previous_staff_assignments(): void
     {
         $staff = $this->staff();
         $other = $this->staff();
@@ -436,7 +436,8 @@ final class StaffAdsAssignmentSelfServiceTest extends TestCase
         $token->forceFill(['tokenable_id' => $other->id])->save();
         app('auth')->forgetGuards();
 
-        $this->getJson(self::ASSIGNMENTS)->assertForbidden()
+        $this->getJson(self::ASSIGNMENTS)->assertOk()
+            ->assertJsonCount(0, 'assignments')
             ->assertDontSee($org->name);
         app('auth')->forgetGuards();
         $this->postJson($this->relinquishUrl($org))->assertNotFound();
