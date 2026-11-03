@@ -347,6 +347,28 @@ final class StaffAdsAssignmentSelfServiceTest extends TestCase
         $this->assertDatabaseCount('security_audit_events', 0);
     }
 
+    public function test_relinquish_denies_downgraded_step_up_bearer_without_mutating_assignment(): void
+    {
+        $staff = $this->staff();
+        $org = $this->organization();
+        $assignmentId = $this->assign($staff, $org);
+        $plainToken = $this->asStaff($staff, true);
+
+        // A bearer may lose its step-up ability after middleware authentication.
+        // The persisted token is authoritative, not the original request context.
+        $token = \Laravel\Sanctum\PersonalAccessToken::findToken($plainToken);
+        $this->assertNotNull($token);
+        $token->forceFill(['abilities' => ['staff:session']])->save();
+        app('auth')->forgetGuards();
+
+        $this->postJson($this->relinquishUrl($org))->assertForbidden();
+        $this->assertDatabaseHas('staff_advertiser_assignments', [
+            'id' => $assignmentId,
+            'is_active' => true,
+        ]);
+        $this->assertDatabaseCount('security_audit_events', 0);
+    }
+
     public function test_reader_advertiser_or_other_staff_roles_cannot_access_assignment_api(): void
     {
         $org = $this->organization();
