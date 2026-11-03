@@ -74,6 +74,55 @@ final class StaffAdsAssignmentSelfServiceTest extends TestCase
         return self::ASSIGNMENTS.'/'.$org->id.'/relinquish';
     }
 
+    public function test_assignment_index_locks_persisted_identity_token_and_joined_rows(): void
+    {
+        $staff = $this->staff();
+        $organization = $this->organization();
+        $this->assign($staff, $organization);
+        $this->asStaff($staff);
+
+        $statements = [];
+        DB::listen(static function (\\Illuminate\\Database\\Events\\QueryExecuted $query) use (&$statements): void {
+            $sql = strtolower($query->sql);
+            if (str_contains($sql, 'for update')) {
+                $statements[] = $sql;
+            }
+        });
+
+        $this->getJson(self::ASSIGNMENTS)->assertOk()
+            ->assertJsonCount(1, 'assignments');
+
+        $staffLock = array_search(true, array_map(
+            static fn (string $sql): bool => str_contains($sql, 'staff_members'),
+            $statements,
+        ), true);
+        $tokenLock = array_search(true, array_map(
+            static fn (string $sql): bool => str_contains($sql, 'personal_access_tokens'),
+            $statements,
+        ), true);
+        $assignmentLock = array_search(true, array_map(
+            static fn (string $sql): bool => str_contains($sql, 'staff_advertiser_assignments')
+                && str_contains($sql, 'advertiser_organizations'),
+            $statements,
+        ), true);
+
+        $this->assertNotFalse($staffLock);
+        $this->assertNotFalse($tokenLock);
+        $this->assertNotFalse($assignmentLock);
+        $this->assertLessThan($tokenLock, $staffLock);
+        $this->assertLessThan($assignmentLock, $tokenLock);
+
+        $staff->forceFill(['role' => 'support'])->save();
+        app('auth')->forgetGuards();
+        $this->getJson(self::ASSIGNMENTS)->assertForbidden()
+            ->assertDontSee($organization->name);
+        $staff->forceFill(['role' => 'ads'])->save();
+        $staff->tokens()->delete();
+        app('auth')->forgetGuards();
+        $this->getJson(self::ASSIGNMENTS)->assertUnauthorized()
+            ->assertDontSee($organization->name);
+    }
+
     public function test_self_list_only_contains_active_assignments_to_active_organizations(): void
     {
         $staff = $this->staff();
