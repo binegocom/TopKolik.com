@@ -17,7 +17,7 @@ final class StaffAdsAssignmentController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        [$staff] = $this->session($request);
+        [$staff, $token] = $this->session($request);
 
         $filters = $request->validate([
             'limit' => ['sometimes', 'integer', 'between:1,50'],
@@ -27,6 +27,7 @@ final class StaffAdsAssignmentController extends Controller
             'include_inactive' => ['missing'],
             'is_active' => ['missing'],
         ]);
+
         return DB::transaction(function () use ($staff, $token, $filters): JsonResponse {
             // Lock the persisted identity and bearer in the same order as logout.
             // Reauthorize after locks: middleware's earlier check is not enough
@@ -50,11 +51,11 @@ final class StaffAdsAssignmentController extends Controller
                 ->where('a.staff_member_id', $staff->getKey())
                 ->where('a.is_active', true)
                 ->where('o.is_active', true);
-    
+
             if (array_key_exists('before_id', $filters)) {
                 $query->where('a.id', '<', (int) $filters['before_id']);
             }
-    
+
             $rows = $query->orderByDesc('a.id')->limit($limit + 1)
                 ->lockForUpdate()
                 ->get(['a.id', 'o.id as organization_id', 'o.name as organization_name']);
@@ -64,7 +65,7 @@ final class StaffAdsAssignmentController extends Controller
                 'organization_id' => (int) $row->organization_id,
                 'organization_name' => $row->organization_name,
             ])->values()->all();
-    
+
             return $this->privateResponse([
                 'assignments' => $page,
                 'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
