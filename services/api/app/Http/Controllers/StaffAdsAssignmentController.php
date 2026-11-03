@@ -17,7 +17,7 @@ final class StaffAdsAssignmentController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        [$staff] = $this->session($request);
+        [$staff, $token] = $this->session($request);
 
         $filters = $request->validate([
             'limit' => ['sometimes', 'integer', 'between:1,50'],
@@ -27,30 +27,50 @@ final class StaffAdsAssignmentController extends Controller
             'include_inactive' => ['missing'],
             'is_active' => ['missing'],
         ]);
-        $limit = (int) ($filters['limit'] ?? 20);
-        $query = DB::table('staff_advertiser_assignments as a')
-            ->join('advertiser_organizations as o', 'o.id', '=', 'a.advertiser_organization_id')
-            ->where('a.staff_member_id', $staff->getKey())
-            ->where('a.is_active', true)
-            ->where('o.is_active', true);
 
-        if (array_key_exists('before_id', $filters)) {
-            $query->where('a.id', '<', (int) $filters['before_id']);
-        }
+        return DB::transaction(function () use ($staff, $token, $filters): JsonResponse {
+            // Lock the persisted identity and bearer in the same order as logout.
+            // Reauthorize after locks: middleware's earlier check is not enough
+            // if a concurrent role change or token revocation commits.
+            $actor = StaffMember::query()->whereKey($staff->getKey())
+                ->lockForUpdate()->first();
+            $currentToken = PersonalAccessToken::query()->whereKey($token->getKey())
+                ->lockForUpdate()->first();
 
-        $rows = $query->orderByDesc('a.id')->limit($limit + 1)
-            ->get(['a.id', 'o.id as organization_id', 'o.name as organization_name']);
-        $hasMore = $rows->count() > $limit;
-        $page = $rows->take($limit)->map(static fn (object $row): array => [
-            'id' => (int) $row->id,
-            'organization_id' => (int) $row->organization_id,
-            'organization_name' => $row->organization_name,
-        ])->values()->all();
+            if (! $actor || ! $currentToken
+                || $currentToken->expires_at === null || $currentToken->expires_at->isPast()
+                || $currentToken->tokenable_type !== $actor->getMorphClass()
+                || (string) $currentToken->tokenable_id !== (string) $actor->getKey()) {
+                abort(401, 'Unauthenticated.');
+            }
+            Gate::forUser($actor)->authorize('staff-ads-assignments-self', [$currentToken]);
 
-        return $this->privateResponse([
-            'assignments' => $page,
-            'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
-        ]);
+            $limit = (int) ($filters['limit'] ?? 20);
+            $query = DB::table('staff_advertiser_assignments as a')
+                ->join('advertiser_organizations as o', 'o.id', '=', 'a.advertiser_organization_id')
+                ->where('a.staff_member_id', $staff->getKey())
+                ->where('a.is_active', true)
+                ->where('o.is_active', true);
+
+            if (array_key_exists('before_id', $filters)) {
+                $query->where('a.id', '<', (int) $filters['before_id']);
+            }
+
+            $rows = $query->orderByDesc('a.id')->limit($limit + 1)
+                ->lockForUpdate()
+                ->get(['a.id', 'o.id as organization_id', 'o.name as organization_name']);
+            $hasMore = $rows->count() > $limit;
+            $page = $rows->take($limit)->map(static fn (object $row): array => [
+                'id' => (int) $row->id,
+                'organization_id' => (int) $row->organization_id,
+                'organization_name' => $row->organization_name,
+            ])->values()->all();
+
+            return $this->privateResponse([
+                'assignments' => $page,
+                'next_before_id' => $hasMore ? $page[count($page) - 1]['id'] : null,
+            ]);
+        }, 3);
     }
 
     public function relinquish(
@@ -132,7 +152,13 @@ final class StaffAdsAssignmentController extends Controller
         $raw = $request->bearerToken();
         $token = $raw ? PersonalAccessToken::findToken($raw) : null;
 
-        if (! $staff instanceof StaffMember || ! $token
+        // Logout may commit after middleware authenticates but before this
+        // controller reloads the bearer. Treat that as unauthenticated.
+        if (! $token) {
+            abort(401, 'Unauthenticated.');
+        }
+
+        if (! $staff instanceof StaffMember
             || $token->expires_at === null || $token->expires_at->isPast()
             || $token->tokenable_type !== $staff->getMorphClass()
             || (string) $token->tokenable_id !== (string) $staff->getKey()) {

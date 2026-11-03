@@ -1735,6 +1735,17 @@
           "type": "reference",
           "value": "https://github.com/binegocom/TopKolik.com/pull/102",
           "validation": "Persisted staff, bearer, advertiser organization, active assignment and scoped campaign rows are locked through response serialization. Feature tests prove lock order, empty-inbox assignment enforcement, SQL tenant scope, draft concealment and no-store headers. Verified implementation SHA 3e58f22615b5bb3ecadd886163a3c4ec6eda0ce6; full RBAC/BOLA matrix and production validation still outstanding."
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test && php scripts/check-ads-assignment-read-concurrency.php && composer audit --no-interaction && bash scripts/check-api-http.sh && bash scripts/check-reader-email-delivery.sh && bash scripts/test-editorial-guard.sh",
+          "result": "PR #103 implementation SHA 3044402b23cb6181af621c87a2cdedb18b4534aa passed Laravel API CI: 366 tests / 3,322 assertions on disposable PostgreSQL/Redis, five four-worker HTTP ads assignment inventory races (deactivation, role revocation, assignment withdrawal, organization deactivation, logout), existing concurrency suites, HTTP/SMTP, Composer audit and 17 editorial guard cases. Editorial/roadmap CI also passed. Final documentation commit requires fresh CI before merge.",
+          "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41555731098"
+        },
+        {
+          "type": "reference",
+          "value": "https://github.com/binegocom/TopKolik.com/pull/103",
+          "validation": "Self-only advertiser assignment inventory now serializes staff, bearer, active assignment and organization reads with revocation; feature test verifies PostgreSQL lock order, BOLA and post-revocation 401/403. P03-007 remains in_progress pending full role/resource matrix, independent security review and production verification."
         }
       ],
       "verified_at": null,
