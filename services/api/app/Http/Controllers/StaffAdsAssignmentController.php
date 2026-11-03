@@ -95,6 +95,23 @@ final class StaffAdsAssignmentController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $staff, $token, $organization, $audit): void {
+            // Serialize with logout and staff offboarding before touching the assignment.
+            $actor = StaffMember::query()->whereKey($staff->getKey())
+                ->lockForUpdate()->first();
+            $currentToken = PersonalAccessToken::query()->whereKey($token->getKey())
+                ->lockForUpdate()->first();
+
+            if (! $actor || ! $currentToken
+                || $currentToken->expires_at === null || $currentToken->expires_at->isPast()
+                || $currentToken->tokenable_type !== $actor->getMorphClass()
+                || (string) $currentToken->tokenable_id !== (string) $actor->getKey()) {
+                abort(401, 'Unauthenticated.');
+            }
+            if (! $currentToken->can('staff:step-up')) {
+                abort(403);
+            }
+            Gate::forUser($actor)->authorize('staff-ads-assignments-self', [$currentToken]);
+
             $assignment = DB::table('staff_advertiser_assignments as a')
                 ->join('advertiser_organizations as o', 'o.id', '=', 'a.advertiser_organization_id')
                 ->where('a.staff_member_id', $staff->getKey())
@@ -109,13 +126,13 @@ final class StaffAdsAssignmentController extends Controller
                 abort(404);
             }
 
-            Gate::forUser($staff)->authorize('staff-resource', [
+            Gate::forUser($actor)->authorize('staff-resource', [
                 'advertising.organization.review',
                 new StaffResourceContext(
                     $organization, 'advertiser_organization', 'active',
                     advertiserId: $organization,
                 ),
-                $token,
+                $currentToken,
             ]);
 
             $changed = DB::table('staff_advertiser_assignments')
