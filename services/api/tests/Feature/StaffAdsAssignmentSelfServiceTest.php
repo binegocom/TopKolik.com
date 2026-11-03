@@ -259,6 +259,46 @@ final class StaffAdsAssignmentSelfServiceTest extends TestCase
             ->assertJsonPath('events.0.subject_id', $org->id);
     }
 
+    public function test_relinquish_rejects_deactivated_staff_even_with_unexpired_step_up_token(): void
+    {
+        $staff = $this->staff();
+        $organization = $this->organization();
+        $assignmentId = $this->assign($staff, $organization);
+        $this->asStaff($staff, true);
+
+        $staff->forceFill(['is_active' => false])->save();
+        app('auth')->forgetGuards();
+
+        $this->postJson($this->relinquishUrl($organization))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('staff_advertiser_assignments', [
+            'id' => $assignmentId,
+            'is_active' => true,
+        ]);
+        $this->assertDatabaseCount('security_audit_events', 0);
+    }
+
+    public function test_relinquish_rejects_role_revocation_without_mutating_assignment(): void
+    {
+        $staff = $this->staff();
+        $organization = $this->organization();
+        $assignmentId = $this->assign($staff, $organization);
+        $this->asStaff($staff, true);
+
+        $staff->forceFill(['role' => 'support'])->save();
+        app('auth')->forgetGuards();
+
+        $this->postJson($this->relinquishUrl($organization))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('staff_advertiser_assignments', [
+            'id' => $assignmentId,
+            'is_active' => true,
+        ]);
+        $this->assertDatabaseCount('security_audit_events', 0);
+    }
+
     public function test_replayed_relinquish_is_not_found_and_does_not_duplicate_audit(): void
     {
         $staff = $this->staff();
