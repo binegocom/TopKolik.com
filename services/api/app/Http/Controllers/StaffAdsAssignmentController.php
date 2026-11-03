@@ -152,7 +152,13 @@ final class StaffAdsAssignmentController extends Controller
         $raw = $request->bearerToken();
         $token = $raw ? PersonalAccessToken::findToken($raw) : null;
 
-        if (! $staff instanceof StaffMember || ! $token
+        // Logout may commit after middleware authenticates but before this
+        // controller reloads the bearer. Treat that as unauthenticated.
+        if (! $token) {
+            abort(401, 'Unauthenticated.');
+        }
+
+        if (! $staff instanceof StaffMember
             || $token->expires_at === null || $token->expires_at->isPast()
             || $token->tokenable_type !== $staff->getMorphClass()
             || (string) $token->tokenable_id !== (string) $staff->getKey()) {
