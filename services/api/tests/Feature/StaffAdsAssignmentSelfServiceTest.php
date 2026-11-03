@@ -197,7 +197,7 @@ final class StaffAdsAssignmentSelfServiceTest extends TestCase
         $this->asStaff($staff, true);
 
         $statements = [];
-        DB::listen(static function (\\Illuminate\\Database\\Events\\QueryExecuted $query) use (&$statements): void {
+        DB::listen(static function (\Illuminate\Database\Events\QueryExecuted $query) use (&$statements): void {
             $sql = strtolower($query->sql);
             if (str_contains($sql, 'for update')) {
                 $statements[] = $sql;
