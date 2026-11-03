@@ -189,6 +189,44 @@ final class StaffAdsAssignmentSelfServiceTest extends TestCase
         }
     }
 
+    public function test_relinquish_locks_identity_and_bearer_before_assignment_mutation(): void
+    {
+        $staff = $this->staff();
+        $organization = $this->organization();
+        $this->assign($staff, $organization);
+        $this->asStaff($staff, true);
+
+        $statements = [];
+        DB::listen(static function (\\Illuminate\\Database\\Events\\QueryExecuted $query) use (&$statements): void {
+            $sql = strtolower($query->sql);
+            if (str_contains($sql, 'for update')) {
+                $statements[] = $sql;
+            }
+        });
+
+        $this->postJson($this->relinquishUrl($organization))->assertOk();
+
+        $find = static function (string $table) use (&$statements): int|false {
+            foreach ($statements as $index => $sql) {
+                if (str_contains($sql, $table)) {
+                    return $index;
+                }
+            }
+
+            return false;
+        };
+
+        $staffLock = $find('staff_members');
+        $tokenLock = $find('personal_access_tokens');
+        $assignmentLock = $find('staff_advertiser_assignments');
+        $this->assertNotFalse($staffLock);
+        $this->assertNotFalse($tokenLock);
+        $this->assertNotFalse($assignmentLock);
+        $this->assertLessThan($tokenLock, $staffLock);
+        $this->assertLessThan($assignmentLock, $tokenLock);
+        $this->assertDatabaseCount('security_audit_events', 1);
+    }
+
     public function test_self_relinquish_requires_step_up_and_records_atomic_metadata_audit(): void
     {
         $staff = $this->staff();
