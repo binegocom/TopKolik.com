@@ -431,7 +431,7 @@ final class StaffAdsAssignmentSelfServiceTest extends TestCase
 
         // A persisted bearer must remain bound to the authenticated staff identity.
         // Changing token ownership must never grant access to the previous owner's scope.
-        $token = \\Laravel\\Sanctum\\PersonalAccessToken::findToken($plainToken);
+        $token = \Laravel\Sanctum\PersonalAccessToken::findToken($plainToken);
         $this->assertNotNull($token);
         $token->forceFill(['tokenable_id' => $other->id])->save();
         app('auth')->forgetGuards();
