@@ -101,6 +101,26 @@ final class AppServiceProvider extends ServiceProvider
             return app(StaffAuthorizationPolicy::class)->canListOwnAdvertiserAssignments($principal, $token);
         });
 
+        RateLimiter::for('public-api', fn (Request $request) => Limit::perMinute(60)
+            ->by('public-api:'.($request->ip() ?? 'unknown')));
+
+        RateLimiter::for('search-api', fn (Request $request) => Limit::perMinute(30)
+            ->by('search-api:'.($request->ip() ?? 'unknown')));
+
+        RateLimiter::for('reader-api', function (Request $request): Limit {
+            $principal = $request->user();
+            $key = $principal ? 'user:'.$principal->getAuthIdentifier() : 'ip:'.($request->ip() ?? 'unknown');
+
+            return Limit::perMinute(180)->by('reader-api:'.$key);
+        });
+
+        RateLimiter::for('staff-api', function (Request $request): Limit {
+            $principal = $request->user();
+            $key = $principal ? 'staff:'.$principal->getAuthIdentifier() : 'ip:'.($request->ip() ?? 'unknown');
+
+            return Limit::perMinute(300)->by('staff-api:'.$key);
+        });
+
         RateLimiter::for('reader-register', fn (Request $request) => Limit::perMinute(5)
             ->by('register:'.($request->ip() ?? 'unknown')));
 

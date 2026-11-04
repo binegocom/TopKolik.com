@@ -31,6 +31,12 @@ use App\Http\Controllers\FixtureController;
 use App\Http\Controllers\CompetitionStandingsController;
 use App\Http\Controllers\VoiceTribuneController;
 use App\Http\Controllers\StaffArenaModerationController;
+use App\Http\Controllers\TeamDetailController;
+use App\Http\Controllers\AthleteDetailController;
+use App\Http\Controllers\CompetitionDetailController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\UserFollowController;
+use App\Http\Controllers\UserSavedItemController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/status', fn () => response()->json(['service' => 'topkolik-api', 'status' => 'operational']))
@@ -63,6 +69,18 @@ Route::prefix('competitions')->group(function (): void {
         ->whereNumber('competition')
         ->middleware('throttle:60,1');
 });
+
+// Public Team, Athlete and Competition detail endpoints (P05-004, P05-007, P05-008)
+Route::get('/teams/{identifier}', [TeamDetailController::class, 'show'])
+    ->middleware('throttle:public-api');
+Route::get('/athletes/{identifier}', [AthleteDetailController::class, 'show'])
+    ->middleware('throttle:public-api');
+Route::get('/competitions/{identifier}', [CompetitionDetailController::class, 'show'])
+    ->middleware('throttle:public-api');
+
+// Public entity search with Turkish typo tolerance (P05-005, P05-007, P05-008)
+Route::get('/search', [SearchController::class, 'search'])
+    ->middleware('throttle:search-api');
 
 Route::prefix('auth')->group(function (): void {
     Route::post('/register', [ReaderAuthController::class, 'register'])->middleware('throttle:reader-register');
@@ -119,9 +137,21 @@ Route::middleware(['auth:sanctum', 'reader.session'])->group(function (): void {
             ->middleware('throttle:30,1');
         Route::get('/rankings/clubs', [FanRankingController::class, 'clubs'])
             ->middleware('throttle:30,1');
+        Route::get('/me/follows', [UserFollowController::class, 'index'])
+            ->middleware('throttle:reader-api');
+        Route::get('/me/saved', [UserSavedItemController::class, 'index'])
+            ->middleware('throttle:reader-api');
     });
 
     Route::middleware('ability:reader:write')->group(function (): void {
+        Route::post('/me/follows', [UserFollowController::class, 'store'])
+            ->middleware('throttle:reader-api');
+        Route::delete('/me/follows/{type}/{id}', [UserFollowController::class, 'destroy'])
+            ->middleware('throttle:reader-api');
+        Route::post('/me/saved', [UserSavedItemController::class, 'store'])
+            ->middleware('throttle:reader-api');
+        Route::delete('/me/saved/{type}/{id}', [UserSavedItemController::class, 'destroy'])
+            ->middleware('throttle:reader-api');
         Route::post('/matches/{fixture}/arena/comments', [MatchArenaController::class, 'postComment'])
             ->whereNumber('fixture')->middleware('throttle:20,1');
         Route::put('/matches/{fixture}/arena/reaction', [MatchArenaController::class, 'react'])

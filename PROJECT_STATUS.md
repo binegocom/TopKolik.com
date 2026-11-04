@@ -2,7 +2,7 @@
 
 > Automated from ROADMAP.json. Does not certify release readiness.
 
-**Tasks:** 154 | **Done:** 32
+**Tasks:** 154 | **Done:** 37
 
 | Phase | Todo | In progress | Blocked | In review | Done |
 |---|---:|---:|---:|---:|---:|
@@ -11,7 +11,7 @@
 | P02 Repository and engineering foundation | 0 | 0 | 0 | 0 | 11 |
 | P03 Authentication, roles and privacy | 0 | 3 | 0 | 0 | 8 |
 | P04 Sports catalog and licensed ingestion | 10 | 0 | 0 | 0 | 0 |
-| P05 Match center, discovery and search API | 5 | 0 | 0 | 0 | 7 |
+| P05 Match center, discovery and search API | 0 | 0 | 0 | 0 | 12 |
 | P06 Autonomous editorial and fact validation | 12 | 0 | 0 | 0 | 0 |
 | P07 Automated media production | 8 | 0 | 0 | 0 | 0 |
 | P08 Consumer web (SEO-first) | 9 | 0 | 0 | 0 | 1 |
@@ -74,11 +74,11 @@
 - P05-001 — done — Implement fixtures and scores public endpoints
 - P05-002 — done — Implement match timeline and team stats API
 - P05-003 — done — Implement lineups, standings and rankings
-- P05-004 — todo — Implement team/athlete/league detail endpoints
-- P05-005 — todo — Implement entity search and typo tolerance
-- P05-006 — todo — Implement follow and saved-content services
-- P05-007 — todo — Implement caching and invalidation policy
-- P05-008 — todo — Implement API usage/rate controls
+- P05-004 — done — Implement team/athlete/league detail endpoints
+- P05-005 — done — Implement entity search and typo tolerance
+- P05-006 — done — Implement follow and saved-content services
+- P05-007 — done — Implement caching and invalidation policy
+- P05-008 — done — Implement API usage/rate controls
 - P05-009 — done — Implement match discussion arenas, segmented fan rooms and moderation controls
 - P05-010 — done — Implement match polls, fan reactions and live mood aggregation
 - P05-011 — done — Implement score prediction markets, lock windows and deterministic scoring engine
