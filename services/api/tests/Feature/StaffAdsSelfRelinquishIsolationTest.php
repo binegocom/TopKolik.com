@@ -73,6 +73,26 @@ final class StaffAdsSelfRelinquishIsolationTest extends TestCase
             ->assertJsonCount(1, 'assignments')
             ->assertJsonPath('assignments.0.id', $staff[1]['assignment']);
 
+        // A replay must not restore the assignment or produce a second audit event.
+        app('auth')->forgetGuards();
+        $this->withToken($staff[0]['token'])
+            ->postJson('/api/v1/staff/ads/assignments/'.$organization->id.'/relinquish')
+            ->assertNotFound();
+
+        app('auth')->forgetGuards();
+        $this->withToken($staff[0]['token'])
+            ->getJson('/api/v1/staff/ads/assignments')
+            ->assertOk()
+            ->assertJsonCount(0, 'assignments');
+
+        app('auth')->forgetGuards();
+        $this->withToken($staff[1]['token'])
+            ->getJson('/api/v1/staff/ads/assignments')
+            ->assertOk()
+            ->assertJsonPath('assignments.0.id', $staff[1]['assignment']);
+
+        $this->assertDatabaseCount('security_audit_events', 1);
+
         $this->assertDatabaseHas('security_audit_events', [
             'staff_member_id' => $staff[0]['id'],
             'action' => 'staff.advertiser_assignment.relinquished',
