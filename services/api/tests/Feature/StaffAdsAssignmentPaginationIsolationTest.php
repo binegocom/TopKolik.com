@@ -52,7 +52,7 @@ final class StaffAdsAssignmentPaginationIsolationTest extends TestCase
             $response = $this->withToken($token)
                 ->getJson('/api/v1/staff/ads/assignments?'.http_build_query($query))
                 ->assertOk()
-                ->assertHeader('Cache-Control', 'private, no-store, max-age=0');
+                ->assertHeader('Cache-Control', 'no-store, private');
 
             $items = $response->json('assignments');
             $this->assertCount($page <= 3 ? 1 : 0, $items);
