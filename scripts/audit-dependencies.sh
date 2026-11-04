@@ -18,9 +18,9 @@ npm audit --audit-level=high
 echo "--- Auditing services/api (Laravel 13 API) ---"
 cd "$ROOT/services/api"
 if command -v composer >/dev/null 2>&1; then
-  composer audit --no-interaction
+  composer audit --locked --no-interaction
 elif [[ -f /tmp/composer.phar ]]; then
-  php /tmp/composer.phar audit --no-interaction
+  php /tmp/composer.phar audit --locked --no-interaction
 else
   echo "Composer not found in PATH or /tmp; skipping local PHP audit."
 fi
