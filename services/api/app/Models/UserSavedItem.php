@@ -25,3 +25,4 @@ final class UserSavedItem extends Model
         return $this->belongsTo(User::class);
     }
 }
+

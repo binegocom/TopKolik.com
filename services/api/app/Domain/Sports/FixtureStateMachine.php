@@ -41,3 +41,4 @@ final class FixtureStateMachine
         $fixture->save();
     }
 }
+

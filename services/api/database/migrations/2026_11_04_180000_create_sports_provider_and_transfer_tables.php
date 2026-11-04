@@ -50,3 +50,4 @@ return new class extends Migration
         Schema::dropIfExists('provider_entity_mappings');
     }
 };
+

@@ -104,3 +104,4 @@ final class ClubAthleteVenueProviderMappingTest extends TestCase
         $this->assertEquals(10000000.00, (float) $transfers[0]['fee_amount']);
     }
 }
+

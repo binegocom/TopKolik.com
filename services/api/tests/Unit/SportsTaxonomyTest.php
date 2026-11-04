@@ -67,3 +67,4 @@ final class SportsTaxonomyTest extends TestCase
         $this->assertTrue($this->taxonomy->validatePeriodForSport('basketbol', 'Q1'));
     }
 }
+

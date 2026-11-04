@@ -52,3 +52,4 @@ final class Athlete extends Model
         return $this->hasMany(AthleteSeasonStatistic::class);
     }
 }
+

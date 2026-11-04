@@ -233,3 +233,4 @@ final class MatchTimelineAndStatsApiTest extends TestCase
         $this->getJson('/api/v1/matches/999999/stats')->assertStatus(404);
     }
 }
+

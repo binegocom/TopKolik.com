@@ -38,3 +38,4 @@ interface SportsDataProviderInterface
      */
     public function fetchTeamRoster(string $teamRef): array;
 }
+

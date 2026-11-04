@@ -64,3 +64,4 @@ final class NormalizedStatisticsDictionaryTest extends TestCase
         $this->assertArrayNotHasKey('unknown_junk', $clean);
     }
 }
+

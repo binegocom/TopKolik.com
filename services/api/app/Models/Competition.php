@@ -38,3 +38,4 @@ final class Competition extends Model
         return $this->hasMany(CompetitionStanding::class);
     }
 }
+

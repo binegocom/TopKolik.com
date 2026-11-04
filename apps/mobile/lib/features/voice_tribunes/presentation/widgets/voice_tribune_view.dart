@@ -460,3 +460,4 @@ class _VoiceTribuneViewState extends State<VoiceTribuneView>
     );
   }
 }
+

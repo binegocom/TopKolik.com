@@ -149,3 +149,4 @@ final class FixtureEventDomainModelTest extends TestCase
         $this->assertSame('home', $this->fixture->first_scoring_team);
     }
 }
+

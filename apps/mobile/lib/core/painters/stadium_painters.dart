@@ -359,3 +359,4 @@ class CelebrationParticlePainter extends CustomPainter {
     return oldDelegate.progress != progress;
   }
 }
+

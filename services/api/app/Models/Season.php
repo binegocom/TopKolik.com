@@ -39,3 +39,4 @@ final class Season extends Model
         return $this->hasMany(CompetitionStanding::class);
     }
 }
+
