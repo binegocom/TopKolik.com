@@ -623,7 +623,7 @@
       "id": "P02-007",
       "phase": "P02",
       "title": "Scaffold Next.js admin",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P01-GATE"
@@ -632,12 +632,24 @@
       "acceptance_criteria": [
         "Typecheck/build; unauthorized access denied."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "verification",
+          "command": "cd apps/admin && npm run build",
+          "result": "Next.js 15 App Router operations build succeeded (4/4 static routes prerendered, TypeScript typecheck clean, staff MFA step-up and emergency lockdown controls compiled)."
+        },
+        {
+          "type": "revision",
+          "value": "HEAD"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
-      "pr_url": null,
-      "limitations": []
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/125",
+      "limitations": [
+        "P01-GATE remains open. Operations console scaffolding does not authorize live staff actions against production infrastructure until full deployment phase."
+      ]
     },
     {
       "id": "P02-008",
