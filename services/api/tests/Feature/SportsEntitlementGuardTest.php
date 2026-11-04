@@ -112,3 +112,4 @@ class SportsEntitlementGuardTest extends TestCase
         $this->assertFalse($this->guard->isCapabilityEntitled('basketbol', 'var_events'));
     }
 }
+

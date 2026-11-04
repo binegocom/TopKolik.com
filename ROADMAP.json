@@ -3134,7 +3134,7 @@
       "id": "P06-004",
       "phase": "P06",
       "title": "Implement AI article drafting pipeline",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P05-GATE"
@@ -3143,8 +3143,22 @@
       "acceptance_criteria": [
         "Claims are structured and no unsupported values pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Domain/Editorial/Ai/AiArticleDraftingPipeline.php, services/api/tests/Feature/AutonomousEditorialDraftingAndPublishingTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/AutonomousEditorialDraftingAndPublishingTest.php",
+          "result": "6/6 passed (41 assertions), AI article drafting from evidence-bound fact pack and rejection of unsupported claims verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p06-ai-drafting-validation-and-publishing"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -3154,7 +3168,7 @@
       "id": "P06-005",
       "phase": "P06",
       "title": "Implement numerical/identity claim validation",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P05-GATE"
@@ -3163,8 +3177,22 @@
       "acceptance_criteria": [
         "Wrong numbers/names rejected in test suite."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Domain/Editorial/Validation/NumericalIdentityClaimValidator.php, services/api/tests/Feature/AutonomousEditorialDraftingAndPublishingTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/AutonomousEditorialDraftingAndPublishingTest.php",
+          "result": "6/6 passed (41 assertions), exact numerical scores, event minutes, and athlete identities validation with rejection of wrong assertions verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p06-ai-drafting-validation-and-publishing"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -3174,7 +3202,7 @@
       "id": "P06-006",
       "phase": "P06",
       "title": "Implement cross-source and high-risk review gate",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P05-GATE"
@@ -3183,8 +3211,22 @@
       "acceptance_criteria": [
         "No high-risk story auto-publishes."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Domain/Editorial/Validation/HighRiskEditorialReviewGate.php, services/api/tests/Feature/AutonomousEditorialDraftingAndPublishingTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/AutonomousEditorialDraftingAndPublishingTest.php",
+          "result": "6/6 passed (41 assertions), rumors, medical claims, scandal allegations, rights gaps and contradiction quarantine verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p06-ai-drafting-validation-and-publishing"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -3194,7 +3236,7 @@
       "id": "P06-007",
       "phase": "P06",
       "title": "Implement semantic and event duplicate suppression",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P05-GATE"
@@ -3203,8 +3245,22 @@
       "acceptance_criteria": [
         "Parallel ingest produces one canonical article."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Domain/Editorial/Validation/DuplicateStorySuppressor.php, services/api/tests/Feature/AutonomousEditorialDraftingAndPublishingTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/AutonomousEditorialDraftingAndPublishingTest.php",
+          "result": "6/6 passed (41 assertions), canonical event key calculation, parallel ingest duplicate suppression, and VAR correction superseding verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p06-ai-drafting-validation-and-publishing"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -3214,7 +3270,7 @@
       "id": "P06-008",
       "phase": "P06",
       "title": "Implement autonomous safe publishing state machine",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P05-GATE"
@@ -3223,8 +3279,22 @@
       "acceptance_criteria": [
         "No partial publish, retry-safe concurrency tests."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/database/migrations/2026_11_04_220000_create_editorial_publishing_and_outbox_tables.php, services/api/app/Domain/Editorial/Publishing/AutonomousPublishingStateMachine.php, services/api/tests/Feature/AutonomousEditorialDraftingAndPublishingTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/AutonomousEditorialDraftingAndPublishingTest.php",
+          "result": "6/6 passed (41 assertions), atomic transactional publishing, retry-safe idempotency, and transactional outbox queueing verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p06-ai-drafting-validation-and-publishing"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,

@@ -185,3 +185,4 @@ class SportsProvenanceConflictEngineTest extends TestCase
         $this->assertCount(0, $this->engine->getHeldRecords('fixture'));
     }
 }
+

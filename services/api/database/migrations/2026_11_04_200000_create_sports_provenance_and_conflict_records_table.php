@@ -39,3 +39,4 @@ SQL);
         Schema::dropIfExists('sports_provenance_records');
     }
 };
+

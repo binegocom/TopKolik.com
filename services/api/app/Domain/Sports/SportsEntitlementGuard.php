@@ -115,3 +115,4 @@ final class SportsEntitlementGuard
         Log::channel('single')->warning("[SPORTS_ENTITLEMENT_ALERT] {$alertType}: {$message}", $context);
     }
 }
+
