@@ -721,7 +721,7 @@
       "id": "P02-010",
       "phase": "P02",
       "title": "Configure CI and local/self-hosted runner options",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P01-GATE"
@@ -730,8 +730,22 @@
       "acceptance_criteria": [
         "Fresh PR runs required checks without secrets exposure."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "docs/engineering/CI_RUNNER_OPTIONS.md, .github/workflows/clients-ci.yml, scripts/audit-dependencies.sh"
+        },
+        {
+          "type": "verification",
+          "command": "bash scripts/audit-dependencies.sh && cd apps/web && npm run build && cd ../admin && npm run build && cd ../mobile && flutter test",
+          "result": "PASS"
+        },
+        {
+          "type": "revision",
+          "value": "feat/ci-runner-matrix-p02-010"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -741,7 +755,7 @@
       "id": "P02-011",
       "phase": "P02",
       "title": "Set ADR, release notes and dependency audit protocol",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P01-GATE"
@@ -750,8 +764,22 @@
       "acceptance_criteria": [
         "PR checklist and release policy validated."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "docs/engineering/ADR_AND_RELEASE_PROTOCOL.md, .github/pull_request_template.md, scripts/audit-dependencies.sh"
+        },
+        {
+          "type": "verification",
+          "command": "bash scripts/audit-dependencies.sh && python3 scripts/validate_blueprint.py && python3 scripts/status.py check",
+          "result": "PASS"
+        },
+        {
+          "type": "revision",
+          "value": "feat/ci-runner-matrix-p02-010"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,

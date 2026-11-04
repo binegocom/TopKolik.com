@@ -2,13 +2,13 @@
 
 > Automated from ROADMAP.json. Does not certify release readiness.
 
-**Tasks:** 154 | **Done:** 16
+**Tasks:** 154 | **Done:** 18
 
 | Phase | Todo | In progress | Blocked | In review | Done |
 |---|---:|---:|---:|---:|---:|
 | P00 Project blueprint and governance | 0 | 0 | 1 | 0 | 3 |
 | P01 Rights, provider discovery and legal foundations | 9 | 1 | 0 | 0 | 0 |
-| P02 Repository and engineering foundation | 5 | 1 | 0 | 0 | 5 |
+| P02 Repository and engineering foundation | 3 | 1 | 0 | 0 | 7 |
 | P03 Authentication, roles and privacy | 0 | 3 | 0 | 0 | 8 |
 | P04 Sports catalog and licensed ingestion | 10 | 0 | 0 | 0 | 0 |
 | P05 Match center, discovery and search API | 8 | 4 | 0 | 0 | 0 |
@@ -48,8 +48,8 @@
 - P02-007 — done — Scaffold Next.js admin
 - P02-008 — done — Scaffold Flutter iOS and Android
 - P02-009 — done — Define OpenAPI and typed client generation
-- P02-010 — todo — Configure CI and local/self-hosted runner options
-- P02-011 — todo — Set ADR, release notes and dependency audit protocol
+- P02-010 — done — Configure CI and local/self-hosted runner options
+- P02-011 — done — Set ADR, release notes and dependency audit protocol
 - P03-001 — done — Implement consumer registration and email verification
 - P03-002 — done — Implement consumer login, logout and sessions
 - P03-003 — done — Implement forgot/reset password
