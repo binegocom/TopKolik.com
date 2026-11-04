@@ -2,7 +2,7 @@
 
 > Automated from ROADMAP.json. Does not certify release readiness.
 
-**Tasks:** 154 | **Done:** 23
+**Tasks:** 154 | **Done:** 27
 
 | Phase | Todo | In progress | Blocked | In review | Done |
 |---|---:|---:|---:|---:|---:|
@@ -11,7 +11,7 @@
 | P02 Repository and engineering foundation | 0 | 0 | 0 | 0 | 11 |
 | P03 Authentication, roles and privacy | 0 | 3 | 0 | 0 | 8 |
 | P04 Sports catalog and licensed ingestion | 10 | 0 | 0 | 0 | 0 |
-| P05 Match center, discovery and search API | 7 | 4 | 0 | 0 | 1 |
+| P05 Match center, discovery and search API | 7 | 0 | 0 | 0 | 5 |
 | P06 Autonomous editorial and fact validation | 12 | 0 | 0 | 0 | 0 |
 | P07 Automated media production | 8 | 0 | 0 | 0 | 0 |
 | P08 Consumer web (SEO-first) | 10 | 0 | 0 | 0 | 0 |
@@ -79,10 +79,10 @@
 - P05-006 — todo — Implement follow and saved-content services
 - P05-007 — todo — Implement caching and invalidation policy
 - P05-008 — todo — Implement API usage/rate controls
-- P05-009 — in_progress — Implement match discussion arenas, segmented fan rooms and moderation controls
-- P05-010 — in_progress — Implement match polls, fan reactions and live mood aggregation
-- P05-011 — in_progress — Implement score prediction markets, lock windows and deterministic scoring engine
-- P05-012 — in_progress — Implement individual and club-based fan leaderboards and reputation badges
+- P05-009 — done — Implement match discussion arenas, segmented fan rooms and moderation controls
+- P05-010 — done — Implement match polls, fan reactions and live mood aggregation
+- P05-011 — done — Implement score prediction markets, lock windows and deterministic scoring engine
+- P05-012 — done — Implement individual and club-based fan leaderboards and reputation badges
 - P06-001 — todo — Implement deterministic story signal rules
 - P06-002 — todo — Implement evidence-bound fact packs
 - P06-003 — todo — Implement AI schema and prompt version registry

@@ -2630,7 +2630,7 @@
       "id": "P05-009",
       "phase": "P05",
       "title": "Implement match discussion arenas, segmented fan rooms and moderation controls",
-      "status": "in_progress",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P04-GATE"
@@ -2644,9 +2644,22 @@
           "type": "test",
           "path": "services/api/tests/Feature/SocialMatchArenasPredictionsAndRankingsTest.php",
           "validation": "PostgreSQL feature tests verify Home/Away club follow enforcement, Neutral open posting, slow-mode 429 cooldowns, automated spam/threat quarantine, mutual block filtering, abuse reporting and MFA staff emergency arena suspension with security audit logging."
+        },
+        {
+          "type": "reference",
+          "value": "services/api/tests/Feature/SocialMatchArenasPredictionsAndRankingsTest.php, apps/mobile/lib/features/arena/, apps/web/src/app/page.tsx, apps/admin/src/app/page.tsx, docs/api/openapi.yaml"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test --filter=SocialMatchArenasPredictionsAndRankingsTest && flutter test && cd apps/web && npm run build && cd ../admin && npm run build",
+          "result": "All section checks, slow mode, block isolation, quarantine and staff audit tests pass across backend and client apps"
+        },
+        {
+          "type": "revision",
+          "value": "feat/certify-social-match-arenas-predictions-p05-009-012"
         }
       ],
-      "verified_at": null,
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -2658,7 +2671,7 @@
       "id": "P05-010",
       "phase": "P05",
       "title": "Implement match polls, fan reactions and live mood aggregation",
-      "status": "in_progress",
+      "status": "done",
       "priority": "P1",
       "depends_on": [
         "P04-GATE"
@@ -2672,9 +2685,22 @@
           "type": "test",
           "path": "services/api/tests/Feature/SocialMatchArenasPredictionsAndRankingsTest.php",
           "validation": "PostgreSQL feature tests verify single-vote poll enforcement (HTTP 409 on duplicate vote) and idempotent per-user reaction upserts and totals."
+        },
+        {
+          "type": "reference",
+          "value": "services/api/tests/Feature/SocialMatchArenasPredictionsAndRankingsTest.php, apps/mobile/lib/features/arena/arena_poll_card.dart, apps/mobile/lib/features/arena/reaction_strip.dart, apps/web/src/app/page.tsx, docs/api/openapi.yaml"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test --filter=SocialMatchArenasPredictionsAndRankingsTest && flutter test",
+          "result": "Duplicate vote rejection (409) and reaction aggregation tests pass"
+        },
+        {
+          "type": "revision",
+          "value": "feat/certify-social-match-arenas-predictions-p05-009-012"
         }
       ],
-      "verified_at": null,
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -2686,7 +2712,7 @@
       "id": "P05-011",
       "phase": "P05",
       "title": "Implement score prediction markets, lock windows and deterministic scoring engine",
-      "status": "in_progress",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P04-GATE"
@@ -2700,9 +2726,22 @@
           "type": "test",
           "path": "services/api/tests/Feature/SocialMatchArenasPredictionsAndRankingsTest.php",
           "validation": "PostgreSQL feature tests verify rejection of wagering/stake fields, scoreline consistency checks, server-side kick-off lock (HTTP 409), 3/5/2/2 point settlement and official VAR revision recomputation."
+        },
+        {
+          "type": "reference",
+          "value": "services/api/tests/Feature/SocialMatchArenasPredictionsAndRankingsTest.php, apps/mobile/lib/features/predictions/, apps/web/src/app/predictions/page.tsx, docs/api/openapi.yaml"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test --filter=SocialMatchArenasPredictionsAndRankingsTest && flutter test test/prediction_widget_test.dart",
+          "result": "Kick-off lock boundary, zero-wagering validation, 3/5/2/2 settlement and VAR recomputation tests pass"
+        },
+        {
+          "type": "revision",
+          "value": "feat/certify-social-match-arenas-predictions-p05-009-012"
         }
       ],
-      "verified_at": null,
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -2714,7 +2753,7 @@
       "id": "P05-012",
       "phase": "P05",
       "title": "Implement individual and club-based fan leaderboards and reputation badges",
-      "status": "in_progress",
+      "status": "done",
       "priority": "P1",
       "depends_on": [
         "P04-GATE"
@@ -2728,9 +2767,22 @@
           "type": "test",
           "path": "services/api/tests/Feature/SocialMatchArenasPredictionsAndRankingsTest.php",
           "validation": "PostgreSQL feature tests verify deterministic individual ranking tie-breakers, badge assignment and minimum active supporter sample-size qualification for club leaderboards."
+        },
+        {
+          "type": "reference",
+          "value": "services/api/tests/Feature/SocialMatchArenasPredictionsAndRankingsTest.php, apps/mobile/lib/features/rankings/, apps/web/src/app/rankings/page.tsx, docs/api/openapi.yaml"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test --filter=SocialMatchArenasPredictionsAndRankingsTest && flutter test",
+          "result": "Tie-break determinism, achievement badges, and normalized club ranking sample size tests pass"
+        },
+        {
+          "type": "revision",
+          "value": "feat/certify-social-match-arenas-predictions-p05-009-012"
         }
       ],
-      "verified_at": null,
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
