@@ -2,7 +2,7 @@
 
 > Automated from ROADMAP.json. Does not certify release readiness.
 
-**Tasks:** 154 | **Done:** 47
+**Tasks:** 154 | **Done:** 50
 
 | Phase | Todo | In progress | Blocked | In review | Done |
 |---|---:|---:|---:|---:|---:|
@@ -12,7 +12,7 @@
 | P03 Authentication, roles and privacy | 0 | 3 | 0 | 0 | 8 |
 | P04 Sports catalog and licensed ingestion | 0 | 0 | 0 | 0 | 10 |
 | P05 Match center, discovery and search API | 0 | 0 | 0 | 0 | 12 |
-| P06 Autonomous editorial and fact validation | 12 | 0 | 0 | 0 | 0 |
+| P06 Autonomous editorial and fact validation | 9 | 0 | 0 | 0 | 3 |
 | P07 Automated media production | 8 | 0 | 0 | 0 | 0 |
 | P08 Consumer web (SEO-first) | 9 | 0 | 0 | 0 | 1 |
 | P09 Flutter mobile iOS and Android | 11 | 0 | 0 | 0 | 1 |
@@ -83,9 +83,9 @@
 - P05-010 — done — Implement match polls, fan reactions and live mood aggregation
 - P05-011 — done — Implement score prediction markets, lock windows and deterministic scoring engine
 - P05-012 — done — Implement individual and club-based fan leaderboards and reputation badges
-- P06-001 — todo — Implement deterministic story signal rules
-- P06-002 — todo — Implement evidence-bound fact packs
-- P06-003 — todo — Implement AI schema and prompt version registry
+- P06-001 — done — Implement deterministic story signal rules
+- P06-002 — done — Implement evidence-bound fact packs
+- P06-003 — done — Implement AI schema and prompt version registry
 - P06-004 — todo — Implement AI article drafting pipeline
 - P06-005 — todo — Implement numerical/identity claim validation
 - P06-006 — todo — Implement cross-source and high-risk review gate
