@@ -62,6 +62,8 @@ jobs:
         run: php -l scripts/check-ads-review-read-concurrency.php
       - name: Lint isolated ads assignment inventory concurrency harness
         run: php -l scripts/check-ads-assignment-read-concurrency.php
+      - name: Lint ads approval concurrency harness
+        run: php -l scripts/check-ads-assignment-concurrency.php
       - name: Prepare database, cache and isolated credentials
         run: |
           python3 scripts/dev-env.py init
