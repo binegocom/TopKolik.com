@@ -8,15 +8,7 @@ on:
       - 'PROJECT_STATUS.md'
       - 'scripts/configure-local-api-env.py'
       - 'scripts/test-editorial-guard.sh'
-      - 'scripts/check-support-reviewer-concurrency.php'
-      - 'scripts/check-support-read-deactivation-concurrency.php'
-      - 'scripts/check-audit-read-revocation-concurrency.php'
-      - 'scripts/check-editorial-logout-concurrency.php'
-      - 'scripts/check-finance-access-concurrency.php'
-      - 'scripts/check-finance-inventory-read-concurrency.php'
-      - 'scripts/check-ads-assignment-concurrency.php'
-      - 'scripts/check-ads-review-read-concurrency.php'
-      - 'scripts/check-ads-assignment-read-concurrency.php'
+      - 'scripts/check-*-concurrency.php'
       - '.github/workflows/laravel-api.yml'
   push:
     branches:
@@ -28,15 +20,7 @@ on:
       - 'PROJECT_STATUS.md'
       - 'scripts/configure-local-api-env.py'
       - 'scripts/test-editorial-guard.sh'
-      - 'scripts/check-support-reviewer-concurrency.php'
-      - 'scripts/check-support-read-deactivation-concurrency.php'
-      - 'scripts/check-audit-read-revocation-concurrency.php'
-      - 'scripts/check-editorial-logout-concurrency.php'
-      - 'scripts/check-finance-access-concurrency.php'
-      - 'scripts/check-finance-inventory-read-concurrency.php'
-      - 'scripts/check-ads-assignment-concurrency.php'
-      - 'scripts/check-ads-review-read-concurrency.php'
-      - 'scripts/check-ads-assignment-read-concurrency.php'
+      - 'scripts/check-*-concurrency.php'
       - '.github/workflows/laravel-api.yml'
 
 permissions:
@@ -59,16 +43,13 @@ jobs:
       - name: Lint all concurrency harnesses
         run: |
           set -euo pipefail
-          for script in \
-            scripts/check-support-reviewer-concurrency.php \
-            scripts/check-support-read-deactivation-concurrency.php \
-            scripts/check-audit-read-revocation-concurrency.php \
-            scripts/check-editorial-logout-concurrency.php \
-            scripts/check-finance-access-concurrency.php \
-            scripts/check-finance-inventory-read-concurrency.php \
-            scripts/check-ads-assignment-concurrency.php \
-            scripts/check-ads-review-read-concurrency.php \
-            scripts/check-ads-assignment-read-concurrency.php; do
+          shopt -s nullglob
+          scripts=(scripts/check-*-concurrency.php)
+          if (( ${#scripts[@]} < 9 )); then
+            echo "Expected at least nine concurrency harnesses" >&2
+            exit 1
+          fi
+          for script in "${scripts[@]}"; do
             php -l "$script"
           done
       - name: Prepare database, cache and isolated credentials
