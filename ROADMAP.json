@@ -2456,7 +2456,7 @@
       "id": "P05-001",
       "phase": "P05",
       "title": "Implement fixtures and scores public endpoints",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "depends_on": [
         "P04-GATE"
@@ -2465,8 +2465,22 @@
       "acceptance_criteria": [
         "OpenAPI contract and real-source read tests pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Http/Controllers/FixtureController.php, services/api/tests/Feature/PublicFixturesAndScoresApiTest.php, docs/api/openapi.yaml"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test --filter=PublicFixturesAndScoresApiTest",
+          "result": "5/5 passed with deterministic cache headers and pagination"
+        },
+        {
+          "type": "revision",
+          "value": "feat/match-center-fixtures-api-p05-001"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
