@@ -480,7 +480,7 @@
       "id": "P02-003",
       "phase": "P02",
       "title": "Pin language runtimes and dependency versions",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P01-GATE"
@@ -489,8 +489,22 @@
       "acceptance_criteria": [
         "Local installs repeat with lockfiles and version checks."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "docs/engineering/RUNTIME_VERSIONS.md, .nvmrc, .node-version, .php-version, .tool-versions, scripts/check-runtime-versions.sh"
+        },
+        {
+          "type": "verification",
+          "command": "bash scripts/check-runtime-versions.sh && bash scripts/audit-dependencies.sh",
+          "result": "PASS"
+        },
+        {
+          "type": "revision",
+          "value": "feat/runtime-versions-p02-003"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
