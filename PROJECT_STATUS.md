@@ -1,771 +1,181 @@
-# Topkolik — Project Status and Verification Log
-
-> **NOT A WORKING PUBLIC PRODUCT.** The Laravel 13 API, verified reader auth and reader preferences/favorites are implemented; consumer web/mobile/admin, live sports data, AI publishing and production deployment are not.
-
-**As of:** 2026-11-04  
-**Release:** Not started  
-**Tracked tasks:** 154 | **Documentation tasks done:** 3 | **Implementation done:** 9
-
-## Phase status
-
-| Gate | Phase | Tasks | Status |
-|---|---|---:|---|
-| `P00-GATE` | Project blueprint and governance | 4 | `in_progress` |
-| `P01-GATE` | Rights, provider discovery and legal foundations | 10 | `in_progress` |
-| `P02-GATE` | Repository and engineering foundation | 11 | `in_progress` |
-| `P03-GATE` | Authentication, roles and privacy | 11 | `in_progress` |
-| `P04-GATE` | Sports catalog and licensed ingestion | 10 | `todo` |
-| `P05-GATE` | Match center, discovery and search API | 12 | `in_progress` |
-| `P06-GATE` | Autonomous editorial and fact validation | 12 | `todo` |
-| `P07-GATE` | Automated media production | 8 | `todo` |
-| `P08-GATE` | Consumer web (SEO-first) | 10 | `todo` |
-| `P09-GATE` | Flutter mobile iOS and Android | 12 | `todo` |
-| `P10-GATE` | Newsroom admin and staff workflows | 12 | `todo` |
-| `P11-GATE` | Ads sales, serving and reporting | 9 | `todo` |
-| `P12-GATE` | Billing, accounting and finance | 8 | `todo` |
-| `P13-GATE` | Support, personalization and analytics | 7 | `todo` |
-| `P14-GATE` | Security, performance, accessibility and compliance | 10 | `todo` |
-| `P15-GATE` | Release and operation | 8 | `todo` |
-
-## Verified work (planning only)
-
-| Task | Evidence | Verification |
-|---|---|---|
-| `P00-001` | `docs/product/PRODUCT_REQUIREMENTS.md` | File existence + blueprint integrity validation; no application tests |
-| `P00-002` | `docs/architecture/ARCHITECTURE.md` | File existence + blueprint integrity validation; no application tests |
-| `P00-003` | `docs/qa/TEST_AND_RELEASE_PLAN.md` | File existence + blueprint integrity validation; no application tests |
-
-## Editorial safety slice — not yet integrated
-
-- PHP preliminary publication guard in `services/api/app/Domain/Editorial/`.
-- Local test: 5 PHP syntax checks and 17 unit scenarios passed on PHP 8.4.24 (2026-10-31).
-- Not connected to Laravel, live provider contracts, persistence or production publishing. Only the independent API framework foundation (P02-005) is complete; editorial publishing remains unimplemented.
-- `P01-003`: desk research documented; actual credentialed provider assessment still pending.
-
-## In-progress infrastructure verification
-
-- `P02-004` local Compose stack is in progress; 7/7 static tests and GitHub Actions PostgreSQL, Redis and Mailpit live smoke checks passed: https://github.com/binegocom/TopKolik.com/actions/runs/41244912287
-- LocalStack 2026 S3 test requires an auth token, so this task is **not done**. Laravel was scaffolded later in a separate API task.
-- GitHub development infrastructure PR: https://github.com/binegocom/TopKolik.com/pull/19
-
-## Verified Laravel API foundation
-
-- `P02-005` is **done**:  Laravel 13 skeleton, Composer lock, PostgreSQL/Redis connections, `/health` and `/ready`, request IDs, 5 feature tests (15 assertions), and 17 legacy guard scenarios confirmed: https://github.com/binegocom/TopKolik.com/actions/runs/41245895596 and https://github.com/binegocom/TopKolik.com/actions/runs/41246075824
-- Live HTTP smoke **passed** on the feature branch. PR #20: https://github.com/binegocom/TopKolik.com/pull/20. No sports data ingestion, staff authorization, stories or production deployment yet.
-- Initial scaffold was created safely on an isolated GitHub feature branch, preserving the existing editorial code.
-
-## Reader authentication — backend verified
-
-- `P03-001` registration and signed email verification: **done**. Real Mailpit SMTP delivery tested in Actions run 41247084594. Polished client confirmation screen and production email configuration remain pending.
-- `P03-002` verified mobile reader sign-in and token revocation: **done**, PR #21 / Actions run 41246890524 (15 Laravel tests, 52 assertions). Scoped, time-limited Sanctum bearer tokens, `/me`, `/logout`, expiry and wrong-scope denials verified.
-- Latest GitHub Actions run passed 15 Laravel tests (52 assertions) and 17 editorial checks: https://github.com/binegocom/TopKolik.com/actions/runs/41246890524
-- Production email provider setup, web cookie+CSRF auth, staff RBAC/MFA and reader UI are **not complete**.
-- P03-001 and P03-002 are backend-complete with recorded tests; P03-GATE is **not complete** (staff MFA/RBAC, browser session, privacy export/delete and security controls pending).
-
-## P03-003 password reset backend — verified
-
-- **done:** Laravel broker with hashed expiring single-use reset token, per-account/IP throttling, PostgreSQL row lock, global Sanctum and DB session revocation.
-- CI evidence: https://github.com/binegocom/TopKolik.com/actions/runs/41247766322 — 26 passing Laravel tests (99 assertions), 17 editorial guard tests, real Mailpit SMTP reset message, successful Composer audit.
-- UI confirmation form, production SMTP and device flows remain separate unresolved release requirements. A trusted reset URL must be configured; default is fail closed.
-
-## Reader profile/favorites — in progress
-
-- P03-004: reader profile, 4-language locale preference, privacy defaults and referential favorites implemented on a feature branch; PostgreSQL/CI acceptance **pending**.
-- Empty sports/teams base tables are only a structural prerequisite for favorites. No providers, real catalog contents or synthetic runtime data have been added.
-- Reader mobile bearer tokens add a `reader:write` ability for mutations. Old read-only tokens must reauthenticate.
-
-## Reader profile, locale and favorites — verified P03-004
-
-- **done:** owned reader profile updates, supported language preferences and en fallback, privacy-default flags, no reading history collection and FK-constrained sports/teams favorites.
-- Test evidence: https://github.com/binegocom/TopKolik.com/actions/runs/41248701254 — 39 Laravel tests (212 assertions), real PostgreSQL and Redis, HTTP and Mailpit SMTP checks; 17 publication guard tests.
-- The sports/teams tables are **empty placeholders for future licensed catalog ingestion**; no fabricated runtime fixtures, news personalization engine, client screens or production data.
-- CI-green does not imply P04 taxonomy/club ingestion is complete; both P04 tasks remain TODO. PR #23: https://github.com/binegocom/TopKolik.com/pull/23
-
-## P03-005 invite-only staff enrollment — tested
-
-- **done:** Separate `staff_members` and `staff_invitations` tables. Invitations originate from a privileged server command, not a public HTTP endpoint. Roles are restricted by PostgreSQL check constraints.
-- Acceptance requires one-time emailed secret, verifies email, hashes password and creates inactive pending-MFA staff identity. No admin login, grant or session endpoints exist.
-- Verified on GitHub Actions: 54 Laravel tests (305 assertions), SMTP send + HTTP accept/replay denial, 17 editorial policy tests and Composer audit: https://github.com/binegocom/TopKolik.com/actions/runs/41249604897
-- This does **not** authorize staff access: mandatory MFA, admin login and RBAC remain open. PR #24: https://github.com/binegocom/TopKolik.com/pull/24
-
-## P03-011 reader authentication abuse controls — verified
-
-- **done (backend security controls):** Independent per-IP (20/minute) and normalized-account (12/hour) reader login throttles prevent both multi-account password spraying and distributed per-account brute force. Reset redemption retains independent IP/account throttles, single-use tokens and all-device revocation.
-- GitHub Actions run [41250002242](https://github.com/binegocom/TopKolik.com/actions/runs/41250002242) on commit `ad9e14b703400734fe2985beaf22729ea6e39a25`: **58 Laravel tests / 369 assertions passed** on disposable PostgreSQL and Redis; live HTTP and real Mailpit SMTP checks, Composer audit and 17 editorial guard cases passed. PR [#25](https://github.com/binegocom/TopKolik.com/pull/25).
-- Automated adversarial regression tests are not an independent penetration test. Production trusted-proxy configuration, Redis rate-limit topology, WAF and monitoring remain release checks; no production deployment is implied.
-
-## P03-006 staff MFA — verified
-
-- RFC 6238 TOTP enrollment, encrypted staff secrets, short-lived setup grant, 10 single-use hashed recovery codes, separately scoped 15-minute staff sessions and 5-minute step-up are implemented on an isolated feature branch.
-- Staff login requires operator activation following email proof and successful MFA. Reader bearer tokens are explicitly denied by staff route middleware.
-- **done:** CI 67 Laravel tests / 486 assertions, Composer audit and real HTTP/SMTP smoke; editorial guard 17/17. https://github.com/binegocom/TopKolik.com/actions/runs/41250991386
-- TOTP replay and staff token revocation/deactivation were additionally hardened based on failed adversarial tests. The mandatory RBAC and admin UI are not implemented; no administrative privilege is exposed by MFA.
-
-## P03-007 staff authorization — foundation under review
-
-- Laravel Gate `staff-resource` default-deny role matrix implemented for owner-bound editorial drafts and assigned support tickets.
-- No publication, finance, advertising, superadmin or cross-advertiser access is granted by this foundational policy. Real resource API integration and BOLA tests remain required before P03-007 done.
-- **Validated policy foundation:** https://github.com/binegocom/TopKolik.com/actions/runs/41251472836 — 79 Laravel tests / 552 assertions, PostgreSQL/Redis, real Mailpit and editorial safety passed.
-- P03-007 remains **in_progress** until real resource models/controllers and authenticated end-to-end BOLA checks exist. No admin route grants are introduced.
-
-## Open blocking decisions
-
-- [x] Repository created: https://github.com/binegocom/TopKolik.com — baseline planning PR #1 merged; engineering code remains on an independent review PR.
-- [ ] Trademark/domain/app identifiers and publisher details.
-- [ ] Explicit Turkey-first UI locale decision (`tr` not silently added).
-- [ ] Commercial sports-data license and real provider coverage matrix.
-- [ ] Visual/photo licensing and AI provider contracts.
-- [ ] Legal privacy/transfer, ads/betting exclusions and tax/e-invoice approvals.
-- [ ] Hosting/monitoring and budget approvals.
-
-## Update rules
-
-1. Change one task in `ROADMAP.json` only after matching acceptance evidence is captured.
-2. Run `python3 scripts/validate_blueprint.py` and `python3 scripts/status.py check`.
-3. Refresh status with `python3 scripts/status.py render`; review the git diff.
-4. On implementation tasks, record PR/commit, tests and date in the task `evidence` list; a file path alone is not sufficient.
-5. Never write `done` for untested or blocked implementation work.
-
-## Change log
-
-- 2026-10-31 — Planning blueprint assembled; initial documentation tasks marked completed based on local artifact file integrity, **not** application implementation.
-## P03-007 persisted support-ticket authorization — PR #28
-
-- **in_progress:** Forward-only PostgreSQL `support_tickets` table, assignment FK/index, encrypted subject and message; no runtime ticket seeding or public create/mutation endpoint.
-- Assigned support staff can read only their own persisted ticket at `GET /api/v1/staff/support/tickets/{ticket}` after MFA session validation, SQL assignment scoping and a fresh persisted Laravel Gate role check. Other staff assignments return 404; reader and wrong-role tokens cannot read ticket data. Sensitive responses use `Cache-Control: no-store, private`.
-- Feature regression cases cover assignment BOLA, missing/expired/reader sessions, role changes, deactivation and encryption at rest. **Verified and merged:** PR [#28](https://github.com/binegocom/TopKolik.com/pull/28), merge `1baf6e95668f2da6bbf6127cf4f7a9df0e7a87ff`. [Laravel CI](https://github.com/binegocom/TopKolik.com/actions/runs/41251992725): 85 passing tests / 573 assertions on PostgreSQL and Redis, real HTTP and SMTP, Composer audit clean. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41251992728): PASS.
-- P03-007 is **not done**. Editorial draft controllers, ticket reply/escalation, advertiser/finance scoping, audit ledger, complete permission matrix and deployment verification remain open.
-
-## P03-007 support replies and MFA escalation — PR review
-
-- Added encrypted, idempotent staff replies and recorded step-up escalation; both operations use locked, assignment-scoped persisted tickets and fresh role policy.
-- Conversation history is available only to the assigned support operator. No consumer ticket creation, real outbound messaging, finance/ads permissions or external notification has been added.
-- CI verified: 95 tests / 641 assertions on PostgreSQL/Redis, real Mailpit SMTP, 17 editorial policy tests, Composer audit: https://github.com/binegocom/TopKolik.com/actions/runs/41253330607
-- Implementation remains **partial** and P03-007 stays `in_progress` until editorial models, full staff-resource authorization and advertiser/finance role scopes are built.
-
-## P03-007 persisted editorial draft workflow — PR review
-
-- Added editor-owned encrypted unpublished drafts; creates require active MFA editor; read/edit/submit require persisted owner SQL scope and fresh Laravel Gate permissions.
-- Optimistic revisions and row locks prevent stale concurrent updates; submit moves to `in_review` but cannot publish.
-- **Verified:** 106 Laravel tests / 724 assertions on PostgreSQL/Redis, real HTTP/SMTP and 17 editorial guard scenarios: https://github.com/binegocom/TopKolik.com/actions/runs/41253897269
-- This is a private-editorial backend slice only; external feed ingestion, publishing, finance/ads authorization, admin UI and full BOLA acceptance are still outstanding, so P03-007 stays `in_progress`.
-
-## P03-010 security audit ledger — tested partial implementation
-
-- Forward-only PostgreSQL staff audit ledger, server-generated request correlation and DML append-only triggers. Privileged state changes write audit records in the same transaction; ticket reply replay does not duplicate events.
-- Covers staff invitation acceptance, MFA enrollment, operator activation, login, step-up, logout, ticket reply and escalation. No credential, MFA factor, token, email or ticket body is logged.
-- **in_progress, not done:** GitHub Actions run [41254268444](https://github.com/binegocom/TopKolik.com/actions/runs/41254268444) passed 110 Laravel tests / 751 assertions, PostgreSQL/Redis, HTTP, SMTP, 17 editorial guard tests and Composer audit. Database owner/superuser can bypass triggers; offsite append-only shipping, production role separation, failed-login coverage, authorized search and retention policy are release prerequisites. No production readiness claim.
-
-## P03-008 advertiser tenant isolation — feature branch review
-
-- A separate advertiser-account Sanctum principal, active organization and explicit active membership are required per tenant. Role changes, deactivation and token revocation invalidate access without trusting client-supplied tenant IDs.
-- Private encrypted campaign drafts are scoped in SQL by organization for list/read/edit; owner/editor may write; viewer is read-only. Optimistic revision protects updates; publishing is unavailable.
-- New isolated PostgreSQL BOLA tests exercise cross-tenant URLs, role downgrade, token confusion (reader/staff), mass assignment, foreign keys, check constraints and membership revocation.
-- **done (backend tenant scoping only):** PR #33 initial feature-branch SHA `a676b7ed8a77efcdd050e37074d09db9fe45103d` verified in [Laravel CI](https://github.com/binegocom/TopKolik.com/actions/runs/41257177847): 121 tests / 828 assertions, PostgreSQL, Redis, SMTP, HTTP, Composer audit, 17 editorial guard tests. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41257177819) passed. No real advertiser onboarding, login, commercial approvals, payments, serving, queue/cache/object tenancy or production deployment is claimed.
-
-## P03-010 staff self-audit query — PR review
-
-- Introduced the read-only, self-scoped audit search API behind active staff identity, current persisted 5-minute MFA step-up token and explicit Gate. Query uses authenticated staff ID only, allowlisted filters, strict cursor pagination and `no-store` responses.
-- New PostgreSQL integration regression tests cover cross-staff isolation, reader/advertiser denial, revoked/expired sessions, role/MFA changes, bounded filters and ledger non-mutation.
-- **in_progress, partially verified:** [PR #34](https://github.com/binegocom/TopKolik.com/pull/34), feature SHA `5203da02f57ef4e0647e570d7dd2f1d2c856ae3a`. [Laravel API CI](https://github.com/binegocom/TopKolik.com/actions/runs/41257648308) passed 129 tests / 905 assertions using PostgreSQL and Redis, real HTTP/SMTP, 17 editorial guard cases, Composer audit. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41257648219) passed. Global incident security-role search, failed attempts, offsite immutable anchoring, production DB separation and retention remain unresolved; no release-ready claim.
-
-## P03-009 reader privacy export and deletion request — PR review
-
-- Owner-bound, password-reverified private JSON export of account, consent history, preferences and canonical favorites; no export file or shared cache is produced.
-- Existing reader preferences now record real opt-in/withdrawal transitions in an append-only PostgreSQL consent ledger, serializing changes with the user row.
-- A pending-only, idempotent deletion request and self-status endpoint are available. No deletion, session revocation, data cascade, production deletion or legal retention override is enabled.
-- **in_progress** despite verified backend slice: 138 Laravel tests / 1000 assertions passed on isolated PostgreSQL/Redis, real HTTP/SMTP, 17 editorial guards and Composer audit clean in [API CI run 41258326986](https://github.com/binegocom/TopKolik.com/actions/runs/41258326986); editorial/roadmap check also passed in [run 41258327042](https://github.com/binegocom/TopKolik.com/actions/runs/41258327042). Legal/finance retention approval and safely verified erasure lifecycle remain unimplemented. [PR #35](https://github.com/binegocom/TopKolik.com/pull/35). ADR-004 remains unchanged.
-
-## P00-004 owner decision gate — blocked
-
-- Marked `P00-004` **blocked** because product, rights, finance, locale and legal decisions in `docs/product/DECISION_REGISTER.md` require explicit owner/vendor approval.
-- Do not infer Turkish UI localization, provider rights, club imagery permissions, gambling ads, tax country or trademark clearance. Independent backend work may proceed while those decisions remain open.
-- `P03-009` privacy API slice was merged in [PR #35](https://github.com/binegocom/TopKolik.com/pull/35) with 138 Laravel tests / 1000 assertions and both GitHub checks green. Actual deletion and legal/finance retention remain pending, so it stays `in_progress`.
-
-## P03-010 failed staff authentication audit — PR review
-
-- Added `security_auth_failures` for rejected, well-formed staff login attempts (known/unknown identities) and authenticated MFA step-up failures. No fabricated staff identity, raw email, password, IP, MFA factor or bearer token is stored; identity correlation uses an APP_KEY HMAC.
-- Server-generated request UUID, explicit event allowlist, optional staff FK, indexes and database append-only DML triggers. Authentication errors retain generic 401 responses; login session issuance remains unchanged.
-- Added PostgreSQL integration tests for known/unknown user indistinguishability, factor replay, success/failure separation, immutable rows, no plaintext secrets and invalid event rejection.
-- **in_progress, partial backend verified:** [PR #37](https://github.com/binegocom/TopKolik.com/pull/37), feature commit `1d43da1208eae4b57471c35b669b0002f1ad0cb8`. [Laravel CI](https://github.com/binegocom/TopKolik.com/actions/runs/41259116353) passed 146 tests / 1,054 assertions with PostgreSQL/Redis, real HTTP/SMTP, Composer audit clean, and 17 editorial guard cases. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41259116332) passed. Rate-limit/validation/middleware denials, offsite archival, privileged DB separation, global analyst authorization, and approved retention remain unresolved; no production-ready claim.
-
-## P03-007 assigned advertising campaign review — feature branch
-
-- Introduced inactive-by-default `staff_advertiser_assignments` with real staff/organization foreign keys and uniqueness. Only active MFA-qualified staff with current `ads` role, active explicit assignment and active advertiser organization may list submitted campaign metadata.
-- Reading creative title/body requires a fresh five-minute MFA step-up token and SQL-scoped in-review campaign. Advertiser drafts and foreign-tenant IDs are inaccessible; no write, approve, publish, invoice or finance permission is exposed.
-- New PostgreSQL integration tests cover cross-organization IDOR/BOLA, draft filtering, revocation, role change, MFA, wrong token principal, cursor bounds and default-deny operations.
-- **in_progress, ads review backend slice verified:** [PR #38](https://github.com/binegocom/TopKolik.com/pull/38) final code SHA `1833d938129561e3faa9071bed7a0821c2821e33`. [Laravel CI](https://github.com/binegocom/TopKolik.com/actions/runs/41259764571) passed 156 tests and 1,133 assertions with isolated PostgreSQL/Redis, API HTTP/SMTP, Composer audit and 17 editorial guards; [editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41259764572) passed. Finance dual approval, secure assignment administration, publishing and full RBAC review remain unimplemented; no production release claim.
-
-## P03-007 advertiser submission to staff review — feature-branch verification
-
-- Added `POST /api/v1/advertiser/organizations/{organization}/campaigns/{campaign}/submit` for active advertiser owner/editor membership, current revision and strict organization-scoped SQL. One-way `draft → in_review` only, with row lock and conditional version update; attempts to change status/tenant/reviewer/body are rejected.
-- Added append-only `advertiser_campaign_review_events` ledger inside the same transaction as status/revision mutation, linked to actual advertiser account, campaign, organization and server request UUID. No personal credential or raw creative content is logged.
-- New PostgreSQL regression scenarios cover current owner/editor, viewer role change, cross-tenant BOLA, no record on failed submission, stale/replayed requests, token isolation, no publication and immutable audit.
-- **in_progress, backend slice verified:** [PR #39](https://github.com/binegocom/TopKolik.com/pull/39), code commit `88b3c56d435ab7d025d0219e1f46e2c22d8f6be6`. [Laravel API CI](https://github.com/binegocom/TopKolik.com/actions/runs/41260382081) passed **166 tests, 1,233 assertions** with isolated PostgreSQL/Redis, real HTTP/SMTP and no Composer security advisories; [Editorial/Roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41260382064) passed. Finance dual-control, advertiser review approval/publishing, data rights and production release remain unverified.
-
-## P03-007 MFA review changes request — PR review
-
-- Ads staff with current assignment, active org, current role and five-minute MFA step-up can request corrections on the precise in-review campaign; PostgreSQL revision CAS and locking prevent stale changes, cross-organization writes and duplicate feedback.
-- The review outcome changes only `in_review → draft`. The advertiser owner/editor can see encrypted feedback via an organization-scoped API, edit the existing creative and submit again; staff identity is not returned in advertiser payload.
-- New forward-only append-only PostgreSQL feedback ledger, tenant/actor FKs and revision constraints, no-store responses, route throttles and negative BOLA/concurrent-version/role tests.
-- **in_progress, tested backend slice:** [PR #40](https://github.com/binegocom/TopKolik.com/pull/40), code commit `a32d9ea68f8ef21932ce21e31ac315a50b16eca1`. [Laravel CI](https://github.com/binegocom/TopKolik.com/actions/runs/41261596280) passed **176 tests / 1,307 assertions** on isolated PostgreSQL/Redis; HTTP/SMTP and Composer security audit clean; [editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41261596232) passed. Approval, publication, delivery, finance dual control, onboarding and production release remain unimplemented.
-
-## P03-010 MFA self-service authentication failure search — PR #41
-
-- Added a read-only, rate-limited `GET /api/v1/staff/security/authentication-failures` endpoint with current persisted staff session and five-minute MFA step-up. SQL always scopes to the authenticated staff ID; actor/email/HMAC selectors are rejected, with only bounded action/UUID/keyset filters allowed.
-- Response exposes no staff ID, identity fingerprint, email, token or MFA factor. Unknown-principal login attempts remain append-only in PostgreSQL but are excluded from this self-service endpoint. Reader and advertiser tokens, revoked/inactive sessions and missing MFA are denied.
-- **in_progress, verified backend slice:** [PR #41](https://github.com/binegocom/TopKolik.com/pull/41), code/docs SHA `76600fccbe54ffd89fc3306804dd144d66f029ec`. [Laravel CI](https://github.com/binegocom/TopKolik.com/actions/runs/41262734530): **184 tests / 1,390 assertions** passed on isolated PostgreSQL/Redis; Composer audit, HTTP and real SMTP passed. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41262734534): 17 editorial guards and roadmap integrity passed.
-- `P03-010` remains **in_progress**: no global incident-analyst search, offsite immutable archival, production DB role separation, approved retention, or complete throttled/malformed/middleware denial capture. No production release or sports-provider access is claimed.
-
-## P03-007 advertising reviewer self-assignment control — CI review
-
-- Staff in current `ads` role can list only their own active assignments to active organizations, without actor-ID selectors. The server applies authenticated staff ID to all SQL queries and bounds keyset pagination.
-- An ads reviewer may relinquish only their own existing active assignment using a short-lived MFA step-up. A transactional row lock, fresh authorization and conditional update deactivate the assignment; an allowlisted staff security audit record commits in the same transaction. No self-grant, reactivation or staff role mutation is available.
-- New negative PostgreSQL integration tests cover cross-tenant/cross-staff IDOR, expired/revoked/wrong tokens, role/MFA changes, replay, metadata-only responses, and forbidden privilege elevation.
-- **in_progress, backend slice verified:** [PR #42](https://github.com/binegocom/TopKolik.com/pull/42), code commit `6d0ae933c0e92f2e039347ecad9889fac277c434`. [Laravel API CI](https://github.com/binegocom/TopKolik.com/actions/runs/41265945163) passed **194 tests, 1,505 assertions** with isolated PostgreSQL/Redis and real HTTP/SMTP, Composer audit clean; [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41265945250) passed. Secure assignment provisioning, finance dual approvals, ad publication, external audit anchoring and production release remain unimplemented.
-
-## P03-007 two-person authorization for advertising staff assignments — PR review
-
-- Created separate inactive-by-default staff security administrator grant and two-person assignment approval queue. Existing editor/support/ads/finance roles gain no implicit admin rights and no self-provisioning API exists.
-- Initiator and approver must be distinct, active verified MFA-enrolled non-ads staff with independently authorized grants and five-minute step-up tokens. Request is pending without access; a separate approver atomically activates only the scoped assignment, records terminal decision and appends an allowlisted audit. Rejection never activates access.
-- Added PostgreSQL constraints/one-way transition guard, 24-hour expiry, uniqueness per pending target/org, current requester authorization recheck and negative replay/role/tenant/token tests.
-- **in_progress, partial backend CI verified and merged:** [PR #43](https://github.com/binegocom/TopKolik.com/pull/43), merge `bc78ae5b20b1c55e0a6aa5ef1551e7b1dfc8e05f`. [Laravel CI 41266888211](https://github.com/binegocom/TopKolik.com/actions/runs/41266888211) passed 205 tests / 1,655 assertions on PostgreSQL/Redis, HTTP/SMTP, Composer audit and 17 editorial guards; [editorial/roadmap CI 41266888168](https://github.com/binegocom/TopKolik.com/actions/runs/41266888168) passed. Authorized production administrator bootstrap/revocation, finance dual control, campaign publication and production security gates remain unavailable.
-
-## P03-010 malformed staff authentication validation audit — PR #44
-
-- The existing staff login and MFA step-up validation contracts remain unchanged (422 for malformed input). A malformed login with a syntactically valid email is recorded as an HMAC-only unknown-principal failure; malformed authenticated step-up records the persisted staff identity. No raw email, password, bearer token or MFA factor is written.
-- New PostgreSQL feature tests cover malformed login/step-up inputs, token non-issuance, secret redaction, absent/array email and unauthenticated step-up denial.
-- **in_progress, backend slice CI-verified:** [PR #44](https://github.com/binegocom/TopKolik.com/pull/44) / [Laravel CI run 41267032971](https://github.com/binegocom/TopKolik.com/actions/runs/41267032971): 209 tests, 1,688 assertions with disposable PostgreSQL/Redis, live HTTP, SMTP, Composer audit clean and 17 editorial guard cases. [Editorial/roadmap CI 41267032961](https://github.com/binegocom/TopKolik.com/actions/runs/41267032961) passed. Missing/invalid-email attempts, middleware and rate-limit denials, offsite tamper-evident archival, approved retention and production DB role separation remain open. No production deployment or live sports-provider access is claimed.
-
-## P03-007 security administrator voluntary revocation — feature review
-
-- Added self-only MFA step-up authenticated `POST /api/v1/staff/security/admin-grant/relinquish`. A current verified security administrator may deactivate only their own independently provisioned grant; grant deactivation and an allowlisted append-only security audit record commit atomically under a PostgreSQL row lock.
-- Existing ad assignment approval requests and decisions now acquire and revalidate the current administrator grant under a row lock inside their transaction, preventing stale permissions from being reused after revocation.
-- Negative feature coverage for cross-principal types, stale role/MFA, expired/revoked tokens, pending requester/approver privilege loss, client mass-assignment overrides and replay.
-- **in_progress, verified backend slice:** [PR #46](https://github.com/binegocom/TopKolik.com/pull/46), feature commit `3d960e7c12ba626207c62492d0ffa506fd9f38a3`. [Laravel API CI](https://github.com/binegocom/TopKolik.com/actions/runs/41269986853) passed **218 tests / 1,757 assertions** on isolated PostgreSQL/Redis with live HTTP/SMTP and clean Composer audit; [editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41269986895) passed. Operator-controlled initial administrator grant provisioning and emergency revocation, finance dual-control, publication and production deployment remain missing.
-
-## P03-010 staff authentication throttling audit — PR #47 in review
-
-- Named Laravel staff login and MFA step-up rate-limit response callbacks record HMAC-pseudonymized authentication failures for rejected requests before the controller runs. Both IP and account/principal dimensions remain enforced; HTTP 429 and Retry-After behavior are preserved.
-- New PostgreSQL regression tests exercise per-account and per-IP exhaustion, invalid identifier handling, authenticated MFA step-up, reader principal isolation, token non-issuance and secret redaction.
-- **in_progress / code CI verified:** [PR #47](https://github.com/binegocom/TopKolik.com/pull/47), code commit `95a45c84f419acd687a12e3c66d7399f417776a4`. [Laravel CI 41270870736](https://github.com/binegocom/TopKolik.com/actions/runs/41270870736) passed **223 tests / 1,838 assertions** on PostgreSQL/Redis with live HTTP/SMTP, clean Composer audit and 17 editorial guard tests; [editorial/roadmap CI 41270870749](https://github.com/binegocom/TopKolik.com/actions/runs/41270870749) passed. Final documentation commit CI remains required. Do not mark P03-010 done until external append-only anchoring, privileged DB role separation, retention policy, authorized analyst access and middleware denial coverage are verified.
-- No licensed sports data, runtime fixtures, provider access or production deployment is claimed.
-
-## P03-010 cross-principal MFA throttle isolation — PR #48
-
-- Reader and staff accounts use separate tables and may share numeric IDs. The staff step-up principal rate limiter previously used an unqualified ID, allowing a reader bearer token to exhaust a staff member's six-per-hour MFA quota.
-- The limiter now namespaces verified staff principals and separates non-staff attempts. The existing IP quota, 429 audit callback, MFA session checks and response contracts are unchanged.
-- A new PostgreSQL feature regression exercises overlapping reader/staff IDs, reader denial without staff audit events, and staff MFA validation after clearing only the shared IP limiter.
-- **P03-010 remains in_progress; PR #48 code commit `8b956bf` passed 224 Laravel tests / 1,849 assertions on isolated PostgreSQL/Redis, real HTTP/SMTP and 17 editorial guard checks.** [Laravel CI 41274750485](https://github.com/binegocom/TopKolik.com/actions/runs/41274750485) and [Editorial CI 41274750571](https://github.com/binegocom/TopKolik.com/actions/runs/41274750571) passed; final documentation commit CI is still required. No production deployment, independent audit archival, privileged DB role separation or approved retention is claimed.
-
-## P03-010 middleware-denied staff MFA step-up audit — PR #49
-
-- [PR #49](https://github.com/binegocom/TopKolik.com/pull/49) adds HMAC-pseudonymized `staff.step_up.failed` records when the persisted bearer token matches a staff principal but `EnsureStaffSession` denies a step-up due to revoked staff activation, missing MFA/email verification or missing `staff:session` ability.
-- The existing 401/403 authorization behavior remains unchanged. Unknown, revoked, expired, reader and mismatched bearer tokens never become synthetic staff audit actors. Other staff-route denials do not create MFA events.
-- New PostgreSQL feature tests cover deactivation, missing MFA enrollment, missing ability, reader/staff ID collisions, revoked/invalid tokens, request-ID linkage, and no plaintext factor, email or bearer token in audit records.
-- **in_progress / code CI verified:** PR #49 code SHA `054e3367967242f74e030bfa111e30043ee087e6` passed **229 Laravel tests / 1,876 assertions** on isolated PostgreSQL/Redis, live HTTP/SMTP, Composer audit and 17 editorial guard tests in [Laravel CI 41278505352](https://github.com/binegocom/TopKolik.com/actions/runs/41278505352). [Editorial/roadmap CI 41278505354](https://github.com/binegocom/TopKolik.com/actions/runs/41278505354) passed. Final documentation commit CI is required before merge. P03-010 remains open pending independent immutable archival, privileged DB role separation, approved retention, global analyst authorization and production verification. No provider access or production deployment is claimed.
-
-## P03-007 assigned support ticket inbox — PR #50
-
-- A dedicated, default-deny support-only Gate authorizes `GET /api/v1/staff/support/tickets` only for an active, email-verified, MFA-enrolled `support` staff member with a valid expiring staff session. The current persisted role is rechecked; SQL scopes tickets to the authenticated assignment.
-- Optional status filter, 1–50 bounded keyset pagination and `next_before_id` expose only ticket ID, encrypted-at-rest subject (decrypted after authorization), state and timestamps. Ticket bodies, reply history, assignment actor IDs and cross-staff records are never included. Private no-store and no-cache headers apply.
-- **P03-007 remains in_progress**: this is an incremental read-only support workflow, not a complete RBAC matrix, support lifecycle, finance dual-control or production verification. No runtime sports data, external API rights, migrations or public ticket endpoints were added.
-- [PR #50](https://github.com/binegocom/TopKolik.com/pull/50) code/docs commit `5063f6b7b7999efcb32e71b9947b66b8e39c26a9`: [Laravel CI 41282163617](https://github.com/binegocom/TopKolik.com/actions/runs/41282163617) **236 tests / 1,944 assertions**, isolated PostgreSQL/Redis, real HTTP and SMTP, Composer audit clean; [editorial/roadmap CI 41282163549](https://github.com/binegocom/TopKolik.com/actions/runs/41282163549) passed 17 guard tests and integrity checks. Final documentation commit must also pass required checks before merge.
-
-
-## P03-007 assigned support resolution — feature branch review
-
-- Added a default-deny, assigned-only support resolution transition from `pending` to `resolved`, requiring current staff MFA step-up. Escalated tickets cannot be silently closed.
-- Forward-only columns preserve encrypted resolution note, resolver and timestamp. Resolution and an allowlisted security audit event commit atomically under a PostgreSQL row lock; no external notifications or user-visible sports data are introduced.
-- New PostgreSQL feature regression tests cover IDOR, wrong principal/role, stale MFA, revocation, state restrictions, encryption and audit linkage.
-- **in_progress, partial backend CI verified:** [PR #51](https://github.com/binegocom/TopKolik.com/pull/51) code/docs SHA `163f1963b72866ca028cea222ecdd9fb66ae15b6` passed **245 Laravel tests / 1,998 assertions** against isolated PostgreSQL/Redis, live HTTP/SMTP and Composer audit in [Laravel CI 41286204431](https://github.com/binegocom/TopKolik.com/actions/runs/41286204431); [editorial/roadmap CI 41286204469](https://github.com/binegocom/TopKolik.com/actions/runs/41286204469) passed. Final evidence commit CI must also pass before merge. Production release remains unverified.
-
-## P03-007 support resolution retry and audit rollback — PR #52
-
-- The assigned-only, current-MFA-step-up resolution transaction now retries PostgreSQL deadlocks up to three attempts. Every attempt re-locks the persisted ticket and rechecks the current role, assignment and state; the resolution and allowlisted audit INSERT remain atomic.
-- New disposable PostgreSQL feature tests verify that repeated resolution requests cannot overwrite the encrypted note or duplicate the audit event, and that an audit INSERT constraint failure rolls back the entire resolution without leaving a partially closed ticket. The expected database error is asserted directly rather than logged as an unexpected application 500.
-- **in_progress / backend slice CI verified:** [PR #52](https://github.com/binegocom/TopKolik.com/pull/52), code SHA `e9428d7bb99c852825fe22d683caedc7b1ec87ab`. [Laravel CI 41290499920](https://github.com/binegocom/TopKolik.com/actions/runs/41290499920) passed **247 tests / 2,012 assertions** with disposable PostgreSQL/Redis, live HTTP/SMTP, clean Composer audit and 17 editorial safety tests. [Editorial/roadmap CI 41290500019](https://github.com/binegocom/TopKolik.com/actions/runs/41290500019) passed. Final evidence commit CI is required before merge.
-- True concurrent-worker contention, escalation-review workflow, complete finance/staff BOLA matrix and production security validation are still open. No production release or licensed sports provider access is claimed.
-
-## P03-007 — support reply/escalation transaction atomicity (PR #53)
-
-- **Status:** in_progress; PR #53 merged at `866c35e5777db58c75038d4fa8e0bdc0fa66521c` after final-head CI, not a completed roadmap task.
-- Reply and escalation mutations now retry PostgreSQL deadlocks (up to three transaction attempts), re-locking the scoped ticket and re-evaluating staff authorization on each attempt.
-- New PostgreSQL feature cases exercise reply and escalation audit-insert failure rollback, duplicate escalation rejection and reply idempotency/audit deduplication.
-- **Verification:** Final PR head `42f2c0f0b817b1e4fe8e1e798f517c565a86c04c`: 251 Laravel tests / 2,036 assertions on PostgreSQL/Redis, real HTTP/SMTP, 17 editorial guard cases and roadmap checks passed. Laravel CI: https://github.com/binegocom/TopKolik.com/actions/runs/41294844246 ; Editorial CI: https://github.com/binegocom/TopKolik.com/actions/runs/41294844283 ; PR: https://github.com/binegocom/TopKolik.com/pull/53
-- **Still missing:** independent concurrent HTTP-worker load verification, a separately authorized escalation-review workflow, complete staff/finance RBAC and production release evidence. No migration, production data deletion, provider entitlement or locale change.
-
-## P03-007 independent support escalation review — PR #56
-
-- Escalated support tickets now select a distinct active MFA-enrolled support reviewer server-side; only that reviewer can read the escalated conversation and approve closure with a fresh MFA step-up. The original assignee cannot resolve until approval, and the reviewer cannot resolve as the assignee.
-- Approval records an encrypted note and an allowlisted audit event atomically under a PostgreSQL row lock. A forward-only migration adds reviewer/approval columns and separation-of-duty constraints. Existing and unassigned escalations stay held.
-- **in_progress / code CI verified:** [PR #56](https://github.com/binegocom/TopKolik.com/pull/56), code/docs SHA `da753b11d7093a6dd6cec0b5fcfd4031ee86bee8`. [Laravel CI 41299165695](https://github.com/binegocom/TopKolik.com/actions/runs/41299165695) passed **259 tests / 2,099 assertions** on disposable PostgreSQL/Redis, real HTTP/SMTP, Composer audit and 17 editorial guard scenarios; [Editorial/roadmap CI 41299165761](https://github.com/binegocom/TopKolik.com/actions/runs/41299165761) passed. Final evidence-commit CI must also pass before merge.
-- **Still missing:** legacy/unassigned reviewer reassignment, rejection and fair scheduling, true simultaneous HTTP-worker tests, complete finance RBAC, production verification and approved provider rights. No production data was deleted, no runtime sports data or new locale was added.
-
-## P03-007 — emergency administrator grant revocation, rebased after concurrent PR #56
-
-- MFA-stepped-up, independently authorized security administrators can revoke **another** staff member's currently active security-administrator grant. The actor and target grants are locked, a conditional one-way deactivation is performed, and an allowlisted audit record commits in the same PostgreSQL transaction.
-- No staff role changes, own-grant mutation via this route, reactivation, grant provisioning or finance permissions were added. A revoked administrator cannot approve previously requested advertising assignments.
-- [PR #55](https://github.com/binegocom/TopKolik.com/pull/55) code passed **259 tests / 2,103 assertions** on [Laravel CI 41298981975](https://github.com/binegocom/TopKolik.com/actions/runs/41298981975) and editorial CI 41298982027, but concurrent PR #56 changed `main` and prevented the original merge.
-- **in_progress:** This replacement PR applies the isolated changes to the updated `main`, including independent escalation review. Fresh CI required. Production operator designation, security grant bootstrap, finance, offsite immutable audit and live deployment remain unverified.
-
-## P03-007 emergency security-admin revocation — verified main CI
-
-- **Merged:** [PR #57](https://github.com/binegocom/TopKolik.com/pull/57), commit `00b66a4f4643bbd453adfd5865751b19529d141e`. Old [PR #55](https://github.com/binegocom/TopKolik.com/pull/55) was closed unmerged after concurrent PR #56 changed `main`; the new PR preserved PR #56's support escalation changes.
-- **Final main verification:** [Laravel API CI](https://github.com/binegocom/TopKolik.com/actions/runs/41299720644) passed **267 tests, 2,166 assertions**, isolated PostgreSQL/Redis, real HTTP/SMTP and Composer audit with no advisories. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41299720703) passed.
-- Emergency grant revocation is only for current independently authorized security administrators with fresh MFA step-up; the revoked administrator's usual role is preserved and no new grant provisioning route exists.
-- **P03-007 remains in_progress:** security-admin bootstrap and incident authorization policy, finance dual-control, full staff RBAC, database role separation, audit archival and production verification remain unavailable.
-
-## P03-007 — MFA-protected escalation reviewer relinquishment (PR #59)
-
-- The currently assigned, active support reviewer can relinquish an unreviewed pending escalation only with a fresh staff MFA step-up. A transaction locks the ticket and selects a different eligible support reviewer on the server, excluding the assignee, original escalator and relinquishing reviewer. Clients cannot choose the replacement or change ticket state.
-- If no replacement exists, the reviewer assignment becomes null while the escalation stays pending and cannot be resolved without independent review. The old reviewer loses access immediately. No historical approval is changed.
-- Reassignment and the allowlisted `support.ticket.escalation_reviewer_relinquished` audit record commit atomically. PostgreSQL tests cover RBAC/IDOR, reader isolation, missing step-up, replay, invalid mutation fields, no-replacement hold and audit failure rollback.
-- **Verified code head:** `dfeafe4abc44b9ef456a8fab1f0284e6aba27d71`, [PR #59](https://github.com/binegocom/TopKolik.com/pull/59). [Laravel CI 41303483319](https://github.com/binegocom/TopKolik.com/actions/runs/41303483319) passed **272 tests / 2,213 assertions** on disposable PostgreSQL/Redis with real HTTP/SMTP and clean Composer audit; [editorial/roadmap CI 41303483360](https://github.com/binegocom/TopKolik.com/actions/runs/41303483360) passed. Final documentation commit must pass fresh CI before merge.
-- **Still in_progress:** no recovery endpoint for legacy/unassigned escalations, no authorized operational reassignment or fair scheduling, no independent simultaneous HTTP-worker verification, no complete finance/staff RBAC matrix, no production deployment or approved licensed sports provider access. No locale or production data changes.
-
-## P03-007 — secure recovery of unassigned support escalation reviewer (PR review)
-
-- Added a privileged rescue path for an already-escalated, pending, not-yet-reviewed ticket with no reviewer. An independently authorized security administrator must use a fresh MFA step-up; existing support/finance/editor roles alone cannot invoke it.
-- A PostgreSQL transaction locks and rechecks the administrator's active grant, locks the held ticket, selects a different eligible active support reviewer server-side and appends a metadata-only security audit record atomically. Excludes the actor, ticket assignee and original escalator.
-- No candidate leaves ticket held (409). Existing assigned/reviewed or non-escalated cases return 404. No client-selected reviewer, ticket content disclosure, auto approval, resolution, additional migration or runtime sports data.
-- Added eight feature tests for full escalation→independent review→resolution, no eligible reviewer, staff/reader/advertiser scope, grant revocation, MFA expiry, replay/injection and PostgreSQL audit rollback. **PR #60 feature CI verified:** [Laravel API run 41307626284](https://github.com/binegocom/TopKolik.com/actions/runs/41307626284) passed **280 tests / 2,310 assertions** on disposable PostgreSQL/Redis with real HTTP/SMTP and clean Composer audit. [Editorial/roadmap run 41307626247](https://github.com/binegocom/TopKolik.com/actions/runs/41307626247) passed. Feature SHA `44314b89ee275a86bfce0dc9f7051f3faec0eb13`; final evidence commit CI and merge remain required. `P03-007` stays in_progress.
-
-## P03-007 — MFA-scoped escalation reviewer inbox (PR #61)
-
-- Added `GET /api/v1/staff/support/escalations` for active support reviewers with a current MFA step-up. SQL restricts the result to the authenticated reviewer, pending escalations and unreviewed records; no client-supplied assignment filter is accepted.
-- The list returns only ticket IDs and escalation timestamps, with 1–50 bounded keyset pagination, `Cache-Control: no-store, private` and no message, subject, staff identity or reply history. Reviewed and held/unassigned cases are excluded.
-- Five PostgreSQL feature tests cover assignment BOLA, principal/role isolation, MFA step-up, current persisted role changes, pagination, rejected query scope expansion, no audit mutation and reviewed/held exclusion.
-- **Code CI verified, task still in_progress:** [PR #61](https://github.com/binegocom/TopKolik.com/pull/61), code commit `21f93450c0e471b0c7d4eb75495d5981730f8f3d`. [Laravel API run 41308544607](https://github.com/binegocom/TopKolik.com/actions/runs/41308544607) passed **285 tests / 2,373 assertions**, isolated PostgreSQL/Redis, real HTTP/SMTP, Composer audit and 17 editorial guard tests. [Editorial/roadmap run 41308544664](https://github.com/binegocom/TopKolik.com/actions/runs/41308544664) passed. Final evidence commit CI and merge are required before calling this PR complete.
-- **Remaining:** complete finance/staff RBAC, independent concurrent HTTP-worker verification, fair reviewer scheduling, production operator and provider approvals. No runtime sports data, destructive migration or UI locale change.
-
-## P03-007 reviewer workload-aware dispatch — PR #62
-
-- **in_progress:** Initial escalation, reviewer relinquishment and held-case security recovery now share a PostgreSQL transaction-scoped advisory lock and a least-pending-workload reviewer selector. Independent-reviewer exclusions, active support eligibility, MFA/RBAC, ticket row locks and audit rollback remain enforced.
-- Verified on code/docs commit `c04b455bedd86ab7db3f15083a12fa14a2cdec15`: 289 Laravel tests / 2,385 assertions passed with disposable PostgreSQL/Redis; real HTTP/SMTP, Composer audit and 17 editorial guard cases passed. [Laravel CI](https://github.com/binegocom/TopKolik.com/actions/runs/41313629158) and [editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41313628984).
-- First CI attempt failed because an existing inbox test assumed all new tickets go to the lowest-ID reviewer. The test fixture was corrected to explicitly construct its assignment state; all tests then passed. This was a test expectation change, not a bypass of production authorization.
-- **Outstanding:** real simultaneous multi-worker HTTP contention tests, complete finance RBAC, production security/operator approvals and licensed sports provider dependencies. No task was marked done; no production release claimed.
-
-## P03-007 — real multi-worker support escalation HTTP contention (PR #63)
-
-- Added a CI-only fail-closed integration harness that runs four PHP HTTP workers and submits five simultaneous authenticated escalation requests to four distinct tickets. One ticket is requested twice. The test verifies four successful commits, one rejected duplicate, balanced independent reviewer assignments (2/2) and exactly one append-only audit event per committed ticket.
-- Fixture writes are restricted to GitHub Actions on Linux with explicit opt-in and the exact disposable loopback PostgreSQL database/user. No production data, schema reset, deletion, sports data, provider credentials or locale change is involved.
-- **Code CI verified, task remains in_progress:** [PR #63](https://github.com/binegocom/TopKolik.com/pull/63), SHA `2cae2d31a0cb3e1b925e8ef0bf7a45e59a2188d5`. [Laravel CI 41318056509](https://github.com/binegocom/TopKolik.com/actions/runs/41318056509): **289 tests / 2,385 assertions**, real concurrent HTTP harness passed, PostgreSQL/Redis, live HTTP/SMTP and clean Composer audit. [Editorial/roadmap CI 41318056465](https://github.com/binegocom/TopKolik.com/actions/runs/41318056465): 17 guard scenarios and roadmap validation passed. The final documentation commit requires fresh CI before merge.
-- **Remaining:** sustained contention/load and reviewer relinquishment/recovery races, full finance/staff RBAC, independent security assessment, approved operational policies and production deployment. This CI test is not a production concurrency guarantee.
-
-## P03-007 — finance staff entitlement two-person authorization (PR review)
-
-- Finance staff role by itself confers no access: an independently approved \`staff_finance_entitlements\` row must be active, and the bearer staff identity must still have finance role, email verification, MFA and an expiring step-up token.
-- Two separate independently authorized security administrators request and approve a 24-hour pending entitlement. The target, initiator and approver must be distinct, with PostgreSQL foreign keys and immutable transition guards, audit in the same transaction and no client-controlled privilege fields. Rejected requests grant nothing.
-- A finance employee may relinquish their own current access; a new two-person workflow is necessary to restore it. No financial amounts, billing, invoices, ledger, reconciliation or payment features added.
-- **Code CI verified, P03-007 remains in_progress:** [PR #64](https://github.com/binegocom/TopKolik.com/pull/64), SHA `c2945c523dd1235193de1af694fea41d58f88bc7`. [Laravel run 41321684897](https://github.com/binegocom/TopKolik.com/actions/runs/41321684897) passed **300 tests / 2,550 assertions** against isolated PostgreSQL/Redis, HTTP/SMTP smoke and clean Composer audit; [editorial/roadmap run 41321684865](https://github.com/binegocom/TopKolik.com/actions/runs/41321684865) passed. Final evidence commit CI and merge remain required. Security-admin onboarding and emergency finance privilege revocation, full resource-level finance RBAC, financial/legal rules, offsite audit anchoring and production verification are unavailable. P12 finance tasks remain todo.
-
-## P03-007 — concurrent reviewer relinquishment and recovery HTTP races (PR #65)
-
-- Extended the existing **four-worker** PHP/Laravel HTTP harness on a disposable GitHub Actions PostgreSQL/Redis database. Two simultaneous requests by the assigned reviewer race to relinquish one pending escalation: exactly one succeeds (200), one is rejected (404), and the ticket remains held with no reviewer. Two simultaneous security-administrator recovery requests then race on the held ticket: exactly one succeeds (200), one is rejected (404), and an eligible independent reviewer is assigned without approving or resolving the ticket.
-- The regression checks that the escalation, relinquishment and recovery each produce **one** actor-attributed, distinct request-ID audit event; rejected replays cannot append extra events. Test identities and the privileged grant exist only inside the guarded CI fixture. No production migration, destructive cleanup, provider access, sports runtime data or locale changes.
-- **Verified code SHA:** `7175b931680d05845bc736b229b6bcaf2de096fb`. [Laravel CI run 41323167960](https://github.com/binegocom/TopKolik.com/actions/runs/41323167960) passed `php artisan test` (**300 tests / 2,550 assertions**), `php scripts/check-support-reviewer-concurrency.php`, live HTTP/SMTP, Composer audit (no advisories) and 17 editorial guard scenarios. [Editorial/roadmap CI run 41323168036](https://github.com/binegocom/TopKolik.com/actions/runs/41323168036) passed. Final documentation-commit CI and PR merge are still required.
-- **Task remains in_progress:** sustained multi-worker stress, full staff/finance resource-level RBAC, independently approved security-admin provisioning, offsite audit controls and production deployment remain unverified.
-
-## P03-007 — MFA-protected emergency finance entitlement revocation (PR #66)
-
-- An independently provisioned security administrator with a current staff session and MFA step-up can revoke only another staff member's **existing active** finance entitlement at `POST /api/v1/staff/security/finance/staff/{staff}/revoke`. No self-revocation, grant creation, financial transaction or approval is permitted.
-- The administrator's grant is locked and revalidated inside a PostgreSQL transaction. Target staff and entitlement row locks follow the finance approval lock order, preventing a concurrent activation from bypassing a committed revocation. The target's ordinary staff session and account are not deleted. A stale entitlement can be revoked even after a role downgrade or deactivation.
-- Only metadata is written to the append-only `staff.finance_access.revoked` security audit record in the same transaction. Audit insertion failure rolls back the entitlement change. Replay, cross-principal access, MFA and role changes, forbidden client fields and missing entitlements are covered by six PostgreSQL feature tests.
-- **Verified code commit:** `bed8e31b3501f7c338456cec699e81fcc81b93c6`, [PR #66](https://github.com/binegocom/TopKolik.com/pull/66). [Laravel CI 41328512689](https://github.com/binegocom/TopKolik.com/actions/runs/41328512689) passed **306 tests / 2,598 assertions** on isolated PostgreSQL/Redis, multi-worker support contention, live HTTP/SMTP, Composer audit and 17 editorial guard cases. [Editorial/roadmap CI 41328512691](https://github.com/binegocom/TopKolik.com/actions/runs/41328512691) passed. The final evidence commit requires fresh CI before merge.
-- **Still in_progress:** full resource-level finance/staff RBAC, security-administrator bootstrap approval, sustained concurrent finance activation/revocation verification, external audit anchoring, provider rights and production deployment remain unverified. No destructive migration, runtime sports fixtures or locale change.
-
-## P03-007 — real finance activation/revocation HTTP race (PR #67)
-
-- Added a fail-closed CI-only four-worker PHP/Laravel HTTP harness. It uses
-  disposable loopback PostgreSQL/Redis and four distinct test identities:
-  finance target, security request initiator, independent approver and
-  independent emergency revoker. It does not reset or delete tables.
-- Two simultaneous approval requests compete on the same pending decision
-  while an emergency revocation competes with activation. Exactly one
-  approval commits. Revocation may be rejected before activation (404) or
-  commit after activation (200); persisted entitlement and append-only
-  audit must match the actual serial order. A rejected early revocation
-  requires a new explicit request. Replays must not add audit events.
-- **Code CI verified:** [PR #67](https://github.com/binegocom/TopKolik.com/pull/67),
-  code SHA `eac6f5aa2fe2c6d2197041bfad0b4f651ce70966`.
-  [Laravel CI run 41333684141](https://github.com/binegocom/TopKolik.com/actions/runs/41333684141)
-  passed **306 tests / 2,598 assertions**, support and finance real
-  four-worker HTTP races, PostgreSQL/Redis, live HTTP/SMTP, Composer audit
-  and 17 editorial guard tests. [Editorial/roadmap CI run 41333684071](https://github.com/binegocom/TopKolik.com/actions/runs/41333684071)
-  passed. Final evidence-commit CI and PR merge remain required.
-- **Still in_progress:** this is a race regression, not a sustained load
-  test or complete finance resource-level authorization. Approved live
-  security-administrator provisioning, offsite audit, commercial sports
-  data rights, legal finance rules and production deployment remain open.
-  No production migration, runtime sports fixtures or locale changes.
-
-## PR #67 merged — finance HTTP concurrency coverage
-
-- [PR #67](https://github.com/binegocom/TopKolik.com/pull/67) merged to
-  `main` as `df4affbdf8d003b49a687c680f78f515e60b5455`.
-- The **final PR head** `98e8816955981086c2c0cc378383437550f2a86e`
-  passed [Laravel CI 41333825271](https://github.com/binegocom/TopKolik.com/actions/runs/41333825271)
-  (306 tests / 2,598 assertions; four-worker finance and support races,
-  PostgreSQL/Redis, real HTTP/SMTP, Composer audit) and
-  [editorial/roadmap CI 41333825289](https://github.com/binegocom/TopKolik.com/actions/runs/41333825289).
-  [Merge editorial CI 41333962593](https://github.com/binegocom/TopKolik.com/actions/runs/41333962593)
-  also passed. The prior `push` path filter did not trigger Laravel CI
-  on this scripts-only merge; a follow-up workflow change aligns `push`
-  coverage with the `pull_request` paths.
-- `P03-007` remains `in_progress`; no new `done` task is claimed.
-  Real production authorization, operator provisioning, legal finance
-  policy and provider rights are still unverified.
-
-## P03-007 finance stale-session regression — PR #69
-
-- **in_progress**, not a completed phase or production release. Existing finance MFA bearer tokens are checked against fresh persisted role and entitlement state after role downgrade and emergency revocation; the real four-worker finance race harness also checks access before and after the committed revocation.
-- Code/test commit `c11492acb2e8c9bda5c04634f40dac2709b5bf60` — [PR #69](https://github.com/binegocom/TopKolik.com/pull/69).
-- [GitHub Actions Laravel run 41338786982](https://github.com/binegocom/TopKolik.com/actions/runs/41338786982): exit 0, 307 Laravel tests / 2,608 assertions, isolated PostgreSQL/Redis, real four-worker support and finance HTTP concurrency, HTTP/SMTP and Composer audit. [Editorial run 41338786815](https://github.com/binegocom/TopKolik.com/actions/runs/41338786815): exit 0, editorial/roadmap checks.
-- Final documentation-commit CI must still pass before merge. No role mutation API, finance payment permissions, production security-administrator bootstrap, sustained load, external audit anchoring or production deployment is authorized or verified.
-
-
-## P03-007 — emergency finance staff offboarding (PR #70)
-
-- An independently authorized security administrator with a current MFA step-up can **deactivate another active finance-role staff member**, not change the role or create any privilege. This one-way operation locks the acting administrator grant and target staff before finance entitlement, then atomically disables the staff account, finance entitlement, residual administrator/advertiser grants and all target Sanctum tokens. A metadata-only audit event is mandatory in the same transaction; an audit failure rolls back the entire operation.
-- Six new PostgreSQL feature tests cover independent admin authorization, wrong principal types, stale bearer invalidation, self-targeting, replay, pending approval denial and audit rollback. No production data, migration, sports-data provider or locale changes.
-- **Code commit:** `6adf654a18bca8c021c27f7d15469051d2938229`, [PR #70](https://github.com/binegocom/TopKolik.com/pull/70). [Laravel CI 41343543588](https://github.com/binegocom/TopKolik.com/actions/runs/41343543588) passed **313 tests / 2,674 assertions**, isolated PostgreSQL/Redis, existing four-worker support/finance races, real HTTP/SMTP, Composer audit and 17 editorial guard cases. [Editorial/roadmap CI 41343543529](https://github.com/binegocom/TopKolik.com/actions/runs/41343543529) passed. Final evidence-commit CI and merge require separate verification.
-- **P03-007 remains in_progress.** No general role mutation/re-activation API, real concurrent offboarding-vs-approval test, complete staff/finance resource RBAC, approved production security-admin provisioning, offsite audit anchoring, commercial sports data rights or production deployment is established.
-
-
-## P03-007 — finance approval versus emergency staff offboarding regression
-
-- The isolated CI harness now races two finance approvals against one independently
-  authorized emergency staff deactivation through four real HTTP workers.
-  Both valid serial orders are checked; no active staff account, entitlement,
-  residual grant or stale bearer may survive offboarding.
-- Checks persisted approval state, single deactivation audit, unique request IDs,
-  actor attribution, replay denial and stale bearer HTTP 401.
-- [PR #71](https://github.com/binegocom/TopKolik.com/pull/71)
-  code/docs commit `d22b3ad4e661a105c251094d3aef5ea956c51281` passed
-  [Laravel CI 41348900691](https://github.com/binegocom/TopKolik.com/actions/runs/41348900691)
-  (PostgreSQL/Redis, four-worker finance and support races, HTTP/SMTP,
-  Composer audit) and [editorial CI 41348900676](https://github.com/binegocom/TopKolik.com/actions/runs/41348900676).
-  Final evidence-commit CI must also pass before merge.
-- P03-007 stays `in_progress`; no `done` task, production privilege,
-  migration, provider access or release is claimed.
-
-- Final evidence-commit CI run [41349025206](https://github.com/binegocom/TopKolik.com/actions/runs/41349025206)
-  found an order-sensitive audit-count assertion: PostgreSQL returned the
-  correct per-action totals in a different row order. The test now sorts
-  action keys before strict comparison. This is a test assertion correction,
-  not a change to authorization behavior; replacement commit CI is required.
-
-## P03-007 — residual administrator grant/offboarding HTTP race (PR #72)
-
-- Added a third isolated four-worker HTTP contention scenario: independent security-admin grant revocation races with finance staff offboarding. The target has an active finance entitlement, historical administrator grant, advertiser assignment and MFA bearer token.
-- Both serial outcomes, complete access revocation, audit attribution, unique request IDs and rejected replays are checked.
-- Code/docs SHA 6805fe51: [Laravel CI 41353972644](https://github.com/binegocom/TopKolik.com/actions/runs/41353972644) passed 313 tests / 2,674 assertions, PostgreSQL/Redis, both four-worker HTTP races, real HTTP/SMTP and Composer audit. [Editorial CI 41353972632](https://github.com/binegocom/TopKolik.com/actions/runs/41353972632) passed. The final evidence-commit CI must also pass before merge. P03-007 remains in_progress; no new done task or production release is claimed.
-
-## P03-007 — advertiser assignment approval / requester grant revocation race (PR review)
-
-- Analysis identified a time-of-check/time-of-use window: the ads assignment
-  approval read the original requester's security grant with an unlocked
-  `exists()` query while independent security administrators could revoke
-  that grant. The transaction now locks the original requester and grant
-  before writing the assignment and audit.
-- Added a feature regression for an actual security-grant revocation before
-  approval and a guarded four-worker HTTP race for concurrent duplicate
-  approvals versus independent requester-grant revocation. The latter checks
-  both valid serial outcomes, the actual ads staff API, replay protection,
-  unique request IDs and audit actor attribution.
-- Code SHA `489d40945f3a4bca96c73d0228881a26ed081a85` passed
-  [Laravel CI 41359323946](https://github.com/binegocom/TopKolik.com/actions/runs/41359323946):
-  314 tests / 2,685 assertions, PostgreSQL/Redis, support and finance races,
-  new four-worker ads approval/revocation race, real HTTP/SMTP, Composer audit
-  and 17 editorial guard checks. [Editorial/roadmap CI 41359323964](https://github.com/binegocom/TopKolik.com/actions/runs/41359323964)
-  passed. The final documentation/evidence commit must also pass CI.
-- [PR #73](https://github.com/binegocom/TopKolik.com/pull/73) keeps
-  `P03-007` `in_progress`. No full RBAC completion, production deployment,
-  external license or new runtime sports data is claimed.
-- Test commands: `cd services/api && php artisan test` and
-  `TOPKOLIK_CONCURRENCY_TEST=1 php scripts/check-ads-assignment-concurrency.php`
-  (second command runs only inside the isolated GitHub Actions environment).
-
-## P03-007 — approver security grant revocation race (review pending)
-
-- Extended the existing guarded four-worker ads assignment HTTP harness with a second isolated race: an independent security administrator revokes the *acting approver's* grant while two approval requests are in flight.
-- Added a PostgreSQL feature regression confirming that already-revoked approver grants deny approve, reject and queue reads even with an unexpired MFA token.
-- Expected serialized outcomes, assignment visibility, audit uniqueness, replay denial and tenant isolation are asserted; GitHub Actions must pass on the final PR commit before acceptance. `P03-007` remains `in_progress`; no production release is claimed.
-
-- [PR #74](https://github.com/binegocom/TopKolik.com/pull/74) code SHA `f2c26e79eb574fbcc24e1a1ee199eb00c47119c4` passed [Laravel CI 41364309164](https://github.com/binegocom/TopKolik.com/actions/runs/41364309164): **315 tests / 2,698 assertions**, PostgreSQL/Redis, both four-worker ads races, HTTP/SMTP, Composer audit and 17 editorial guards. [Editorial/roadmap CI 41364309196](https://github.com/binegocom/TopKolik.com/actions/runs/41364309196) passed. Final evidence commit CI remains mandatory before merge; `P03-007` remains `in_progress`.
-
-## P03-007 — finance entitlement inventory and approval decision history (feature PR review)
-
-- Two **read-only**, separately authorized administrator API views expose current active finance entitlement metadata (including whether staff currently meets finance-role/verification/MFA enrollment eligibility) and terminal approved/rejected finance-access decision history.
-- Exact persisted staff-token type, currently active independent security-administrator grant and current MFA step-up are required; no reader, advertiser or ordinary finance role may access these APIs.
-- Responses reveal only numeric staff/approval IDs, timestamps and status, not staff names, emails, MFA factors, tokens, request UUIDs, financial statements, banking or payment amounts. Bounded descending keyset pagination and strict rejected actor selectors prevent scope expansion.
-- New PostgreSQL feature tests cover default denial, admin grant revocation, malformed filters, real two-person approvals/rejections, pending exclusion, role drift visibility, cursor, private/no-store and absence of DB writes.
-- **Feature CI verified:** [PR #75](https://github.com/binegocom/TopKolik.com/pull/75), source SHA `f68dd4fa27eccae358415e9a45fae97f2d08718f`; [Laravel CI 41368850129](https://github.com/binegocom/TopKolik.com/actions/runs/41368850129) passed **324 tests / 2,869 assertions** on isolated PostgreSQL/Redis with HTTP/SMTP checks and clean Composer audit; [editorial/roadmap CI 41368850133](https://github.com/binegocom/TopKolik.com/actions/runs/41368850133) passed. Final evidence commit needs fresh CI. `P03-007` remains in_progress, all `P12` finance tasks remain todo. No finance transaction or production rollout is enabled.
-
-## P03-007 — ads assignment request versus emergency staff offboarding (PR #76)
-
-- The ads assignment transaction now locks and revalidates the acting security administrator's persisted staff identity under its existing active-grant lock. Deactivated, unverified, MFA-unenrolled or ads-role principals fail closed before a request or approval can commit.
-- A new feature regression verifies that a finance-role administrator's revoked bearer token and even a newly issued token cannot create an ads assignment request after emergency deactivation.
-- A third isolated four-worker HTTP race covers request creation versus independent finance-role requester offboarding. Valid serialized outcomes are pending request before deactivation or denied request after deactivation; no target advertiser access is granted. The test checks old-token revocation, audit uniqueness, replay denial and second-person approval rejection of a now-ineligible requester.
-- [PR #76](https://github.com/binegocom/TopKolik.com/pull/76) code SHA `b3ec83f25934a66234c01990815749ea9316b546` passed [Laravel CI 41369624509](https://github.com/binegocom/TopKolik.com/actions/runs/41369624509): **325 tests / 2,879 assertions**, disposable PostgreSQL/Redis, real four-worker ads/support/finance races, HTTP/SMTP, Composer audit and 17 editorial guard cases. [Editorial/roadmap CI 41369624621](https://github.com/binegocom/TopKolik.com/actions/runs/41369624621) passed. The final evidence commit must pass fresh CI before merge.
-- `P03-007` remains `in_progress`. No production release, new security grant, sports provider license or full RBAC acceptance is claimed.
-
-## P03-007 — finance access request creation versus emergency offboarding (PR #77)
-
-- Two concurrent finance-access request creations now race independent emergency deactivation of the same eligible finance staff member across four real PHP HTTP workers, using disposable PostgreSQL and isolated CI staff principals.
-- The harness verifies all permitted serial outcomes (one pending request before offboarding or no request after offboarding), exactly-once actor-attributed audit events, no active finance entitlement, stale MFA bearer revocation, late independent approval denial and offboarding replay rejection.
-- The first CI attempt exposed test-actor rate-limit exhaustion (HTTP 429) on a late approval; the regression now uses independently granted, fresh MFA test administrators rather than bypassing application throttles.
-- [PR #77 code SHA `0c36a263`](https://github.com/binegocom/TopKolik.com/pull/77) passed [Laravel CI 41374636095](https://github.com/binegocom/TopKolik.com/actions/runs/41374636095): **325 tests / 2,879 assertions**, disposable PostgreSQL/Redis, real four-worker finance/ads/support races, HTTP/SMTP, Composer audit and 17 editorial guards. [Editorial/roadmap CI 41374636088](https://github.com/binegocom/TopKolik.com/actions/runs/41374636088) passed.
-- The final documentation-evidence commit requires fresh successful CI before merge. `P03-007` remains `in_progress`; `P00-004` remains blocked on owner/legal/provider decisions. No production release, live finance operations, provider rights or full RBAC acceptance is claimed.
-
-
-## P03-009 — reader self-service consent history (PR review)
-
-- Added authenticated, owner-only `GET /api/v1/me/privacy/consent-history`, reading the existing append-only PostgreSQL consent ledger with verified reader bearer tokens, bounded descending keyset pagination and optional allowlisted consent type. Unexpected query selectors are rejected, and staff/advertiser principals cannot read history. Responses contain only consent metadata and use private no-store headers.
-- A new six-case PostgreSQL feature suite covers real opt-in/withdrawal transitions, default opt-out, cross-reader isolation, pagination, invalid selectors, expired/revoked/unverified reader sessions and non-reader token rejection.
-- **in_progress / verified code CI:** [PR #78](https://github.com/binegocom/TopKolik.com/pull/78) code SHA `526a9d0ffab29957995b7d2c0ae3c47703e5cae1` passed [Laravel CI 41376334613](https://github.com/binegocom/TopKolik.com/actions/runs/41376334613): **331 tests / 2,972 assertions**, six new consent-history feature tests on PostgreSQL/Redis, real four-worker support/finance/ads races, HTTP/SMTP and clean Composer audit. [Editorial/roadmap CI 41376334692](https://github.com/binegocom/TopKolik.com/actions/runs/41376334692) passed 17 editorial guard scenarios and tracking integrity. Final evidence-commit CI must pass before merge. P03-009 stays in_progress until legal retention and erasure processing are approved and verified. No destructive migration, live sports provider, new locale or deployment.
-
-## P03-007 — expiring staff bearer sessions (PR #79)
-
-- Fixed an authorization gap: a legacy persisted staff bearer token with no
-  `expires_at` could previously pass the staff session middleware and
-  editor/support resource Gates. All staff HTTP sessions and both resource
-  authorization paths now require an explicit unexpired token timestamp.
-- Preserved existing cross-principal isolation: a reader bearer token on a
-  staff route remains HTTP 403, while a matched non-expiring staff bearer is
-  HTTP 401. Expired and revoked tokens continue to fail closed.
-- Added two PostgreSQL-backed regression tests for HTTP staff profile,
-  editorial draft index, MFA step-up, editor draft creation and support
-  resource authorization. No new role, permission, provider, migration or
-  runtime sports data was added.
-- The initial PR CI failed because the first middleware change returned
-  HTTP 401 instead of the established HTTP 403 for non-staff principals;
-  the root cause was fixed before re-running the full suite.
-- **Verified code commit `ee49d6034a4e0c9853cd1537336bc868b512106d`:**
-  [Laravel CI 41379579709](https://github.com/binegocom/TopKolik.com/actions/runs/41379579709)
-  passed **333 tests / 2,982 assertions** with disposable PostgreSQL/Redis,
-  real four-worker HTTP races, live HTTP/SMTP and Composer audit.
-  [Editorial/roadmap CI 41379579682](https://github.com/binegocom/TopKolik.com/actions/runs/41379579682)
-  passed. The final documentation-evidence commit must pass CI before merge.
-- `P03-007` remains **in_progress**; the full RBAC/BOLA matrix and production
-  release are not accepted.
-
-## P03-011 — reader bearer principal/expiry boundary (review pending)
-
-- Added `reader.session` middleware to existing reader auth-self, logout and all `/me` account routes. The persisted bearer must bind to a verified `User` principal, not merely possess a reader ability; a missing or expired `expires_at` denies access. Reader responses become private/no-store.
-- Five PostgreSQL feature regressions cover authenticated flows, overlapping reader/staff/advertiser ID denial, legacy non-expiring tokens, changed email-verification state, expired/revoked/wrong-scope tokens. Existing profile tests now issue expiring tokens to match the login contract.
-- **Verified code CI:** [PR #80](https://github.com/binegocom/TopKolik.com/pull/80), code SHA `98be6a7894910d0d52cfd832394a8a2b712de6b3`, passed [Laravel API CI 41380400999](https://github.com/binegocom/TopKolik.com/actions/runs/41380400999): **338 Laravel tests / 3,048 assertions** on disposable PostgreSQL/Redis, real four-worker ads/finance/support races, HTTP/SMTP and clean Composer audit. [Editorial/roadmap CI 41380401006](https://github.com/binegocom/TopKolik.com/actions/runs/41380401006) passed 17 editorial guard cases. The first CI attempt failed on a test-only assumption that identity-table numeric ID sequences match; the fixture now explicitly constructs the overlap and tests passed. Final evidence commit CI and merge remain required. P03-GATE remains incomplete; no migration, production token revocation job, provider access or release is claimed.
-
-## P03-007 — protected staff and advertiser response cache controls (PR #81)
-
-- Previously, private staff identity and authorization-denial responses did not consistently carry cache prevention headers; advertiser middleware also relied on controller-specific headers. Both authenticated session boundaries now apply `Cache-Control: no-store, private` and `Pragma: no-cache` to their successful and middleware-denied responses.
-- Four new PostgreSQL feature regressions verify active staff and advertiser responses, wrong-role or wrong-ability denial, immediate account deactivation and rejection of non-expiring legacy bearer sessions. Existing 401/403 semantics, staff MFA and advertiser tenancy remain unchanged.
-- **Verified code SHA `bcb5417668c25e0036c5e4004f8fd9558e857209`:** [Laravel CI 41385284550](https://github.com/binegocom/TopKolik.com/actions/runs/41385284550) passed **342 tests / 3,088 assertions** on disposable PostgreSQL/Redis, real four-worker HTTP races, HTTP/SMTP, Composer audit and 17 editorial publication guards. [Editorial/roadmap CI 41385284498](https://github.com/binegocom/TopKolik.com/actions/runs/41385284498) passed.
-- [PR #81](https://github.com/binegocom/TopKolik.com/pull/81) requires successful CI on its final evidence commit before merge. `P03-007` remains **in_progress**; full RBAC/BOLA acceptance, production proxy verification, licensed sports data and release are not claimed.
-
-## P03-007 — atomic editorial authorization for draft writes (PR #82)
-
-- Editorial draft creation, update and review submission now acquire a
-  PostgreSQL `FOR UPDATE` lock on the persisted editor identity inside the
-  same transaction as the write, before re-checking current staff policy.
-  Existing draft ownership, revision guards, encryption and no-publish
-  restrictions remain unchanged. Lock order is staff identity then draft.
-- Two new PostgreSQL-backed feature regressions verify all three staff-row
-  write locks and denial of a submitted draft after the editor's role is
-  revoked. No migration, external data, new permission or client locale.
-- **Verified code SHA `39b67e4d9e21e1c3e33b6e244ae57929aefaa98a`:**
-  [Laravel CI 41390909115](https://github.com/binegocom/TopKolik.com/actions/runs/41390909115)
-  passed **344 tests / 3,098 assertions** with disposable PostgreSQL/Redis,
-  four-worker HTTP races, real HTTP/SMTP, Composer audit and 17 editorial
-  guard cases. [Editorial/roadmap CI 41390909138](https://github.com/binegocom/TopKolik.com/actions/runs/41390909138)
-  passed. Final documentation commit requires its own successful CI before
-  merge.
-- `P03-007` stays **in_progress**: full RBAC/BOLA coverage, external
-  concurrency review, licensed sports integrations and production release
-  remain unverified.
-
-## P03-007 — support ticket actor-row authorization locks (PR #83)
-
-- Reply, escalation and resolution now lock the persisted acting support staff row
-  before the SQL-assigned ticket row, and re-authorize the locked actor inside
-  the write transaction. This serializes ticket mutations against compliant
-  role-revocation/deactivation writers that lock the same staff row.
-- Two PostgreSQL feature regressions verify staff-before-ticket lock order
-  for all three writes, committed audit events and rejection of all three
-  mutations after a role downgrade with an otherwise valid MFA bearer.
-- **Verified code SHA `2596ecabf89576a165ab20825fb3d99c3811531d`:**
-  [Laravel CI 41396330449](https://github.com/binegocom/TopKolik.com/actions/runs/41396330449)
-  passed **346 tests / 3,116 assertions**, disposable PostgreSQL/Redis,
-  four-worker support/finance/ads HTTP races, real HTTP/SMTP, Composer audit
-  and 17 editorial guard scenarios.
-  [Editorial/roadmap CI 41396330875](https://github.com/binegocom/TopKolik.com/actions/runs/41396330875)
-  passed. The final evidence-documentation commit must pass both workflows
-  before merge.
-- [PR #83](https://github.com/binegocom/TopKolik.com/pull/83).
-  `P03-007` remains **in_progress**. No independent role-revocation
-  versus support-write worker race, full RBAC/BOLA acceptance, licensed
-  sports data or production release has been verified.
-
-## P03-007 — support ticket mutation / staff logout serialization (PR #84)
-
-- A support reply, escalation or resolution can no longer authorize against
-  a bearer token loaded before a concurrent logout. Each write locks the
-  persisted actor, then the presented token, then the assigned ticket, and
-  evaluates the current token and resource policy inside the transaction.
-- Staff logout uses the same actor-before-token PostgreSQL lock order and
-  commits token deletion and its security audit atomically. This prevents
-  token/staff lock inversion during simultaneous support writes.
-- A PostgreSQL feature regression checks the lock sequence for all three
-  support mutations and that logging out one bearer does not revoke another
-  active bearer. The CI-only four-worker HTTP harness races logout with
-  reply, escalation and resolution, validating either legal serial order,
-  immutable audit attribution and rejection of the revoked bearer.
-- [PR #84](https://github.com/binegocom/TopKolik.com/pull/84) code SHA
-  `d62c64d134d31e8bf6b7d01a44227641e1d632c8` passed
-  [Laravel CI 41402257757](https://github.com/binegocom/TopKolik.com/actions/runs/41402257757):
-  **347 tests / 3,122 assertions** on disposable PostgreSQL/Redis; all
-  four-worker support logout/write, reviewer, finance and ads races passed,
-  with real HTTP/SMTP, Composer audit and 17 editorial guard cases.
-  [Editorial/roadmap CI 41402257805](https://github.com/binegocom/TopKolik.com/actions/runs/41402257805)
-  also passed. This documentation/evidence update requires fresh CI on
-  the final PR commit before merge.
-- `P03-007` remains **in_progress**; independent staff-role revocation
-  versus ticket-write HTTP races, the complete RBAC/BOLA matrix and
-  production release are not verified. No new provider access, locale,
-  migration or runtime sports content is introduced.
-
-## P03-007 support role revocation / real HTTP worker race — PR #85
-
-- **Verified partial RBAC security slice (2026-11-02):** The existing four-worker HTTP concurrency harness now holds a PostgreSQL staff row lock, verifies an actual blocked HTTP worker through `pg_stat_activity`, commits a support-to-editor role revocation, then requires HTTP 403 for ticket reply, escalation and resolution. The old MFA bearer remains unusable for support mutations; ticket status, replies and audit records are unchanged.
-- **Evidence on implementation commit `4f84c73b53d2f0b39bbc382d57e31a8648b58156`:** [Laravel API checks](https://github.com/binegocom/TopKolik.com/actions/runs/41410906277) passed: 347 tests / 3,122 assertions, disposable PostgreSQL/Redis, real HTTP/SMTP, support/finance/ads concurrency, Composer audit and editorial guard. [Editorial/roadmap checks](https://github.com/binegocom/TopKolik.com/actions/runs/41410906336) passed.
-- **PR:** https://github.com/binegocom/TopKolik.com/pull/85. Documentation follow-up commits require their own final-head CI before merge. `P03-007` stays `in_progress`; full resource RBAC/BOLA matrix and production authorization verification remain open. No production data or provider-dependent functionality was changed.
-
-## P03-007 — support reviewer role and bearer revocation serialization (PR #86)
-
-- Support escalation approval and reviewer relinquishment now lock the persisted acting reviewer, then the current Sanctum bearer, then the assigned ticket before re-authorizing the mutation. This preserves the established staff/token/ticket lock order and prevents writes based on stale middleware authentication after concurrent role changes or logout.
-- Three new PostgreSQL feature tests cover both write lock sequences, revoked-role denial, revoked-bearer denial, unchanged ticket state and audit atomicity. The isolated four-worker HTTP harness now verifies that approval and relinquishment actually wait for a held staff row lock, then return HTTP 403 after a committed role revocation, with no ticket or audit mutation.
-- **Verified code SHA `71f5f258d39076f556d4c2dc64569712bf238575`:** [Laravel API CI 41421623113](https://github.com/binegocom/TopKolik.com/actions/runs/41421623113) passed **350 tests / 3,146 assertions**, real PostgreSQL/Redis, four-worker support/finance/ads races, live HTTP/SMTP, Composer audit and 17 editorial guard scenarios. [Editorial/roadmap CI 41421623142](https://github.com/binegocom/TopKolik.com/actions/runs/41421623142) passed.
-- Initial concurrency CI failed with HTTP 404 because the isolated fixture attempted mass assignment of protected escalation fields. The fixture was corrected to use explicit server-side `forceFill` and re-tested successfully; no production model fillable policy was weakened.
-- The final documentation/evidence commit requires fresh CI before merge. `P03-007` remains **in_progress**; full resource RBAC/BOLA coverage, independent production security verification, licensed sports data and production release are not complete.
-
-## P03-007 — escalation recovery versus administrator revocation (PR #87)
-
-- Recovery now locks the persisted administrator identity, presented Sanctum bearer, independent security grant and held ticket in that order before assigning an eligible reviewer. It re-authorizes after the locks, preventing an already-authenticated HTTP worker from completing recovery after a committed staff-role downgrade, logout or security-grant revocation.
-- Two new PostgreSQL feature regressions verify lock order and rejection of revoked bearer/role sessions. The isolated four-worker HTTP harness proves that recovery actually waits on a locked administrator row or independent grant row, then returns HTTP 403 after revocation without assigning a reviewer or appending a ticket audit event.
-- **Verified code SHA `6f93971c0b78e7a447dd718dbe8f71de3294a5d4`:** [Laravel API CI 41424516334](https://github.com/binegocom/TopKolik.com/actions/runs/41424516334) passed **352 tests / 3,162 assertions**, disposable PostgreSQL/Redis, support/finance/ads concurrency, real HTTP/SMTP, Composer audit and 17 editorial guard scenarios. [Editorial/roadmap CI 41424516326](https://github.com/binegocom/TopKolik.com/actions/runs/41424516326) passed. Initial CI exposed a test-only assumption that reviewer selection acquired no further staff locks; assertion was corrected to verify the first four authorization locks, and the full suite passed.
-- The final documentation/evidence commit must pass its own CI before merge. `P03-007` remains **in_progress** until the complete RBAC/BOLA matrix is accepted. `P00-004` remains blocked on owner/legal/provider decisions. No new grant, migration, sports data, locale or production release.
-
-## P03-007 — support recovery versus logout and bearer revocation (PR #88)
-
-- A real four-worker HTTP regression races an independent security administrator's `POST /staff/auth/logout` against held-escalation reviewer recovery using the same short-lived MFA bearer. Either valid serial order is accepted: recovery may commit before logout, or the revoked session must fail closed. The ticket, recovered-reviewer audit, logout audit and replay denial are checked together.
-- A second deterministic PostgreSQL race locks the presented Sanctum token row, waits for a live recovery HTTP worker to contend on that row (including Sanctum's own `last_used_at` update), then deletes the token before releasing the lock. Recovery is denied with HTTP 401/403, without assigning a reviewer or writing a recovery audit event.
-- Initial CI failed because the harness expected the worker to reach the controller's `FOR UPDATE` before encountering Sanctum's earlier token update. The test was corrected to observe either actual bearer-row lock wait; the production authorization code was not weakened.
-- **Verified implementation SHA `616f6f5c60866a1c033b78388656e0c8d3d88a37`:** [Laravel API CI 41432040148](https://github.com/binegocom/TopKolik.com/actions/runs/41432040148) passed **352 tests / 3,162 assertions**, real PostgreSQL/Redis, four-worker support/finance/ads races, live HTTP/SMTP, Composer audit and 17 editorial guard cases. [Editorial/roadmap CI 41432040146](https://github.com/binegocom/TopKolik.com/actions/runs/41432040146) passed.
-- The final documentation/evidence commit must pass its own CI before merge. `P03-007` remains **in_progress** pending full RBAC/BOLA matrix, independent security review and production verification. `P00-004` remains blocked on owner/legal/provider decisions. No provider-dependent sports data, runtime fixtures, destructive migrations, new locale or production release was introduced.
-
-## P03-007 — editorial draft writes versus revoked staff bearer (PR #89)
-
-- Editorial draft creation, update and review submission now lock the persisted staff identity, then the presented Sanctum bearer, then the owned draft (where present). They re-authorize using the locked identity and current bearer, consistent with the staff logout lock order. A token revoked after middleware authentication cannot authorize a draft mutation.
-- Two PostgreSQL feature tests cover the lock order and revocation at the post-read boundary for all three write paths, without adding a publication route, migration, new locale, sports provider dependency or runtime fixture.
-- **Verified implementation commit `dae1042f163444527e3103905eb5f226b3b03304`:** [Laravel API CI 41440393165](https://github.com/binegocom/TopKolik.com/actions/runs/41440393165) passed **354 tests / 3,179 assertions** with disposable PostgreSQL/Redis, four-worker support/finance/ads HTTP races, live HTTP/SMTP, Composer audit and 17 editorial guards. [Editorial/roadmap CI 41440393157](https://github.com/binegocom/TopKolik.com/actions/runs/41440393157) passed.
-- Final documentation commit requires its own successful CI before merge. `P03-007` remains **in_progress**: independent editorial/logout multi-worker contention, full RBAC/BOLA acceptance and production release remain unverified. `P00-004` remains blocked on owner/legal/provider decisions.
-
-## P03-007 editorial logout / write HTTP concurrency — PR #90
-
-- **2026-11-02, in_progress:** Added a real four-worker HTTP regression for staff editor draft creation, update and review submission racing staff logout. The controller's existing persisted staff → bearer → draft lock order is unchanged.
-- The disposable PostgreSQL test accepts only serialized outcomes: the mutation commits before logout, or is rejected with 401 after logout. It validates exact draft state/revision, bearer revocation, one correlated logout audit event and replay denial without subsequent writes.
-- **Verified PR head `46bc39eea3f0717e8e044cb6468a3612a9ec46a8`:** [Laravel API CI](https://github.com/binegocom/TopKolik.com/actions/runs/41448560623) passed 354 tests / 3,179 assertions and three real HTTP race scenarios. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41448560710) passed.
-- Full role/resource BOLA coverage, production IAM, deployment and provider/licensing gates remain outstanding. P03-007 is **not done**; no public release claim.
-
-## P03-007 — editorial draft writes versus committed editor role revocation (PR #91)
-
-- Added real four-worker HTTP races for draft creation, revisioned update and review submission. Each request is held on a PostgreSQL staff identity row lock; `pg_stat_activity` proves the worker is actually blocked before a separate transaction commits an editor-to-support role downgrade.
-- After lock release all three writes return HTTP 403. No new draft, revision, status transition or audit event is allowed; the unexpired bearer remains a valid staff session but cannot regain editor permissions on replay.
-- **Verified implementation SHA `3391483c2e0a4b2640a75d1c159062dc03da7751`:** [Laravel API CI 41456997486](https://github.com/binegocom/TopKolik.com/actions/runs/41456997486) passed **354 tests / 3,179 assertions**, six real editorial HTTP races (three logout, three role revocation), disposable PostgreSQL/Redis, existing support/finance/ads races, HTTP/SMTP, Composer audit and 17 editorial publication guards. [Editorial/roadmap CI 41456997395](https://github.com/binegocom/TopKolik.com/actions/runs/41456997395) passed.
-- This evidence/workflow commit requires its own successful CI before merge. `P03-007` stays **in_progress** pending full resource RBAC/BOLA matrix and independent production security acceptance. `P00-004` remains **blocked** on owner/legal/provider decisions. No production data, licensed feed, locale, migration or runtime sports content was changed.
-
-## P03-007 editorial read authorization — PR #92
-
-- Editorial draft list and detail now serialize persisted staff identity and Sanctum bearer validation with logout/role revocation using PostgreSQL `FOR UPDATE`, matching the existing staff → token lock order. SQL owner scoping, draft visibility filtering and private cache headers are preserved.
-- [PR #92](https://github.com/binegocom/TopKolik.com/pull/92), implementation/test commit `eb6d1de18bf5132e0722f2e329f3525e480737ab`: [Laravel API CI](https://github.com/binegocom/TopKolik.com/actions/runs/41466901366) passed 357 tests / 3,205 assertions, including 3 new PostgreSQL feature regressions for read locks, cross-editor BOLA, role/token revocation and pagination. [Editorial/roadmap CI](https://github.com/binegocom/TopKolik.com/actions/runs/41466901275) passed. Existing four-worker write races, SMTP/HTTP checks, Composer audit and 17 editorial guard scenarios also passed.
-- `P03-007` remains **in_progress**: no independent four-worker read-versus-revocation race has been tested; complete staff/finance RBAC, independent security review and production deployment are still outstanding. No sports API access or publication permission was added.
-
-## P03-007 — editorial draft read versus logout and role revocation (PR #93)
-
-- Added four isolated real HTTP races to the existing four-worker harness: GET /staff/editorial/drafts and GET /staff/editorial/drafts/{draft} against concurrent logout, plus both read paths waiting on a locked editor row before a committed role downgrade.
-- Logout/read accepts only safe serialization: a 200 response with the authenticated editor's own records before logout, or a 401 after bearer revocation. Subsequent list, owned detail and foreign detail requests all return 401. Logout produces one correlated audit event.
-- The role downgrade is proven to block a live read worker on PostgreSQL FOR UPDATE; after the committed editor-to-support change, the read returns 403. Replays deny index/owned detail (403) and preserve foreign-detail concealment (404). Draft revisions, bearer state and audit invariants are checked.
-- **Verified implementation commit 946a4c3e6c2e9daee681739e2ad6fbe2d0100517:** [Laravel API CI 41476526869](https://github.com/binegocom/TopKolik.com/actions/runs/41476526869) passed the complete API, PostgreSQL/Redis, four-worker support/editorial/finance/ads races, real HTTP/SMTP, Composer audit and 17 editorial guards. [Editorial/roadmap CI 41476526891](https://github.com/binegocom/TopKolik.com/actions/runs/41476526891) passed. Documentation/evidence changes require fresh final-head CI before merge.
-- P03-007 remains **in_progress** until the full role/resource matrix and independent production security review are complete. P00-004 remains **blocked** on owner/legal/provider approvals. No sports API, runtime data, new locale, schema change or release was introduced.
-
-## P03-007 — editorial read versus staff account deactivation (PR #95)
-
-- **2026-11-02, in_progress:** Added a deterministic four-worker HTTP regression for draft index/detail reads waiting on a PostgreSQL `staff_members FOR UPDATE` lock. The test commits `is_active=false` before releasing the blocked request and requires HTTP 403 without owner or foreign-editor body disclosure.
-- A still-present, unexpired MFA staff bearer cannot bypass the persisted active-state check. Owned/foreign replay requests are rejected; after explicit bearer deletion, both read routes return HTTP 401. Draft revisions and audit state remain unchanged. A new Laravel feature regression covers the same active-state boundary.
-- **Verified implementation SHA `c0d0be8cf9e788b7192e13e1639d506d6b75d6a3`:** [Laravel API CI 41485159234](https://github.com/binegocom/TopKolik.com/actions/runs/41485159234) passed **358 tests / 3,221 assertions**, disposable PostgreSQL/Redis, editorial/support/finance/ads real HTTP concurrency, live HTTP/SMTP, Composer audit and 17 editorial guard checks. [Editorial/roadmap CI 41485159059](https://github.com/binegocom/TopKolik.com/actions/runs/41485159059) passed.
-- This documentation/evidence commit must also pass CI on the final PR head before merge. P03-007 remains **in_progress** pending complete RBAC/BOLA matrix, independent security review and production deployment. P00-004 remains **blocked** on owner/legal/provider approvals. No sports API, schema, runtime fixture, new locale or production data was changed.
-
-## P03-007 — support ticket read versus staff deactivation (PR #96)
-
-- **2026-11-02, in_progress:** Support ticket index/detail now lock the persisted staff identity, current Sanctum bearer and scoped ticket rows in a PostgreSQL transaction. The SQL assignment constraint, ticket/reply privacy, cache controls and default-deny MFA/RBAC checks remain in place.
-- Three PostgreSQL feature tests cover read lock acquisition, staff deactivation, bearer revocation and foreign-ticket BOLA concealment. A new isolated four-worker HTTP regression proves both index and detail block on a held staff row, then return HTTP 403 after committed deactivation; deleting the bearer produces HTTP 401. No ticket or security audit mutation is allowed.
-- **Verified implementation SHA `0e1e0707c09ee7d0159a5c1dcbc31eadfc6474bf`:** [Laravel API CI 41494294187](https://github.com/binegocom/TopKolik.com/actions/runs/41494294187) passed **361 tests / 3,251 assertions**, disposable PostgreSQL/Redis, support/editorial/finance/ads four-worker races, real HTTP/SMTP, Composer audit and editorial guard. [Editorial/roadmap CI 41494294235](https://github.com/binegocom/TopKolik.com/actions/runs/41494294235) passed.
-- Final evidence commit requires fresh CI before merge. **P03-007 stays in_progress** until the full staff resource matrix and independent security review are accepted. **P00-004 stays blocked** on legal, license, provider and owner approvals. No sports feed, runtime fixtures, new locale, destructive migration or production release was introduced.
-
-## P03-007 — support ticket reads versus committed role revocation (PR #97)
-
-- **2026-11-02, in_progress:** Extended the isolated four-worker HTTP regression to race both support ticket index and owned detail reads against a committed `support` → `ads` staff role downgrade, while retaining both account-deactivation scenarios. The live worker is observed waiting on a PostgreSQL `staff_members FOR UPDATE` lock before the downgrade commits.
-- All four scenarios return HTTP 403 after the relevant revocation. The still-valid bearer cannot restore support access; the foreign-ticket detail remains concealed as HTTP 404 after role downgrade, and token deletion returns HTTP 401. Owned/foreign ticket state, private response contents and security audit invariants are checked.
-- **Verified implementation commit `f7935c090b1860bcda08f705b69f7c7db139d9d2`:** [Laravel API CI 41504780624](https://github.com/binegocom/TopKolik.com/actions/runs/41504780624) passed **361 tests / 3,251 assertions**, four support-read HTTP races, other support/editorial/finance/ads concurrency, real PostgreSQL/Redis, HTTP/SMTP, Composer audit and 17 editorial guards. [Editorial/roadmap CI 41504780762](https://github.com/binegocom/TopKolik.com/actions/runs/41504780762) passed.
-- The final documentation commit requires its own successful CI before merge. `P03-007` remains **in_progress** pending the complete role/resource RBAC/BOLA matrix, independent security review and production validation. `P00-004` remains **blocked** on owner, legal and provider approvals. No production data, sports feed, schema, UI locale or release changed.
-
-## P03-007 — support ticket reads versus concurrent staff logout (PR #98)
-
-- **2026-11-02, in_progress:** Added two real four-worker HTTP races for support ticket index and owned detail reads versus the same staff bearer logging out. The existing staff → bearer → ticket transaction lock order is unchanged. A read may return HTTP 200 with only the assigned ticket before logout commits, or HTTP 401 after revocation; foreign ticket content must never be returned.
-- The test verifies the exact bearer is deleted, one correlated `staff.session.ended` audit event is recorded, ticket state remains unchanged and all index/owned/foreign replay reads return HTTP 401. This runs only against isolated GitHub Actions PostgreSQL; no production mutation or external sports data is used.
-- **Verified implementation SHA `df5eefdbb69223671c5b5ad31dd3a3978a8e08a7`:** [Laravel API CI 41513697053](https://github.com/binegocom/TopKolik.com/actions/runs/41513697053) and [Editorial/roadmap CI 41513697180](https://github.com/binegocom/TopKolik.com/actions/runs/41513697180) passed, including PostgreSQL/Redis, four-worker concurrency, HTTP/SMTP, Composer audit and editorial guard. The final documentation head requires fresh CI before merge.
-- `P03-007` remains **in_progress** pending complete cross-resource RBAC/BOLA coverage and independent security/production review. `P00-004` remains **blocked** pending owner, provider and legal approvals. No sports API, runtime fixture, schema, UI locale or production release changed.
-
-## P03-007 — finance metadata reads versus concurrent administrator revocation (PR #99)
-
-- **2026-11-02, in_progress:** Both MFA-protected, read-only finance entitlement inventory and terminal decision history endpoints now lock the current staff identity, persisted bearer and independent security-administrator grant within the read transaction. No finance payment, invoicing or approval authority was added.
-- Eight isolated PostgreSQL four-worker HTTP races cover grant revocation, role revocation, account deactivation and bearer deletion across both endpoints. Feature regressions check fail-closed 401/403, no-store responses and unchanged finance/audit records. No production data or external sports provider is used.
-- **Verified implementation SHA `1b0fd240aaad679e0e808d3926b9386eaa04ed7`:** [Laravel API CI 41522245598](https://github.com/binegocom/TopKolik.com/actions/runs/41522245598) and [Editorial/roadmap CI 41522245527](https://github.com/binegocom/TopKolik.com/actions/runs/41522245527) passed. Final documentation head requires its own successful CI before merge.
-- `P03-007` remains **in_progress** pending complete resource RBAC/BOLA matrix, independent security review and production validation. `P00-004` remains **blocked** pending legal, product and provider approvals. No runtime sports data, UI locale, destructive migration or production release changed.
-
-## P03-010 — self-audit read/revocation serialization (CI pending)
-
-- Both MFA-protected self-only audit endpoints now lock persisted staff identity followed by the presented bearer inside a PostgreSQL transaction, and complete authorization, actor-scoped query and response serialization before releasing those locks. This prevents a committed logout or staff deactivation from racing an already-authorized audit read.
-- A new PostgreSQL feature regression inspects real SQL `FOR UPDATE` statements for both endpoints and checks post-revocation HTTP 401, private cache headers and unchanged audit ledgers. Existing search/BOLA/MFA tests remain in the API suite.
-- **P03-010 stays in_progress** pending final-head GitHub Actions, real four-worker read/revocation races, approved global security oversight, offsite tamper evidence, retention and production database-role separation. **P00-004 stays blocked** on owner/legal/provider decisions. No production data, sports provider, schema, locale or release changed.
-
-- **Verified PR #100 SHA `79dd1cca812fc48665dbabce84276d5c12298988`:** [Laravel API CI 41532195927](https://github.com/binegocom/TopKolik.com/actions/runs/41532195927) passed 363 tests / 3,292 assertions, isolated PostgreSQL/Redis, existing four-worker races, real HTTP/SMTP, Composer audit and 17 editorial guards. [Editorial/roadmap CI 41532195920](https://github.com/binegocom/TopKolik.com/actions/runs/41532195920) passed. This evidence commit requires fresh CI before merge; no independent audit read/revocation four-worker race has been added.
-
-## P03-010 — self-audit read versus concurrent revocation (PR #101)
-
-- **2026-11-02, in_progress:** Added an isolated four-worker PHP HTTP regression for both self-only, MFA step-up protected audit-event and authentication-failure endpoints. It covers a live read blocked on the persisted staff row before a committed account deactivation (HTTP 403), plus concurrent logout/read ordering (read HTTP 200 only before revocation, otherwise 401). Replays are denied; foreign actor metadata never appears; append-only ledgers and exactly one attributed logout event are verified.
-- The test runs only against the disposable GitHub Actions PostgreSQL development database, with explicit CI/environment guards; the existing authorization, migrations, locale and sports-provider boundaries were not changed. The Laravel workflow now checks PHP syntax early and requires this regression.
-- **Verified implementation commit `a22b7c2cfe7f0da5bd327cb448839bf89c844f3e`:** [Laravel API CI 41540613952](https://github.com/binegocom/TopKolik.com/actions/runs/41540613952) passed 363 Laravel tests / 3,292 assertions plus the new four HTTP races, PostgreSQL/Redis, existing support/editorial/finance/ads concurrency, HTTP/SMTP, Composer audit and 17 editorial guard checks. [Editorial/roadmap CI 41540614098](https://github.com/binegocom/TopKolik.com/actions/runs/41540614098) passed. Final documentation commit must also pass CI before merge.
-- `P03-010` remains **in_progress** pending independently anchored audit integrity, approved retention, global analyst authorization, production DB role separation and independent security/release validation. `P00-004` remains **blocked** on legal, product, provider and owner approvals. No production release is claimed.
-
-## P03-007 — advertiser campaign review read/revocation serialization (PR #102)
-
-- **2026-11-03, in_progress:** Private advertiser campaign index/detail reads now run in a PostgreSQL transaction holding persisted staff, current bearer, advertiser organization, assigned reviewer row and scoped campaign locks until response serialization. The existing MFA step-up requirement for creative body, tenant SQL predicates, draft concealment, no-store headers and default-deny policy remain unchanged.
-- Two new PostgreSQL feature regressions assert lock order and an empty review inbox's assignment protection. A CI-only, four-worker HTTP harness verifies six real revocation races: staff deactivation, role downgrade and assignment withdrawal against both index and detail. After the committed revocation the in-flight read returns concealed HTTP 404 without private creative; subsequent deactivated-staff requests return HTTP 403, and revoked bearers return HTTP 401. Foreign campaigns, audit events and review state remain intact.
-- **Verified implementation SHA `3e58f22615b5bb3ecadd886163a3c4ec6eda0ce6`:** [Laravel API CI 41548573028](https://github.com/binegocom/TopKolik.com/actions/runs/41548573028) passed **365 tests / 3,311 assertions**, isolated PostgreSQL/Redis, six new advertiser races, existing support/editorial/finance/ads HTTP races, live HTTP/SMTP, Composer audit and editorial guard. [Editorial/roadmap CI 41548573012](https://github.com/binegocom/TopKolik.com/actions/runs/41548573012) passed. This documentation commit requires its own successful final-head CI before merge.
-- **P03-007 remains in_progress** until the complete role/resource RBAC/BOLA matrix, independent security review and production validation are accepted. **P00-004 remains blocked** on owner, provider, license and legal decisions. No live sports provider, runtime fixtures, UI locale, destructive migration or production release was introduced.
-
-## P03-007 — self-only advertiser assignment inventory versus revocation (PR #103)
-
-- **2026-11-03, in_progress:** The MFA-protected, self-only assignment index now holds PostgreSQL staff, bearer and joined assignment/organization locks through response serialization. After the persisted locks, RBAC is rechecked; a bearer deleted between middleware and controller returns HTTP 401. Pagination, tenant scoping, private no-store responses and existing role separation are preserved.
-- A PostgreSQL feature regression checks the lock order and post-revocation access. Five isolated four-worker HTTP races cover staff deactivation, role revocation, assignment withdrawal, organization deactivation and concurrent logout. The tests reject foreign advertiser names, verify post-commit replay denials and preserve the audit/assignment ledger. No production data or sports API is involved.
-- **Verified implementation SHA `3044402b23cb6181af621c87a2cdedb18b4534aa`:** [Laravel API CI 41555731098](https://github.com/binegocom/TopKolik.com/actions/runs/41555731098) passed **366 Laravel tests / 3,322 assertions**, PostgreSQL/Redis, five new four-worker races, existing HTTP concurrency suites, live HTTP/SMTP, Composer audit and 17 editorial guard cases. [Editorial/roadmap CI 41555731544](https://github.com/binegocom/TopKolik.com/actions/runs/41555731544) passed. The final documentation head must also pass both workflows before merge.
-- **P03-007 remains in_progress** pending complete cross-resource RBAC/BOLA matrix, independent security review and production validation. **P00-004 remains blocked** pending owner/legal/provider decisions. No locale, runtime sports fixtures, destructive migration or release state changed.
-
-## P00-004 / P01-003 / P03-004 / P05-009..012 — Owner-approved social fan scope, Turkish (`tr`) UI locale, zero-cost sports API matrix & backend Match Arenas / Predictions / Rankings
-
-- **2026-11-04, in_progress:** Recorded owner-approved `ADR-004` (`de`, `fr`, `it`, `en`, `tr` UI localization with automatic `tr` selection for `Accept-Language: tr*` and `en` fallback) and `ADR-015`..`ADR-017` (social match discussion arenas, free-to-play score predictions with deterministic versioned settlement, and individual + sample-size-normalized club fan rankings). Updated `UpdateReaderPreferencesRequest`, `ReaderProfileController`, and `ReaderProfilePreferencesTest` to support `tr`.
-- Published the 20-criterion zero-cost/open-data sports API matrix and central polling quota math in `docs/research/FREE_SPORTS_API_MATRIX.md` (`P01-003` remains `in_progress`; commercial licensing `P01-004` and remaining `ADR-003`/`ADR-007`..`ADR-014` decisions keep `P00-004` `blocked`).
-- Added forward-only PostgreSQL migration `2026_11_04_120000_create_social_match_arenas_predictions_and_rankings_tables.php` and backend services/controllers for segmented Match Arenas (`home`/`away`/`neutral` rooms, club-follow checks, slow-mode 429 cooldowns, `SocialContentSafetyFilter` quarantine, mutual user blocks, abuse reporting, single-vote polls, reactions, and MFA step-up staff moderation with append-only `security_audit_events`), free-to-play `MatchPredictionController` + `PredictionScoringEngine` (kick-off lock window, `3/5/2/2` point settlement, and official VAR/score revision recomputation), and `FanRankingController` (deterministic individual and `min_club_ranking_sample_size`-normalized club leaderboards).
-- Verified locally on disposable PostgreSQL 16 (`SocialMatchArenasPredictionsAndRankingsTest`, `ReaderProfilePreferencesTest`, `SecurityAuditEventsTest`, `StaffSecurityAuditSearchTest` — 28 tests / 287 assertions passed) and `validate_blueprint.py` / `status.py check` / `test-editorial-guard.sh`. `P05-009`..`P05-012` remain **in_progress** pending licensed live fixture ingestion (`P04`) and consumer web/mobile/admin UI integration (`P08-010`, `P09-012`, `P10-012`).
+# Topkolik — Generated project status
+
+> Automated from ROADMAP.json. Does not certify release readiness.
+
+**Tasks:** 154 | **Done:** 16
+
+| Phase | Todo | In progress | Blocked | In review | Done |
+|---|---:|---:|---:|---:|---:|
+| P00 Project blueprint and governance | 0 | 0 | 1 | 0 | 3 |
+| P01 Rights, provider discovery and legal foundations | 9 | 1 | 0 | 0 | 0 |
+| P02 Repository and engineering foundation | 5 | 1 | 0 | 0 | 5 |
+| P03 Authentication, roles and privacy | 0 | 3 | 0 | 0 | 8 |
+| P04 Sports catalog and licensed ingestion | 10 | 0 | 0 | 0 | 0 |
+| P05 Match center, discovery and search API | 8 | 4 | 0 | 0 | 0 |
+| P06 Autonomous editorial and fact validation | 12 | 0 | 0 | 0 | 0 |
+| P07 Automated media production | 8 | 0 | 0 | 0 | 0 |
+| P08 Consumer web (SEO-first) | 10 | 0 | 0 | 0 | 0 |
+| P09 Flutter mobile iOS and Android | 12 | 0 | 0 | 0 | 0 |
+| P10 Newsroom admin and staff workflows | 12 | 0 | 0 | 0 | 0 |
+| P11 Ads sales, serving and reporting | 9 | 0 | 0 | 0 | 0 |
+| P12 Billing, accounting and finance | 8 | 0 | 0 | 0 | 0 |
+| P13 Support, personalization and analytics | 7 | 0 | 0 | 0 | 0 |
+| P14 Security, performance, accessibility and compliance | 10 | 0 | 0 | 0 | 0 |
+| P15 Release and operation | 8 | 0 | 0 | 0 | 0 |
+
+## Tasks
+
+- P00-001 — done — Define Topkolik product scope and brand constraints
+- P00-002 — done — Publish baseline architecture and domain boundaries
+- P00-003 — done — Publish quality, risk and delivery governance
+- P00-004 — blocked — Approve unresolved first-release product decisions
+- P01-001 — todo — Verify domain and trademark availability
+- P01-002 — todo — Register publisher and responsible editorial contact
+- P01-003 — in_progress — Evaluate sports data providers and feature coverage
+- P01-004 — todo — Approve sports-data licenses
+- P01-005 — todo — Approve player/photo/club asset licensing
+- P01-006 — todo — Approve privacy and international data transfer design
+- P01-007 — todo — Approve advertising and gambling-exclusion policy
+- P01-008 — todo — Select AI vendors and contractual data controls
+- P01-009 — todo — Select tax jurisdiction and invoicing path
+- P01-010 — todo — Approve editorial AI policy and high-risk hold rules
+- P02-001 — todo — Initialize protected GitHub monorepo
+- P02-002 — todo — Configure status tracking and issue templates
+- P02-003 — todo — Pin language runtimes and dependency versions
+- P02-004 — in_progress — Create developer Docker environment
+- P02-005 — done — Scaffold Laravel modular API
+- P02-006 — done — Scaffold Next.js public web
+- P02-007 — done — Scaffold Next.js admin
+- P02-008 — done — Scaffold Flutter iOS and Android
+- P02-009 — done — Define OpenAPI and typed client generation
+- P02-010 — todo — Configure CI and local/self-hosted runner options
+- P02-011 — todo — Set ADR, release notes and dependency audit protocol
+- P03-001 — done — Implement consumer registration and email verification
+- P03-002 — done — Implement consumer login, logout and sessions
+- P03-003 — done — Implement forgot/reset password
+- P03-004 — done — Implement reader profile and preferences
+- P03-005 — done — Implement staff invite-only enrollment
+- P03-006 — done — Implement staff MFA and recovery
+- P03-007 — in_progress — Implement RBAC permissions and policy enforcement
+- P03-008 — done — Implement advertiser organization scoping
+- P03-009 — in_progress — Implement account deletion/export and consent
+- P03-010 — in_progress — Implement security audit events
+- P03-011 — done — Implement supportable session/security controls
+- P04-001 — todo — Implement sports taxonomy and competition mapping
+- P04-002 — todo — Implement club/team/athlete/venue model
+- P04-003 — todo — Implement fixture/event domain model
+- P04-004 — todo — Implement normalized statistics dictionary
+- P04-005 — todo — Implement provider adapter contract
+- P04-006 — todo — Implement first licensed football provider
+- P04-007 — todo — Implement basketball and volleyball provider coverage
+- P04-008 — todo — Implement remaining sports adapter expansion
+- P04-009 — todo — Implement provenance and conflict records
+- P04-010 — todo — Implement live ingestion scheduling
+- P05-001 — todo — Implement fixtures and scores public endpoints
+- P05-002 — todo — Implement match timeline and team stats API
+- P05-003 — todo — Implement lineups, standings and rankings
+- P05-004 — todo — Implement team/athlete/league detail endpoints
+- P05-005 — todo — Implement entity search and typo tolerance
+- P05-006 — todo — Implement follow and saved-content services
+- P05-007 — todo — Implement caching and invalidation policy
+- P05-008 — todo — Implement API usage/rate controls
+- P05-009 — in_progress — Implement match discussion arenas, segmented fan rooms and moderation controls
+- P05-010 — in_progress — Implement match polls, fan reactions and live mood aggregation
+- P05-011 — in_progress — Implement score prediction markets, lock windows and deterministic scoring engine
+- P05-012 — in_progress — Implement individual and club-based fan leaderboards and reputation badges
+- P06-001 — todo — Implement deterministic story signal rules
+- P06-002 — todo — Implement evidence-bound fact packs
+- P06-003 — todo — Implement AI schema and prompt version registry
+- P06-004 — todo — Implement AI article drafting pipeline
+- P06-005 — todo — Implement numerical/identity claim validation
+- P06-006 — todo — Implement cross-source and high-risk review gate
+- P06-007 — todo — Implement semantic and event duplicate suppression
+- P06-008 — todo — Implement autonomous safe publishing state machine
+- P06-009 — todo — Implement correction/retraction lifecycle
+- P06-010 — todo — Implement editorial quality analytics
+- P06-011 — todo — Implement source-aware official transfer reporting
+- P06-012 — todo — Implement emergency editorial kill switch
+- P07-001 — todo — Create vector production logo and master tokens
+- P07-002 — todo — Implement article hero visual templates
+- P07-003 — todo — Implement authorized image asset registry
+- P07-004 — todo — Integrate image generation vendor
+- P07-005 — todo — Implement deterministic text/stat overlays
+- P07-006 — todo — Implement derivatives and object storage security
+- P07-007 — todo — Implement media audit and correction
+- P07-008 — todo — Export native app/OG icons and image assets
+- P08-001 — todo — Implement public layout/header/footer
+- P08-002 — todo — Implement homepage and latest news feeds
+- P08-003 — todo — Implement article pages and correction disclosure
+- P08-004 — todo — Implement match center and match detail web
+- P08-005 — todo — Implement sport/team/league/athlete web
+- P08-006 — todo — Implement search, follow, save and auth web
+- P08-007 — todo — Implement SEO structured data and sitemaps
+- P08-008 — todo — Integrate policy-compliant public ad slots
+- P08-009 — todo — Implement analytics and consent UX
+- P08-010 — todo — Implement web match arena discussion, prediction center and fan leaderboards
+- P09-001 — todo — Implement native-adaptive navigation and theme
+- P09-002 — todo — Implement onboarding and guest-first reader experience
+- P09-003 — todo — Implement mobile home and breaking news
+- P09-004 — todo — Implement mobile article reading and sharing
+- P09-005 — todo — Implement mobile fixtures and match detail
+- P09-006 — todo — Implement mobile discover/search/entities
+- P09-007 — todo — Implement consumer login/registration/reset on mobile
+- P09-008 — todo — Implement follow and push preferences
+- P09-009 — todo — Implement offline-safe reading cache
+- P09-010 — todo — Implement iOS store and Android assets
+- P09-011 — todo — Run device accessibility and performance tests
+- P09-012 — todo — Implement mobile match arena, prediction slip and fan rankings experience
+- P10-001 — todo — Implement admin design shell and RBAC routes
+- P10-002 — todo — Implement operational dashboard
+- P10-003 — todo — Implement editorial review queue
+- P10-004 — todo — Implement article editor and revisions
+- P10-005 — todo — Implement AI bot management
+- P10-006 — todo — Implement sports data source operations
+- P10-007 — todo — Implement media library and rights management
+- P10-008 — todo — Implement notifications administration
+- P10-009 — todo — Implement SEO and publication operations
+- P10-010 — todo — Implement audit, roles and account administration
+- P10-011 — todo — Implement admin responsive/accessibility QA
+- P10-012 — todo — Implement social moderation queue, arena slow-mode/lockdown and prediction policy operations
+- P11-001 — todo — Implement advertiser account data model
+- P11-002 — todo — Implement inventory and ad placement management
+- P11-003 — todo — Implement contract and campaign creation
+- P11-004 — todo — Implement creative review and policy checks
+- P11-005 — todo — Implement ad scheduling, pacing and cap enforcement
+- P11-006 — todo — Implement web/native app ad rendering
+- P11-007 — todo — Implement impression/click collection
+- P11-008 — todo — Implement campaign and revenue reports
+- P11-009 — todo — Implement future advertiser portal authorization
+- P12-001 — todo — Implement business and tax identity validation
+- P12-002 — todo — Implement billable events and pricing
+- P12-003 — todo — Implement invoice issuance state machine
+- P12-004 — todo — Implement payments and reconciliation
+- P12-005 — todo — Implement credit notes and dispute workflow
+- P12-006 — todo — Implement approved e-invoice/accounting export
+- P12-007 — todo — Implement finance dashboards and exports
+- P12-008 — todo — Implement financial audit and retention
+- P13-001 — todo — Implement help center, contact and editorial corrections
+- P13-002 — todo — Implement ticket lifecycle and staff scopes
+- P13-003 — todo — Implement notification subscriptions and delivery
+- P13-004 — todo — Implement privacy-aware event analytics
+- P13-005 — todo — Implement recommendation ranking v1
+- P13-006 — todo — Implement editorial/content and finance dashboards
+- P13-007 — todo — Implement alerting for correction and removal requests
+- P14-001 — todo — Run identity and authorization penetration suite
+- P14-002 — todo — Run media/source and web security suite
+- P14-003 — todo — Run high-concurrency publishing and billing suite
+- P14-004 — todo — Run WCAG and native UX audit
+- P14-005 — todo — Run SEO and quality validation
+- P14-006 — todo — Run source rights and privacy compliance review
+- P14-007 — todo — Run backup/PITR recovery drill
+- P14-008 — todo — Run performance and operational load testing
+- P14-009 — todo — Run real-data staged end-to-end tests
+- P14-010 — todo — Complete incident runbooks and on-call ownership
+- P15-001 — todo — Prepare store listings and legal documentation
+- P15-002 — todo — Validate signing and release builds
+- P15-003 — todo — Provision production infrastructure securely
+- P15-004 — todo — Deploy staging and exercise rollback
+- P15-005 — todo — Approve production GO/NO-GO
+- P15-006 — todo — Launch web and mobile in controlled rollout
+- P15-007 — todo — Monitor launch health and corrections
+- P15-008 — todo — Establish ongoing maintenance cadence
