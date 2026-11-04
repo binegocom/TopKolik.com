@@ -2,7 +2,7 @@
 
 > Automated from ROADMAP.json. Does not certify release readiness.
 
-**Tasks:** 154 | **Done:** 37
+**Tasks:** 154 | **Done:** 42
 
 | Phase | Todo | In progress | Blocked | In review | Done |
 |---|---:|---:|---:|---:|---:|
@@ -10,7 +10,7 @@
 | P01 Rights, provider discovery and legal foundations | 9 | 1 | 0 | 0 | 0 |
 | P02 Repository and engineering foundation | 0 | 0 | 0 | 0 | 11 |
 | P03 Authentication, roles and privacy | 0 | 3 | 0 | 0 | 8 |
-| P04 Sports catalog and licensed ingestion | 10 | 0 | 0 | 0 | 0 |
+| P04 Sports catalog and licensed ingestion | 5 | 0 | 0 | 0 | 5 |
 | P05 Match center, discovery and search API | 0 | 0 | 0 | 0 | 12 |
 | P06 Autonomous editorial and fact validation | 12 | 0 | 0 | 0 | 0 |
 | P07 Automated media production | 8 | 0 | 0 | 0 | 0 |
@@ -61,11 +61,11 @@
 - P03-009 — in_progress — Implement account deletion/export and consent
 - P03-010 — in_progress — Implement security audit events
 - P03-011 — done — Implement supportable session/security controls
-- P04-001 — todo — Implement sports taxonomy and competition mapping
-- P04-002 — todo — Implement club/team/athlete/venue model
-- P04-003 — todo — Implement fixture/event domain model
-- P04-004 — todo — Implement normalized statistics dictionary
-- P04-005 — todo — Implement provider adapter contract
+- P04-001 — done — Implement sports taxonomy and competition mapping
+- P04-002 — done — Implement club/team/athlete/venue model
+- P04-003 — done — Implement fixture/event domain model
+- P04-004 — done — Implement normalized statistics dictionary
+- P04-005 — done — Implement provider adapter contract
 - P04-006 — todo — Implement first licensed football provider
 - P04-007 — todo — Implement basketball and volleyball provider coverage
 - P04-008 — todo — Implement remaining sports adapter expansion

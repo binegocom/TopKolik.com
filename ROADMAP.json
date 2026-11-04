@@ -47,7 +47,7 @@
     {
       "id": "P04",
       "name": "Sports catalog and licensed ingestion",
-      "status": "todo",
+      "status": "in_progress",
       "gate": "P04-GATE",
       "task_count": 10
     },
@@ -2256,7 +2256,7 @@
       "id": "P04-001",
       "phase": "P04",
       "title": "Implement sports taxonomy and competition mapping",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P03-GATE"
@@ -2265,8 +2265,22 @@
       "acceptance_criteria": [
         "Unique mappings and sport taxonomy tests pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Domain/Sports/SportsTaxonomyService.php, services/api/tests/Unit/SportsTaxonomyTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Unit/SportsTaxonomyTest.php",
+          "result": "5/5 passed (19 assertions), football/basketball/volleyball taxonomy and competition tier mappings verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p04-sports-domain-and-provider-contracts"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -2276,7 +2290,7 @@
       "id": "P04-002",
       "phase": "P04",
       "title": "Implement club/team/athlete/venue model",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P03-GATE"
@@ -2285,8 +2299,22 @@
       "acceptance_criteria": [
         "FK and source map tests pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Domain/Sports/ProviderEntityMapper.php, services/api/database/migrations/2026_11_04_180000_create_sports_provider_and_transfer_tables.php, services/api/tests/Feature/ClubAthleteVenueProviderMappingTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/ClubAthleteVenueProviderMappingTest.php",
+          "result": "3/3 passed (9 assertions), entity mapping resolution and multi-team athlete history verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p04-sports-domain-and-provider-contracts"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -2296,7 +2324,7 @@
       "id": "P04-003",
       "phase": "P04",
       "title": "Implement fixture/event domain model",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P03-GATE"
@@ -2305,8 +2333,22 @@
       "acceptance_criteria": [
         "Out-of-order event and status transition tests pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Domain/Sports/FixtureStateMachine.php, services/api/app/Domain/Sports/FixtureEventReconciler.php, services/api/tests/Feature/FixtureEventDomainModelTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/FixtureEventDomainModelTest.php",
+          "result": "3/3 passed (18 assertions), valid lifecycle transitions, out-of-order event ingestion, and VAR score recomputation verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p04-sports-domain-and-provider-contracts"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -2316,7 +2358,7 @@
       "id": "P04-004",
       "phase": "P04",
       "title": "Implement normalized statistics dictionary",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P03-GATE"
@@ -2325,8 +2367,22 @@
       "acceptance_criteria": [
         "Stats never conflated across sports/periods."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Domain/Sports/StatisticsDictionary.php, services/api/tests/Unit/NormalizedStatisticsDictionaryTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Unit/NormalizedStatisticsDictionaryTest.php",
+          "result": "4/4 passed (7 assertions), sports bounds validation, sanitization, and cross-sport stat conflation prevention verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p04-sports-domain-and-provider-contracts"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -2336,7 +2392,7 @@
       "id": "P04-005",
       "phase": "P04",
       "title": "Implement provider adapter contract",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P03-GATE"
@@ -2345,8 +2401,22 @@
       "acceptance_criteria": [
         "Contract tests with legitimately acquired provider payloads."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Domain/Sports/Contracts/SportsDataProviderInterface.php, services/api/app/Domain/Sports/Providers/LicensedSportsProviderAdapter.php, services/api/tests/Unit/SportsDataProviderContractTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Unit/SportsDataProviderContractTest.php",
+          "result": "5/5 passed (19 assertions), provider quota consumption, fixtures ingestion, and live match state payloads verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p04-sports-domain-and-provider-contracts"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
