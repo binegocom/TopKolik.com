@@ -614,7 +614,7 @@
       "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
-      "pr_url": null,
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/124",
       "limitations": [
         "P01-GATE remains open. Foundation public web scaffolding does not authorize live wagering, unmoderated user comments, or unauthorized third-party sports data acquisition."
       ]
