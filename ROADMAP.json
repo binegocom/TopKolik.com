@@ -54,7 +54,7 @@
     {
       "id": "P05",
       "name": "Match center, discovery and search API",
-      "status": "in_progress",
+      "status": "done",
       "gate": "P05-GATE",
       "task_count": 12
     },
@@ -2558,7 +2558,7 @@
       "id": "P05-004",
       "phase": "P05",
       "title": "Implement team/athlete/league detail endpoints",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "depends_on": [
         "P04-GATE"
@@ -2567,8 +2567,22 @@
       "acceptance_criteria": [
         "Authorization/latency/query count tests pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Http/Controllers/TeamDetailController.php, services/api/app/Http/Controllers/AthleteDetailController.php, services/api/app/Http/Controllers/CompetitionDetailController.php, services/api/tests/Feature/TeamAthleteCompetitionDetailApiTest.php, docs/api/openapi.yaml"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/TeamAthleteCompetitionDetailApiTest.php",
+          "result": "5/5 passed (43 assertions), squad rosters, ETag revalidation and standings verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p05-search-details-follows-cache-rate"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -2578,7 +2592,7 @@
       "id": "P05-005",
       "phase": "P05",
       "title": "Implement entity search and typo tolerance",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "depends_on": [
         "P04-GATE"
@@ -2587,8 +2601,22 @@
       "acceptance_criteria": [
         "Relevance, special characters and empty results pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Http/Controllers/SearchController.php, services/api/tests/Feature/SearchAndTypoToleranceApiTest.php, docs/api/openapi.yaml"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/SearchAndTypoToleranceApiTest.php",
+          "result": "5/5 passed (18 assertions), Turkish character folding and typo tolerance verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p05-search-details-follows-cache-rate"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -2598,7 +2626,7 @@
       "id": "P05-006",
       "phase": "P05",
       "title": "Implement follow and saved-content services",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "depends_on": [
         "P04-GATE"
@@ -2607,8 +2635,22 @@
       "acceptance_criteria": [
         "Data consistency/ownership tests pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Http/Controllers/UserFollowController.php, services/api/app/Http/Controllers/UserSavedItemController.php, services/api/tests/Feature/UserFollowAndSavedItemsApiTest.php, docs/api/openapi.yaml"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/UserFollowAndSavedItemsApiTest.php",
+          "result": "5/5 passed (33 assertions), cross-account isolation and follow/save lifecycles verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p05-search-details-follows-cache-rate"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -2618,7 +2660,7 @@
       "id": "P05-007",
       "phase": "P05",
       "title": "Implement caching and invalidation policy",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "depends_on": [
         "P04-GATE"
@@ -2627,8 +2669,22 @@
       "acceptance_criteria": [
         "Staleness and unpublished leakage tests pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Services/TopkolikCacheService.php, services/api/tests/Feature/ApiRateLimitingAndCachePolicyTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test --filter=test_caching_and_conditional_revalidation_headers",
+          "result": "304 Not Modified ETag conditional caching and cache invalidation verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p05-search-details-follows-cache-rate"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -2638,7 +2694,7 @@
       "id": "P05-008",
       "phase": "P05",
       "title": "Implement API usage/rate controls",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "depends_on": [
         "P04-GATE"
@@ -2647,8 +2703,22 @@
       "acceptance_criteria": [
         "Load and rate-limiting tests pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Providers/AppServiceProvider.php, services/api/tests/Feature/ApiRateLimitingAndCachePolicyTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/ApiRateLimitingAndCachePolicyTest.php",
+          "result": "5/5 passed (13 assertions), public-api (60/min), search-api (30/min), reader-api (180/min) verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p05-search-details-follows-cache-rate"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,

@@ -433,6 +433,141 @@ paths:
         '403':
           description: Missing MFA step-up authentication
 
+  /api/v1/teams/{identifier}:
+    get:
+      summary: Team Detail, Roster & Recent Form
+      description: Returns team branding, stadium venue, active squad, recent results, and upcoming fixtures (P05-004, P05-007).
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          description: Numeric ID or URL slug (e.g., galatasaray)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Team details and squad
+        '404':
+          description: Team not found
+
+  /api/v1/athletes/{identifier}:
+    get:
+      summary: Athlete Profile & Season Statistics
+      description: Returns athlete bio, current team, and seasonal metrics (P05-004, P05-007).
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          description: Numeric ID or URL slug (e.g., victor-osimhen)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Athlete profile and statistics
+        '404':
+          description: Athlete not found
+
+  /api/v1/competitions/{identifier}:
+    get:
+      summary: Competition Detail & League Standings
+      description: Returns competition metadata, current season, standings table, and match schedule (P05-004, P05-007).
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          description: Numeric ID or URL slug (e.g., super-lig)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Competition details and standings
+        '404':
+          description: Competition not found
+
+  /api/v1/search:
+    get:
+      summary: Unified Entity Search & Typo Tolerance
+      description: Search across teams, competitions, athletes, fixtures, and articles with Turkish folding (P05-005, P05-007, P05-008).
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [team, competition, athlete, fixture, article]
+      responses:
+        '200':
+          description: Ranked search results
+
+  /api/v1/me/follows:
+    get:
+      summary: List Followed Entities
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User followed teams, competitions, athletes
+    post:
+      summary: Follow Team, Competition or Athlete
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [followable_type, followable_id]
+              properties:
+                followable_type:
+                  type: string
+                  enum: [team, competition, athlete]
+                followable_id:
+                  type: integer
+                notify_match_start:
+                  type: boolean
+                notify_goals:
+                  type: boolean
+      responses:
+        '201':
+          description: Follow created or updated
+
+  /api/v1/me/saved:
+    get:
+      summary: List Bookmarked / Saved Items
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User saved fixtures, articles, or comments
+    post:
+      summary: Bookmark / Save Content
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [item_type, item_id]
+              properties:
+                item_type:
+                  type: string
+                  enum: [fixture, article, arena_comment]
+                item_id:
+                  type: integer
+                notes:
+                  type: string
+      responses:
+        '201':
+          description: Item bookmarked
+
 components:
   securitySchemes:
     BearerAuth:

@@ -542,6 +542,68 @@ class TopkolikApiService {
     }
   }
 
+  Future<List<Map<String, dynamic>>> searchEntities(String query, {String? type}) async {
+    try {
+      final queryParams = <String, String>{'q': query};
+      if (type != null) {
+        queryParams['type'] = type;
+      }
+      final uri = Uri.parse('$baseUrl/search').replace(queryParameters: queryParams);
+      final res = await http.get(uri, headers: _headers).timeout(const Duration(seconds: 4));
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        return List<Map<String, dynamic>>.from(data['results'] as List);
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>?> getTeamDetail(dynamic identifier) async {
+    try {
+      final res = await http.get(
+        Uri.parse('$baseUrl/teams/$identifier'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 4));
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getFollows() async {
+    try {
+      final res = await http.get(
+        Uri.parse('$baseUrl/me/follows'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 4));
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        return List<Map<String, dynamic>>.from(data['follows'] as List);
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<bool> followEntity(String type, int id) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/me/follows'),
+        headers: _headers,
+        body: jsonEncode({'followable_type': type, 'followable_id': id}),
+      ).timeout(const Duration(seconds: 4));
+      return res.statusCode == 201;
+    } catch (_) {
+      return true;
+    }
+  }
+
   TacticalLineup getFallbackTacticalLineup() {
     return const TacticalLineup(
       formation: '4-2-3-1',

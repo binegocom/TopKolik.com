@@ -335,4 +335,83 @@ export class TopkolikApiClient {
     const data = await res.json();
     return data.success;
   }
+
+  // --- Entity Details, Search, Follows & Saved Items (P05-004 - P05-008) ---
+
+  async getTeamDetail(identifier: string | number): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/teams/${identifier}`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to fetch team: ${res.statusText}`);
+    return res.json();
+  }
+
+  async getAthleteDetail(identifier: string | number): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/athletes/${identifier}`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to fetch athlete: ${res.statusText}`);
+    return res.json();
+  }
+
+  async getCompetitionDetail(identifier: string | number): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/competitions/${identifier}`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to fetch competition: ${res.statusText}`);
+    return res.json();
+  }
+
+  async searchEntities(q: string, type?: string): Promise<{ query: string; total: number; results: any[] }> {
+    const url = new URL(`${this.baseUrl}/search`);
+    url.searchParams.set("q", q);
+    if (type) url.searchParams.set("type", type);
+    const res = await fetch(url.toString(), { headers: this.headers });
+    if (!res.ok) throw new Error(`Search failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  async getFollows(): Promise<any[]> {
+    const res = await fetch(`${this.baseUrl}/me/follows`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to fetch follows: ${res.statusText}`);
+    const data = await res.json();
+    return data.follows;
+  }
+
+  async followEntity(type: "team" | "competition" | "athlete", id: number): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/me/follows`, {
+      method: "POST",
+      headers: this.headers,
+      body: JSON.stringify({ followable_type: type, followable_id: id }),
+    });
+    if (!res.ok) throw new Error(`Failed to follow entity: ${res.statusText}`);
+    return res.json();
+  }
+
+  async unfollowEntity(type: string, id: number): Promise<boolean> {
+    const res = await fetch(`${this.baseUrl}/me/follows/${type}/${id}`, {
+      method: "DELETE",
+      headers: this.headers,
+    });
+    return res.ok;
+  }
+
+  async getSavedItems(): Promise<any[]> {
+    const res = await fetch(`${this.baseUrl}/me/saved`, { headers: this.headers });
+    if (!res.ok) throw new Error(`Failed to fetch saved items: ${res.statusText}`);
+    const data = await res.json();
+    return data.saved_items;
+  }
+
+  async saveItem(itemType: "fixture" | "article" | "arena_comment", itemId: number, notes?: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/me/saved`, {
+      method: "POST",
+      headers: this.headers,
+      body: JSON.stringify({ item_type: itemType, item_id: itemId, notes }),
+    });
+    if (!res.ok) throw new Error(`Failed to save item: ${res.statusText}`);
+    return res.json();
+  }
+
+  async unsaveItem(itemType: string, itemId: number): Promise<boolean> {
+    const res = await fetch(`${this.baseUrl}/me/saved/${itemType}/${itemId}`, {
+      method: "DELETE",
+      headers: this.headers,
+    });
+    return res.ok;
+  }
 }
