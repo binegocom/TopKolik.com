@@ -1,0 +1,106 @@
+name: Clients and Dependency Audit
+
+on:
+  pull_request:
+    paths:
+      - 'apps/**'
+      - 'scripts/audit-dependencies.sh'
+      - '.github/workflows/clients-ci.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/**'
+      - 'scripts/audit-dependencies.sh'
+      - '.github/workflows/clients-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: Public Web Next.js Build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Install dependencies
+        working-directory: apps/web
+        run: npm ci
+      - name: Run Next.js production build
+        working-directory: apps/web
+        run: npm run build
+
+  admin:
+    name: Operations Admin Next.js Build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: apps/admin/package-lock.json
+      - name: Install dependencies
+        working-directory: apps/admin
+        run: npm ci
+      - name: Run Next.js production build
+        working-directory: apps/admin
+        run: npm run build
+
+  mobile:
+    name: Flutter Mobile Analyze and Tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+      - name: Install Flutter dependencies
+        working-directory: apps/mobile
+        run: flutter pub get
+      - name: Analyze Flutter codebase
+        working-directory: apps/mobile
+        run: flutter analyze --no-fatal-infos
+      - name: Run Flutter widget and unit tests
+        working-directory: apps/mobile
+        run: flutter test
+
+  audit:
+    name: Security and Dependency Audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer:v2
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+      - name: Run multi-project dependency audit
+        run: bash scripts/audit-dependencies.sh
