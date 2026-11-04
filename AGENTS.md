@@ -26,7 +26,8 @@ This repository initially contains a blueprint, not running software. On each ta
 ## Design and languages
 - Respect the approved Topkolik reference brand; do not replace or revise logo/colors without a decision record.
 - iOS HIG and Android Material 3 native behaviors; web responsive WCAG 2.2 AA target. Do not copy another app's layouts or assets.
-- Source UI locale `de`, then `fr`, `it`, `en`, fallback `en` on unsupported device locales. Do not add Turkish UI localization without explicit owner authorization. Turkish sports editorial articles are distinct from localized interface labels.
+- Source UI locale `de`, plus supported locales `fr`, `it`, `en`, and owner-approved `tr` (`ADR-004`), with fallback `en` on unsupported device locales. Automatically resolve `tr` for Türkiye-based users (`Accept-Language: tr*`) when no explicit `preferred_locale` override is stored.
+- Owner-approved social fan platform capabilities (`ADR-015`..`ADR-017`): segmented Match Arenas (`home`, `away`, `neutral`), match polls & reactions, free-to-play Score Predictions (1-X-2, exact score, goal range, first-scoring team; strictly zero wagering/betting), and individual + sample-size-normalized club Fan Rankings. Social posting requires operational moderation, reporting, blocking, slow-mode, and emergency lockdown controls.
 - Code, identifiers, API paths, migrations, documentation and GitHub issues in English.
 
 ## Completion discipline

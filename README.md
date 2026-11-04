@@ -1,6 +1,6 @@
 # Topkolik — Autonomous Sports News Platform
 
-> **Not a working public product.** The repository contains a tested Laravel 13 API foundation, reader-only Sanctum mobile authentication, reader profile/locale/favorites API, and an isolated editorial policy guard. Reader password reset is implemented and CI-tested on the backend (with a trusted frontend URL prerequisite); invite-only inactive staff enrollment, mandatory MFA and staff authorization, customer web/browser session integration, sports-data providers, AI publishing, public web/mobile apps, advertising and production deployment are **not** implemented or verified.
+> **Not a working public product.** The repository contains a tested Laravel 13 API foundation, reader-only Sanctum mobile authentication, reader profile/locale/favorites API (`de`, `fr`, `it`, `en`, `tr`), segmented social Match Arenas (`home`/`away`/`neutral` rooms, polls, reactions, automated safety filter, reporting, blocking, slow mode, and MFA staff moderation lockdown), free-to-play Score Predictions with deterministic versioned settlement, individual and normalized club Fan Rankings, invite-only staff MFA/RBAC/audit slices, and an isolated editorial policy guard. Customer web/browser session integration, licensed live sports-data provider ingestion, AI publishing, public web/mobile/admin apps, advertising and production deployment are **not** complete or verified in production.
 
 **Mission:** Build an original, legally sourced, AI-assisted, largely autonomous sports-news publication for web, iOS and Android, with particular emphasis on Turkish sports competitions across all accessible disciplines.
 
@@ -25,7 +25,7 @@
 
 **User authentication:** Public reading and live scores work without login. Reader accounts are optional for synchronized preferences, favorites and saved content. Admin/editor/staff login is mandatory, separately scoped and protected by MFA.
 
-**Languages:** UI localization decision is currently `de → fr → it → en`, with English fallback, per owner preferences. Editorial output may cover Turkey in Turkish; Turkish **UI localization is not approved** and remains a blocking product decision for the Turkey-first release. Do not silently add `tr` to UI locales.
+**Languages:** Supported UI locales are `de`, `fr`, `it`, `en`, and owner-approved `tr` (`ADR-004`), with `de` as source language, automatic `tr` selection for `Accept-Language: tr*` when `preferred_locale` is null, and English (`en`) fallback for unsupported locales.
 
 ## Getting started
 

@@ -1,6 +1,6 @@
 # Execution roadmap — Topkolik
 
-147 independently tracked tasks across 16 sequential phase gates. The task IDs, actual status and acceptance evidence live in [`ROADMAP.json`](../../ROADMAP.json).
+154 independently tracked tasks across 16 sequential phase gates. The task IDs, actual status and acceptance evidence live in [`ROADMAP.json`](../../ROADMAP.json).
 
 Milestones may overlap for implementation efficiency but phase gates cannot be claimed complete until all their blocking tests and dependencies pass. The project is not yet implemented or deployed.
 
@@ -173,7 +173,7 @@ Milestones may overlap for implementation efficiency but phase gates cannot be c
 **Gate condition:** all tasks have test-backed evidence, relevant legal/source-rights blockers are cleared, and acceptance is reviewed.
 
 ## P05 — Match center, discovery and search API
-**Gate:** `P05-GATE` | **Current status:** `todo` | **Tasks:** 8
+**Gate:** `P05-GATE` | **Current status:** `in_progress` | **Tasks:** 12
 
 - [ ] **P05-001 — Implement fixtures and scores public endpoints** (`todo`)  
   **Approach:** Schedule, live, results by sport/league/date with pagination.  
@@ -199,6 +199,18 @@ Milestones may overlap for implementation efficiency but phase gates cannot be c
 - [ ] **P05-008 — Implement API usage/rate controls** (`todo`)  
   **Approach:** Public vs privileged quotas, consistent errors and abuse thresholds.  
   **Acceptance:** Load and rate-limiting tests pass.
+- [ ] **P05-009 — Implement match discussion arenas, segmented fan rooms and moderation controls** (`in_progress`)  
+  **Approach:** Home/Away supporter sections, Neutral room, automated safety filter, reporting, blocking, slow mode and MFA staff emergency lockdown.  
+  **Acceptance:** Section follow checks, slow mode, block isolation, quarantine and staff audit tests pass.
+- [ ] **P05-010 — Implement match polls, fan reactions and live mood aggregation** (`in_progress`)  
+  **Approach:** Single-vote arena polls and idempotent per-user match reactions.  
+  **Acceptance:** Duplicate vote rejection and reaction aggregation tests pass.
+- [ ] **P05-011 — Implement score prediction markets, lock windows and deterministic scoring engine** (`in_progress`)  
+  **Approach:** Free-to-play 1-X-2, exact score, goal range and first scorer predictions locked at kick-off with versioned settlement and VAR revision recompute.  
+  **Acceptance:** Kick-off lock boundary, zero-wagering validation and deterministic settlement tests pass.
+- [ ] **P05-012 — Implement individual and club-based fan leaderboards and reputation badges** (`in_progress`)  
+  **Approach:** Individual analyst rankings with non-monetary achievement badges and club rankings normalized by minimum supporter sample size.  
+  **Acceptance:** Tie-break determinism and minimum sample-size qualification tests pass.
 
 **Gate condition:** all tasks have test-backed evidence, relevant legal/source-rights blockers are cleared, and acceptance is reviewed.
 
@@ -275,7 +287,7 @@ Milestones may overlap for implementation efficiency but phase gates cannot be c
 **Gate condition:** all tasks have test-backed evidence, relevant legal/source-rights blockers are cleared, and acceptance is reviewed.
 
 ## P08 — Consumer web (SEO-first)
-**Gate:** `P08-GATE` | **Current status:** `todo` | **Tasks:** 9
+**Gate:** `P08-GATE` | **Current status:** `todo` | **Tasks:** 10
 
 - [ ] **P08-001 — Implement public layout/header/footer** (`todo`)  
   **Approach:** Responsive accessible layout with real API navigation.  
@@ -304,11 +316,14 @@ Milestones may overlap for implementation efficiency but phase gates cannot be c
 - [ ] **P08-009 — Implement analytics and consent UX** (`todo`)  
   **Approach:** First-party page events/privacy/legal controls.  
   **Acceptance:** Consent and opt-out events verified.
+- [ ] **P08-010 — Implement web match arena discussion, prediction center and fan leaderboards** (`todo`)  
+  **Approach:** Segmented supporter rooms, free-to-play prediction slip, individual/club rankings and 5-locale UI (`de`, `fr`, `it`, `en`, `tr`).  
+  **Acceptance:** Responsive arena moderation states, prediction lock UX and leaderboard rendering pass.
 
 **Gate condition:** all tasks have test-backed evidence, relevant legal/source-rights blockers are cleared, and acceptance is reviewed.
 
 ## P09 — Flutter mobile iOS and Android
-**Gate:** `P09-GATE` | **Current status:** `todo` | **Tasks:** 11
+**Gate:** `P09-GATE` | **Current status:** `todo` | **Tasks:** 12
 
 - [ ] **P09-001 — Implement native-adaptive navigation and theme** (`todo`)  
   **Approach:** iOS HIG tabs; Android Material 3; Topkolik tokens.  
@@ -343,11 +358,14 @@ Milestones may overlap for implementation efficiency but phase gates cannot be c
 - [ ] **P09-011 — Run device accessibility and performance tests** (`todo`)  
   **Approach:** VoiceOver/TalkBack, dynamic type, back navigation, start latency.  
   **Acceptance:** Signed build and physical device test evidence recorded.
+- [ ] **P09-012 — Implement mobile match arena, prediction slip and fan rankings experience** (`todo`)  
+  **Approach:** Native iOS/Android segmented match tribunes, live polls/reactions, prediction slip and club/analyst leaderboards in `de`, `fr`, `it`, `en`, `tr`.  
+  **Acceptance:** Widget, localization and API integration tests pass.
 
 **Gate condition:** all tasks have test-backed evidence, relevant legal/source-rights blockers are cleared, and acceptance is reviewed.
 
 ## P10 — Newsroom admin and staff workflows
-**Gate:** `P10-GATE` | **Current status:** `todo` | **Tasks:** 11
+**Gate:** `P10-GATE` | **Current status:** `todo` | **Tasks:** 12
 
 - [ ] **P10-001 — Implement admin design shell and RBAC routes** (`todo`)  
   **Approach:** Sidebar, search, command bar, identity and permission guards.  
@@ -382,6 +400,9 @@ Milestones may overlap for implementation efficiency but phase gates cannot be c
 - [ ] **P10-011 — Implement admin responsive/accessibility QA** (`todo`)  
   **Approach:** Dense desktop tables and safe small-screen operations.  
   **Acceptance:** Keyboard/screen reader/viewport tests pass.
+- [ ] **P10-012 — Implement social moderation queue, arena slow-mode/lockdown and prediction policy operations** (`todo`)  
+  **Approach:** MFA-protected report resolution console, comment quarantine review, arena slow-mode/emergency lock controls and prediction settlement inspection.  
+  **Acceptance:** RBAC, MFA step-up and security audit tests pass.
 
 **Gate condition:** all tasks have test-backed evidence, relevant legal/source-rights blockers are cleared, and acceptance is reviewed.
 

@@ -73,6 +73,10 @@ final class ReaderProfilePreferencesTest extends TestCase
 
         $this->withHeader('Accept-Language', 'tr-TR,tr;q=0.9')
             ->getJson('/api/v1/me/preferences')->assertOk()
+            ->assertJsonPath('preferences.effective_locale', 'tr');
+
+        $this->withHeader('Accept-Language', 'es-ES,es;q=0.9')
+            ->getJson('/api/v1/me/preferences')->assertOk()
             ->assertJsonPath('preferences.effective_locale', 'en');
 
         $this->withHeader('Accept-Language', 'de-CH,de;q=0.9')
@@ -136,7 +140,7 @@ final class ReaderProfilePreferencesTest extends TestCase
     {
         $user = $this->reader();
         $this->withReaderToken($user)
-            ->patchJson('/api/v1/me/preferences', ['preferred_locale' => 'tr'])
+            ->patchJson('/api/v1/me/preferences', ['preferred_locale' => 'es'])
             ->assertUnprocessable()->assertJsonValidationErrors('preferred_locale');
         $this->patchJson('/api/v1/me/preferences', ['reading_history_enabled' => true])
             ->assertUnprocessable()->assertJsonValidationErrors('reading_history_enabled');
@@ -151,7 +155,11 @@ final class ReaderProfilePreferencesTest extends TestCase
     {
         $user = $this->reader();
         $this->withReaderToken($user)
-            ->patchJson('/api/v1/me/preferences', ['preferred_locale' => 'de'])
+            ->patchJson('/api/v1/me/preferences', ['preferred_locale' => 'tr'])
+            ->assertOk()
+            ->assertJsonPath('preferences.preferred_locale', 'tr')
+            ->assertJsonPath('preferences.effective_locale', 'tr');
+        $this->patchJson('/api/v1/me/preferences', ['preferred_locale' => 'de'])
             ->assertOk()->assertJsonPath('preferences.effective_locale', 'de');
         $this->withHeader('Accept-Language', 'it-CH,it;q=0.9')
             ->patchJson('/api/v1/me/preferences', ['preferred_locale' => null])

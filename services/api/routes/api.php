@@ -24,6 +24,10 @@ use App\Http\Controllers\StaffSupportEscalationRecoveryController;
 use App\Http\Controllers\StaffSupportTicketController;
 use App\Http\Controllers\StaffSupportEscalationController;
 use App\Http\Controllers\StaffEditorialDraftController;
+use App\Http\Controllers\MatchArenaController;
+use App\Http\Controllers\MatchPredictionController;
+use App\Http\Controllers\FanRankingController;
+use App\Http\Controllers\StaffArenaModerationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/status', fn () => response()->json(['service' => 'topkolik-api', 'status' => 'operational']))
@@ -70,6 +74,37 @@ Route::middleware(['auth:sanctum', 'reader.session'])->prefix('me')->group(funct
             ->middleware('throttle:reader-privacy-sensitive');
         Route::post('/privacy/deletion-requests', [ReaderPrivacyController::class, 'requestDeletion'])
             ->middleware('throttle:reader-privacy-sensitive');
+    });
+});
+
+// Social fan match arenas, predictions, reporting, blocking and leaderboards.
+Route::middleware(['auth:sanctum', 'reader.session'])->group(function (): void {
+    Route::middleware('ability:reader:read')->group(function (): void {
+        Route::get('/matches/{fixture}/arena', [MatchArenaController::class, 'show'])
+            ->whereNumber('fixture')->middleware('throttle:60,1');
+        Route::get('/matches/{fixture}/prediction', [MatchPredictionController::class, 'showOwn'])
+            ->whereNumber('fixture')->middleware('throttle:60,1');
+        Route::get('/rankings/users', [FanRankingController::class, 'users'])
+            ->middleware('throttle:30,1');
+        Route::get('/rankings/clubs', [FanRankingController::class, 'clubs'])
+            ->middleware('throttle:30,1');
+    });
+
+    Route::middleware('ability:reader:write')->group(function (): void {
+        Route::post('/matches/{fixture}/arena/comments', [MatchArenaController::class, 'postComment'])
+            ->whereNumber('fixture')->middleware('throttle:20,1');
+        Route::put('/matches/{fixture}/arena/reaction', [MatchArenaController::class, 'react'])
+            ->whereNumber('fixture')->middleware('throttle:30,1');
+        Route::post('/matches/{fixture}/arena/polls/{poll}/votes', [MatchArenaController::class, 'votePoll'])
+            ->whereNumber('fixture')->whereNumber('poll')->middleware('throttle:20,1');
+        Route::post('/arena/comments/{comment}/reports', [MatchArenaController::class, 'reportComment'])
+            ->whereNumber('comment')->middleware('throttle:15,1');
+        Route::put('/me/blocks/{targetUser}', [MatchArenaController::class, 'blockUser'])
+            ->whereNumber('targetUser')->middleware('throttle:20,1');
+        Route::delete('/me/blocks/{targetUser}', [MatchArenaController::class, 'unblockUser'])
+            ->whereNumber('targetUser')->middleware('throttle:20,1');
+        Route::put('/matches/{fixture}/prediction', [MatchPredictionController::class, 'submit'])
+            ->whereNumber('fixture')->middleware('throttle:20,1');
     });
 });
 
@@ -232,6 +267,14 @@ Route::prefix('staff')->group(function (): void {
             ->whereNumber('ticket')->middleware('throttle:6,1');
         Route::post('/support/tickets/{ticket}/resolve', [StaffSupportTicketController::class, 'resolve'])
             ->whereNumber('ticket')->middleware('throttle:6,1');
+
+        // MFA step-up protected social match arena and comment moderation controls.
+        Route::patch('/moderation/arenas/{arena}/control', [StaffArenaModerationController::class, 'updateArenaControl'])
+            ->whereNumber('arena')->middleware('throttle:15,1');
+        Route::post('/moderation/comments/{comment}/decision', [StaffArenaModerationController::class, 'moderateComment'])
+            ->whereNumber('comment')->middleware('throttle:20,1');
+        Route::post('/moderation/reports/{report}/resolve', [StaffArenaModerationController::class, 'resolveReport'])
+            ->whereNumber('report')->middleware('throttle:20,1');
     });
 });
 

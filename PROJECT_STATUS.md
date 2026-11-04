@@ -2,9 +2,9 @@
 
 > **NOT A WORKING PUBLIC PRODUCT.** The Laravel 13 API, verified reader auth and reader preferences/favorites are implemented; consumer web/mobile/admin, live sports data, AI publishing and production deployment are not.
 
-**As of:** 2026-11-02  
+**As of:** 2026-11-04  
 **Release:** Not started  
-**Tracked tasks:** 147 | **Documentation tasks done:** 3 | **Implementation done:** 9
+**Tracked tasks:** 154 | **Documentation tasks done:** 3 | **Implementation done:** 9
 
 ## Phase status
 
@@ -15,12 +15,12 @@
 | `P02-GATE` | Repository and engineering foundation | 11 | `in_progress` |
 | `P03-GATE` | Authentication, roles and privacy | 11 | `in_progress` |
 | `P04-GATE` | Sports catalog and licensed ingestion | 10 | `todo` |
-| `P05-GATE` | Match center, discovery and search API | 8 | `todo` |
+| `P05-GATE` | Match center, discovery and search API | 12 | `in_progress` |
 | `P06-GATE` | Autonomous editorial and fact validation | 12 | `todo` |
 | `P07-GATE` | Automated media production | 8 | `todo` |
-| `P08-GATE` | Consumer web (SEO-first) | 9 | `todo` |
-| `P09-GATE` | Flutter mobile iOS and Android | 11 | `todo` |
-| `P10-GATE` | Newsroom admin and staff workflows | 11 | `todo` |
+| `P08-GATE` | Consumer web (SEO-first) | 10 | `todo` |
+| `P09-GATE` | Flutter mobile iOS and Android | 12 | `todo` |
+| `P10-GATE` | Newsroom admin and staff workflows | 12 | `todo` |
 | `P11-GATE` | Ads sales, serving and reporting | 9 | `todo` |
 | `P12-GATE` | Billing, accounting and finance | 8 | `todo` |
 | `P13-GATE` | Support, personalization and analytics | 7 | `todo` |
@@ -762,3 +762,10 @@
 - A PostgreSQL feature regression checks the lock order and post-revocation access. Five isolated four-worker HTTP races cover staff deactivation, role revocation, assignment withdrawal, organization deactivation and concurrent logout. The tests reject foreign advertiser names, verify post-commit replay denials and preserve the audit/assignment ledger. No production data or sports API is involved.
 - **Verified implementation SHA `3044402b23cb6181af621c87a2cdedb18b4534aa`:** [Laravel API CI 41555731098](https://github.com/binegocom/TopKolik.com/actions/runs/41555731098) passed **366 Laravel tests / 3,322 assertions**, PostgreSQL/Redis, five new four-worker races, existing HTTP concurrency suites, live HTTP/SMTP, Composer audit and 17 editorial guard cases. [Editorial/roadmap CI 41555731544](https://github.com/binegocom/TopKolik.com/actions/runs/41555731544) passed. The final documentation head must also pass both workflows before merge.
 - **P03-007 remains in_progress** pending complete cross-resource RBAC/BOLA matrix, independent security review and production validation. **P00-004 remains blocked** pending owner/legal/provider decisions. No locale, runtime sports fixtures, destructive migration or release state changed.
+
+## P00-004 / P01-003 / P03-004 / P05-009..012 — Owner-approved social fan scope, Turkish (`tr`) UI locale, zero-cost sports API matrix & backend Match Arenas / Predictions / Rankings
+
+- **2026-11-04, in_progress:** Recorded owner-approved `ADR-004` (`de`, `fr`, `it`, `en`, `tr` UI localization with automatic `tr` selection for `Accept-Language: tr*` and `en` fallback) and `ADR-015`..`ADR-017` (social match discussion arenas, free-to-play score predictions with deterministic versioned settlement, and individual + sample-size-normalized club fan rankings). Updated `UpdateReaderPreferencesRequest`, `ReaderProfileController`, and `ReaderProfilePreferencesTest` to support `tr`.
+- Published the 20-criterion zero-cost/open-data sports API matrix and central polling quota math in `docs/research/FREE_SPORTS_API_MATRIX.md` (`P01-003` remains `in_progress`; commercial licensing `P01-004` and remaining `ADR-003`/`ADR-007`..`ADR-014` decisions keep `P00-004` `blocked`).
+- Added forward-only PostgreSQL migration `2026_11_04_120000_create_social_match_arenas_predictions_and_rankings_tables.php` and backend services/controllers for segmented Match Arenas (`home`/`away`/`neutral` rooms, club-follow checks, slow-mode 429 cooldowns, `SocialContentSafetyFilter` quarantine, mutual user blocks, abuse reporting, single-vote polls, reactions, and MFA step-up staff moderation with append-only `security_audit_events`), free-to-play `MatchPredictionController` + `PredictionScoringEngine` (kick-off lock window, `3/5/2/2` point settlement, and official VAR/score revision recomputation), and `FanRankingController` (deterministic individual and `min_club_ranking_sample_size`-normalized club leaderboards).
+- Verified locally on disposable PostgreSQL 16 (`SocialMatchArenasPredictionsAndRankingsTest`, `ReaderProfilePreferencesTest`, `SecurityAuditEventsTest`, `StaffSecurityAuditSearchTest` — 28 tests / 287 assertions passed) and `validate_blueprint.py` / `status.py check` / `test-editorial-guard.sh`. `P05-009`..`P05-012` remain **in_progress** pending licensed live fixture ingestion (`P04`) and consumer web/mobile/admin UI integration (`P08-010`, `P09-012`, `P10-012`).

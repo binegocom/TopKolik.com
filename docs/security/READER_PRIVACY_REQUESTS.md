@@ -22,7 +22,7 @@ This is a partial P03-009 transparency feature; legal retention decisions and ex
 
 Existing `PATCH /api/v1/me/preferences` remains compatible. It writes an append-only consent change record for real transitions of `analytics_consent` and `personalized_news_enabled` in the same transaction as preferences, serialized via a user row lock. Initial privacy-safe default is false and creates no tracking event. Unchanged submissions and locale-only updates create no event. PostgreSQL rejects updating or deleting past consent records.
 
-No reading history is created. User interface locales remain `de`, `fr`, `it`, `en` with `en` fallback; unresolved ADR-004 is unchanged.
+No reading history is created. User interface locales are `de`, `fr`, `it`, `en`, `tr` with `en` fallback per owner-approved ADR-004.
 
 ## Legal/production blockers
 
