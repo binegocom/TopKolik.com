@@ -23,13 +23,11 @@ final class PublicFixturesAndScoresApiTest extends TestCase
             'sport_id' => $sport->id,
             'slug' => 'galatasaray-'.Str::random(6),
             'name' => 'Galatasaray',
-            'short_code' => 'GS',
         ]);
         $awayTeam = Team::create([
             'sport_id' => $sport->id,
             'slug' => 'fenerbahce-'.Str::random(6),
             'name' => 'Fenerbahçe',
-            'short_code' => 'FB',
         ]);
 
         $now = now();
