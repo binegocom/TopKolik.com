@@ -120,7 +120,7 @@ final class ReaderProfileController extends Controller
     {
         $pref = $user->readerPreference;
         $preferred = $pref?->preferred_locale;
-        $supported = ['de', 'fr', 'it', 'en'];
+        $supported = ['de', 'fr', 'it', 'en', 'tr'];
         $detected = 'en';
 
         if ($preferred === null) {

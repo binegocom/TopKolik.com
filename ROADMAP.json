@@ -54,9 +54,9 @@
     {
       "id": "P05",
       "name": "Match center, discovery and search API",
-      "status": "todo",
+      "status": "in_progress",
       "gate": "P05-GATE",
-      "task_count": 8
+      "task_count": 12
     },
     {
       "id": "P06",
@@ -77,21 +77,21 @@
       "name": "Consumer web (SEO-first)",
       "status": "todo",
       "gate": "P08-GATE",
-      "task_count": 9
+      "task_count": 10
     },
     {
       "id": "P09",
       "name": "Flutter mobile iOS and Android",
       "status": "todo",
       "gate": "P09-GATE",
-      "task_count": 11
+      "task_count": 12
     },
     {
       "id": "P10",
       "name": "Newsroom admin and staff workflows",
       "status": "todo",
       "gate": "P10-GATE",
-      "task_count": 11
+      "task_count": 12
     },
     {
       "id": "P11",
@@ -219,7 +219,7 @@
       "issue_url": null,
       "pr_url": null,
       "limitations": [
-        "Owner approval is required for ADR-004 UI locale policy (de/fr/it/en remains configured; Turkish UI is not authorized), ADR-007 licensed sports data and exact coverage, ADR-008 team/athlete/media rights, ADR-010 gambling/odds ad policy, ADR-012 legal entity/tax/finance country, and ADR-014 domain/trademark/app identifiers. No default may be treated as approved.",
+        "ADR-004 UI locale policy (de/fr/it/en/tr with en fallback) and ADR-015..ADR-017 social match arenas, free-to-play predictions and fan rankings are owner-approved (2026-11-04). Owner approval is still required for ADR-007 licensed sports data and exact coverage, ADR-008 team/athlete/media rights, ADR-010 gambling/odds ad policy, ADR-012 legal entity/tax/finance country, and ADR-014 domain/trademark/app identifiers. No default may be treated as approved.",
         "Advertising vendors (ADR-011), publisher contact (ADR-013), AI vendor/retention (ADR-009) and infrastructure/region budget (ADR-003) are also pending; implementable independent backend work can continue without inventing those decisions."
       ]
     },
@@ -280,7 +280,12 @@
         {
           "type": "file",
           "path": "docs/research/SPORTS_DATA_PROVIDER_ASSESSMENT.md",
-          "validation": "Desk research only; provider credentials, licensing, sport coverage and costs not yet validated"
+          "validation": "Desk research and zero-cost-first evaluation documented; commercial provider credentials, licensing, sport coverage and costs not yet validated"
+        },
+        {
+          "type": "file",
+          "path": "docs/research/FREE_SPORTS_API_MATRIX.md",
+          "validation": "20-criterion free/open sports API evaluation matrix and centralized polling quota math documented"
         }
       ],
       "verified_at": null,
@@ -868,7 +873,7 @@
       "pr_url": "https://github.com/binegocom/TopKolik.com/pull/23",
       "limitations": [
         "Canonical sports/teams lookup tables are initially empty. P04 provider mapping, live data and reader web/mobile UI remain pending.",
-        "Favorites API functions against empty catalog schema; no licensed teams or sports records, personalization delivery engine, web/mobile UI, production deployment or localization decision for Turkish yet."
+        "Favorites API functions against empty catalog schema; Turkish (tr) UI locale is now enabled alongside de/fr/it/en per owner-approved ADR-004 (2026-11-04), while licensed teams/sports records, personalization delivery engine, web/mobile UI and production deployment remain pending."
       ]
     },
     {
@@ -2475,6 +2480,118 @@
       "limitations": []
     },
     {
+      "id": "P05-009",
+      "phase": "P05",
+      "title": "Implement match discussion arenas, segmented fan rooms and moderation controls",
+      "status": "in_progress",
+      "priority": "P0",
+      "depends_on": [
+        "P04-GATE"
+      ],
+      "implementation": "Home/Away supporter sections, Neutral room, automated safety filter, reporting, blocking, slow mode and MFA staff emergency lockdown.",
+      "acceptance_criteria": [
+        "Section follow checks, slow mode, block isolation, quarantine and staff audit tests pass."
+      ],
+      "evidence": [
+        {
+          "type": "test",
+          "path": "services/api/tests/Feature/SocialMatchArenasPredictionsAndRankingsTest.php",
+          "validation": "PostgreSQL feature tests verify Home/Away club follow enforcement, Neutral open posting, slow-mode 429 cooldowns, automated spam/threat quarantine, mutual block filtering, abuse reporting and MFA staff emergency arena suspension with security audit logging."
+        }
+      ],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": [
+        "Backend API, PostgreSQL schema constraints, safety filter and MFA staff moderation endpoints implemented and tested on disposable PostgreSQL; licensed live fixture ingestion (P04) and consumer web/mobile/admin UI surfaces remain pending."
+      ]
+    },
+    {
+      "id": "P05-010",
+      "phase": "P05",
+      "title": "Implement match polls, fan reactions and live mood aggregation",
+      "status": "in_progress",
+      "priority": "P1",
+      "depends_on": [
+        "P04-GATE"
+      ],
+      "implementation": "Single-vote arena polls and idempotent per-user match reactions.",
+      "acceptance_criteria": [
+        "Duplicate vote rejection and reaction aggregation tests pass."
+      ],
+      "evidence": [
+        {
+          "type": "test",
+          "path": "services/api/tests/Feature/SocialMatchArenasPredictionsAndRankingsTest.php",
+          "validation": "PostgreSQL feature tests verify single-vote poll enforcement (HTTP 409 on duplicate vote) and idempotent per-user reaction upserts and totals."
+        }
+      ],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": [
+        "Backend poll voting and reaction aggregation endpoints implemented and tested on disposable PostgreSQL; consumer web/mobile UI and licensed match scheduling remain pending."
+      ]
+    },
+    {
+      "id": "P05-011",
+      "phase": "P05",
+      "title": "Implement score prediction markets, lock windows and deterministic scoring engine",
+      "status": "in_progress",
+      "priority": "P0",
+      "depends_on": [
+        "P04-GATE"
+      ],
+      "implementation": "Free-to-play 1-X-2, exact score, goal range and first scorer predictions locked at kick-off with versioned settlement and VAR revision recompute.",
+      "acceptance_criteria": [
+        "Kick-off lock boundary, zero-wagering validation and deterministic settlement tests pass."
+      ],
+      "evidence": [
+        {
+          "type": "test",
+          "path": "services/api/tests/Feature/SocialMatchArenasPredictionsAndRankingsTest.php",
+          "validation": "PostgreSQL feature tests verify rejection of wagering/stake fields, scoreline consistency checks, server-side kick-off lock (HTTP 409), 3/5/2/2 point settlement and official VAR revision recomputation."
+        }
+      ],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": [
+        "Backend prediction submission, kick-off lock and deterministic settlement engine implemented and tested on disposable PostgreSQL; automated post-match trigger from licensed live provider (P04) and client UI remain pending."
+      ]
+    },
+    {
+      "id": "P05-012",
+      "phase": "P05",
+      "title": "Implement individual and club-based fan leaderboards and reputation badges",
+      "status": "in_progress",
+      "priority": "P1",
+      "depends_on": [
+        "P04-GATE"
+      ],
+      "implementation": "Individual analyst rankings with non-monetary achievement badges and club rankings normalized by minimum supporter sample size.",
+      "acceptance_criteria": [
+        "Tie-break determinism and minimum sample-size qualification tests pass."
+      ],
+      "evidence": [
+        {
+          "type": "test",
+          "path": "services/api/tests/Feature/SocialMatchArenasPredictionsAndRankingsTest.php",
+          "validation": "PostgreSQL feature tests verify deterministic individual ranking tie-breakers, badge assignment and minimum active supporter sample-size qualification for club leaderboards."
+        }
+      ],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": [
+        "Backend individual and normalized club leaderboard endpoints implemented and tested on disposable PostgreSQL; seasonal archival rollups and consumer web/mobile UI remain pending."
+      ]
+    },
+    {
       "id": "P06-001",
       "phase": "P06",
       "title": "Implement deterministic story signal rules",
@@ -3055,6 +3172,26 @@
       "limitations": []
     },
     {
+      "id": "P08-010",
+      "phase": "P08",
+      "title": "Implement web match arena discussion, prediction center and fan leaderboards",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P07-GATE"
+      ],
+      "implementation": "Segmented supporter rooms, free-to-play prediction slip, individual/club rankings and 5-locale UI (de, fr, it, en, tr).",
+      "acceptance_criteria": [
+        "Responsive arena moderation states, prediction lock UX and leaderboard rendering pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
       "id": "P09-001",
       "phase": "P09",
       "title": "Implement native-adaptive navigation and theme",
@@ -3275,6 +3412,26 @@
       "limitations": []
     },
     {
+      "id": "P09-012",
+      "phase": "P09",
+      "title": "Implement mobile match arena, prediction slip and fan rankings experience",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P08-GATE"
+      ],
+      "implementation": "Native iOS/Android segmented match tribunes, live polls/reactions, prediction slip and club/analyst leaderboards in de, fr, it, en, tr.",
+      "acceptance_criteria": [
+        "Widget, localization and API integration tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
       "id": "P10-001",
       "phase": "P10",
       "title": "Implement admin design shell and RBAC routes",
@@ -3486,6 +3643,26 @@
       "implementation": "Dense desktop tables and safe small-screen operations.",
       "acceptance_criteria": [
         "Keyboard/screen reader/viewport tests pass."
+      ],
+      "evidence": [],
+      "verified_at": null,
+      "owner": null,
+      "issue_url": null,
+      "pr_url": null,
+      "limitations": []
+    },
+    {
+      "id": "P10-012",
+      "phase": "P10",
+      "title": "Implement social moderation queue, arena slow-mode/lockdown and prediction policy operations",
+      "status": "todo",
+      "priority": "P1",
+      "depends_on": [
+        "P09-GATE"
+      ],
+      "implementation": "MFA-protected report resolution console, comment quarantine review, arena slow-mode/emergency lock controls and prediction settlement inspection.",
+      "acceptance_criteria": [
+        "RBAC, MFA step-up and security audit tests pass."
       ],
       "evidence": [],
       "verified_at": null,

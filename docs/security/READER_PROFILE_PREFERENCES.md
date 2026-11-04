@@ -13,8 +13,8 @@ All endpoints use Laravel Sanctum `auth:sanctum`. GET requires `reader:read`; mu
 
 - Default personalization and analytics consent are **false**.
 - Reading history collection is not implemented. `reading_history: {supported:false,enabled:false}` is explicit; attempts to set `reading_history_enabled` fail validation.
-- `preferred_locale: null` uses quality-weighted `Accept-Language`; supported `de`, `fr`, `it`, `en`; region variants reduce to base language, unsupported falls back to `en`.
-- The Türkiye-first Turkish UI locale decision is still open (ADR-004). Do not silently add a localization language; Turkish sports reporting and UI localization are separate decisions.
+- `preferred_locale: null` uses quality-weighted `Accept-Language`; supported `de`, `fr`, `it`, `en`, `tr`; region variants reduce to base language, unsupported falls back to `en`.
+- Owner-approved `ADR-004` (2026-11-04) authorizes Turkish (`tr`) UI localization alongside `de`, `fr`, `it`, `en`.
 - No personal reading history, last-viewed articles, IP address, location or device fingerprint is stored in these preference tables.
 - Consent fields record user choices; instrumentation and consent enforcement in future analytics/news feeds must honor them before collecting or personalizing anything.
 

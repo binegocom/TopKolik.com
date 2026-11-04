@@ -17,7 +17,7 @@ final class UpdateReaderPreferencesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'preferred_locale' => ['sometimes', 'nullable', Rule::in(['de', 'fr', 'it', 'en'])],
+            'preferred_locale' => ['sometimes', 'nullable', Rule::in(['de', 'fr', 'it', 'en', 'tr'])],
             'personalized_news_enabled' => ['sometimes', 'required', 'boolean'],
             'analytics_consent' => ['sometimes', 'required', 'boolean'],
             // No reading history collector exists: do not imply that opting in enables it.

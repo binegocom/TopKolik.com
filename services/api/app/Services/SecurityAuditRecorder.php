@@ -36,9 +36,19 @@ final class SecurityAuditRecorder
         'support.ticket.escalation_reviewer_relinquished',
         'support.ticket.escalation_reviewer_recovered',
         'support.ticket.resolved',
+        'moderation.arena.control_updated',
+        'moderation.comment.moderated',
+        'moderation.report.resolved',
     ];
 
-    private const SUBJECT_TYPES = ['staff_member', 'support_ticket', 'advertiser_organization'];
+    private const SUBJECT_TYPES = [
+        'staff_member',
+        'support_ticket',
+        'advertiser_organization',
+        'match_arena',
+        'arena_comment',
+        'moderation_report',
+    ];
 
     public static function allowedActions(): array
     {
