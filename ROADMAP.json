@@ -61,7 +61,7 @@
     {
       "id": "P06",
       "name": "Autonomous editorial and fact validation",
-      "status": "todo",
+      "status": "in_progress",
       "gate": "P06-GATE",
       "task_count": 12
     },
@@ -3032,7 +3032,7 @@
       "id": "P06-001",
       "phase": "P06",
       "title": "Implement deterministic story signal rules",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P05-GATE"
@@ -3041,8 +3041,22 @@
       "acceptance_criteria": [
         "No news emitted for missing/conflicted/provisional facts."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Domain/Editorial/StorySignalDetector.php, services/api/database/migrations/2026_11_04_210000_create_editorial_signals_and_fact_packs_tables.php, services/api/tests/Feature/DeterministicStorySignalsAndFactPacksTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/DeterministicStorySignalsAndFactPacksTest.php",
+          "result": "7/7 passed (38 assertions), deterministic story signal emission for finished matches, fixture changes, and suppression of provisional/conflicted observations verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p06-deterministic-story-signals-and-fact-packs"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -3052,7 +3066,7 @@
       "id": "P06-002",
       "phase": "P06",
       "title": "Implement evidence-bound fact packs",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P05-GATE"
@@ -3061,8 +3075,22 @@
       "acceptance_criteria": [
         "Every required claim links to exact source evidence."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Domain/Editorial/FactPackBuilder.php, services/api/tests/Feature/DeterministicStorySignalsAndFactPacksTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/DeterministicStorySignalsAndFactPacksTest.php",
+          "result": "7/7 passed (38 assertions), evidence-bound fact pack schema versioning, exact source snapshot claim linkage, and publication guard clearance verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p06-deterministic-story-signals-and-fact-packs"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -3072,7 +3100,7 @@
       "id": "P06-003",
       "phase": "P06",
       "title": "Implement AI schema and prompt version registry",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P05-GATE"
@@ -3081,8 +3109,22 @@
       "acceptance_criteria": [
         "Schema and prompt-injection adversarial tests pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Domain/Editorial/Ai/AiArticleSchema.php, services/api/app/Domain/Editorial/Ai/AiPromptRegistry.php, services/api/tests/Feature/AiSchemaAndPromptRegistryTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/AiSchemaAndPromptRegistryTest.php",
+          "result": "5/5 passed (15 assertions), model-safe JSON schema enforcement, prompt lineage/cost attribution, and adversarial prompt-injection defense verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p06-deterministic-story-signals-and-fact-packs"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
