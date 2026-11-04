@@ -25,8 +25,9 @@ void main() {
 
     // Verify bottom navigation items
     expect(find.text('Maç Arenası'), findsOneWidget);
+    expect(find.text('Sesli Tribün'), findsOneWidget);
+    expect(find.text('Taktik Tahta'), findsOneWidget);
     expect(find.text('Tahminler'), findsOneWidget);
     expect(find.text('Taraftar Ligi'), findsOneWidget);
-    expect(find.text('Haberler'), findsOneWidget);
   });
 }

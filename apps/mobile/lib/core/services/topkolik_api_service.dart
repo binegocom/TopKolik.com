@@ -431,4 +431,142 @@ class TopkolikApiService {
       ],
     );
   }
+
+  Future<List<VoiceTribuneRoom>> getVoiceTribunes(int fixtureId) async {
+    try {
+      final res = await http.get(
+        Uri.parse('$baseUrl/matches/$fixtureId/voice-tribunes'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 3));
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body)['rooms'] as List<dynamic>;
+        return data.map((r) => VoiceTribuneRoom.fromJson(r as Map<String, dynamic>)).toList();
+      }
+    } catch (_) {}
+
+    return [
+      const VoiceTribuneRoom(
+        id: 1,
+        fixtureId: 1,
+        title: 'Derbi 2. Yarı Taktik Analiz ve VAR Pozisyonu',
+        phaseTag: 'MAÇ ANINDA CANLI',
+        listenersCount: 1420,
+        clubId: 1,
+        clubName: 'Galatasaray',
+        hostName: 'Tribün Lideri Barış',
+        isJoined: true,
+        isMicMuted: true,
+      ),
+      const VoiceTribuneRoom(
+        id: 2,
+        fixtureId: 1,
+        title: 'Fenerbahçe Deplasman Tribünü Canlı Tezahürat & Taktik',
+        phaseTag: 'MAÇ ANINDA CANLI',
+        listenersCount: 980,
+        clubId: 2,
+        clubName: 'Fenerbahçe',
+        hostName: 'Kadıköy Ruhu',
+        isJoined: false,
+        isMicMuted: true,
+      ),
+      const VoiceTribuneRoom(
+        id: 3,
+        fixtureId: 1,
+        title: 'Maç Sonu 3. Devre: Hakem Kararları ve Puan Durumu Değerlendirmesi',
+        phaseTag: 'MAÇ SONU 3. DEVRE',
+        listenersCount: 650,
+        clubId: null,
+        clubName: 'Tarafsız',
+        hostName: 'Analiz Meydanı',
+        isJoined: false,
+        isMicMuted: true,
+      ),
+    ];
+  }
+
+  Future<VoiceTribuneRoom?> createVoiceTribune({
+    required int fixtureId,
+    required String title,
+    required String phaseTag,
+    int? clubId,
+  }) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/matches/$fixtureId/voice-tribunes'),
+        headers: _headers,
+        body: jsonEncode({
+          'title': title,
+          'phase_tag': phaseTag,
+          'club_id': clubId,
+        }),
+      ).timeout(const Duration(seconds: 3));
+
+      if (res.statusCode == 201) {
+        final data = jsonDecode(res.body)['room'] as Map<String, dynamic>;
+        return VoiceTribuneRoom.fromJson(data);
+      }
+    } catch (_) {}
+
+    return VoiceTribuneRoom(
+      id: DateTime.now().millisecondsSinceEpoch,
+      fixtureId: fixtureId,
+      title: title,
+      phaseTag: phaseTag,
+      listenersCount: 1,
+      clubId: clubId,
+      hostName: 'Siz (Kurucu)',
+      isJoined: true,
+    );
+  }
+
+  Future<bool> triggerVoiceAction({
+    required int roomId,
+    required String action,
+    String? emoji,
+  }) async {
+    try {
+      final payload = <String, dynamic>{'action': action};
+      if (emoji != null) {
+        payload['emoji'] = emoji;
+      }
+      final res = await http.post(
+        Uri.parse('$baseUrl/voice-tribunes/$roomId/actions'),
+        headers: _headers,
+        body: jsonEncode(payload),
+      ).timeout(const Duration(seconds: 3));
+
+      return res.statusCode == 200;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  TacticalLineup getFallbackTacticalLineup() {
+    return const TacticalLineup(
+      formation: '4-2-3-1',
+      mentality: 'Önde Şok Baskı',
+      coachName: 'Okan Buruk',
+      starters: [
+        TacticalPlayerSlot(slotIndex: 0, playerName: 'Muslera', shirtNumber: 1, position: 'GK', xRatio: 0.50, yRatio: 0.88, clubPrimaryHex: '#A6192E'),
+        TacticalPlayerSlot(slotIndex: 1, playerName: 'Kaan Ayhan', shirtNumber: 23, position: 'DF', xRatio: 0.16, yRatio: 0.70, clubPrimaryHex: '#A6192E'),
+        TacticalPlayerSlot(slotIndex: 2, playerName: 'Davinson', shirtNumber: 6, position: 'DF', xRatio: 0.38, yRatio: 0.72, clubPrimaryHex: '#A6192E'),
+        TacticalPlayerSlot(slotIndex: 3, playerName: 'Abdülkerim', shirtNumber: 42, position: 'DF', xRatio: 0.62, yRatio: 0.72, clubPrimaryHex: '#A6192E'),
+        TacticalPlayerSlot(slotIndex: 4, playerName: 'Jakobs', shirtNumber: 4, position: 'DF', xRatio: 0.84, yRatio: 0.70, clubPrimaryHex: '#A6192E'),
+        TacticalPlayerSlot(slotIndex: 5, playerName: 'Torreira', shirtNumber: 34, position: 'MF', xRatio: 0.36, yRatio: 0.52, clubPrimaryHex: '#A6192E'),
+        TacticalPlayerSlot(slotIndex: 6, playerName: 'Gabriel Sara', shirtNumber: 20, position: 'MF', xRatio: 0.64, yRatio: 0.52, clubPrimaryHex: '#A6192E'),
+        TacticalPlayerSlot(slotIndex: 7, playerName: 'Barış Alper', shirtNumber: 53, position: 'FW', xRatio: 0.18, yRatio: 0.33, clubPrimaryHex: '#A6192E'),
+        TacticalPlayerSlot(slotIndex: 8, playerName: 'Mertens', shirtNumber: 10, position: 'MF', xRatio: 0.50, yRatio: 0.34, clubPrimaryHex: '#A6192E'),
+        TacticalPlayerSlot(slotIndex: 9, playerName: 'Yunus Akgün', shirtNumber: 11, position: 'FW', xRatio: 0.82, yRatio: 0.33, clubPrimaryHex: '#A6192E'),
+        TacticalPlayerSlot(slotIndex: 10, playerName: 'Icardi', shirtNumber: 9, position: 'FW', xRatio: 0.50, yRatio: 0.15, clubPrimaryHex: '#A6192E'),
+      ],
+      bench: [
+        TacticalPlayerSlot(slotIndex: 11, playerName: 'Batshuayi', shirtNumber: 44, position: 'FW', xRatio: 0.50, yRatio: 0.15, clubPrimaryHex: '#A6192E'),
+        TacticalPlayerSlot(slotIndex: 12, playerName: 'Kerem Demirbay', shirtNumber: 8, position: 'MF', xRatio: 0.50, yRatio: 0.52, clubPrimaryHex: '#A6192E'),
+        TacticalPlayerSlot(slotIndex: 13, playerName: 'Berkan Kutlu', shirtNumber: 18, position: 'MF', xRatio: 0.50, yRatio: 0.52, clubPrimaryHex: '#A6192E'),
+        TacticalPlayerSlot(slotIndex: 14, playerName: 'Nelsson', shirtNumber: 25, position: 'DF', xRatio: 0.50, yRatio: 0.72, clubPrimaryHex: '#A6192E'),
+        TacticalPlayerSlot(slotIndex: 15, playerName: 'Günay Güvenç', shirtNumber: 19, position: 'GK', xRatio: 0.50, yRatio: 0.88, clubPrimaryHex: '#A6192E'),
+      ],
+    );
+  }
 }

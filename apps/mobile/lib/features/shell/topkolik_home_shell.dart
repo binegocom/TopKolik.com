@@ -8,6 +8,8 @@ import '../match_arena/presentation/widgets/arena_poll_card.dart';
 import '../match_arena/presentation/widgets/segmented_tribune_view.dart';
 import '../predictions/presentation/widgets/prediction_slip_card.dart';
 import '../rankings/presentation/widgets/rankings_tab_view.dart';
+import '../voice_tribunes/presentation/widgets/voice_tribune_view.dart';
+import '../tactical_board/presentation/widgets/tactical_pitch_board_view.dart';
 
 class TopkolikHomeShell extends StatefulWidget {
   final ValueChanged<Locale>? onLocaleChanged;
@@ -29,6 +31,8 @@ class _TopkolikHomeShellState extends State<TopkolikHomeShell> with SingleTicker
   MatchPrediction? _myPrediction;
   List<AnalystRanking> _analysts = [];
   List<ClubRanking> _clubs = [];
+  List<VoiceTribuneRoom> _voiceRooms = [];
+  late TacticalLineup _tacticalLineup;
   bool _isLoading = true;
 
   late AnimationController _pulseController;
@@ -60,6 +64,8 @@ class _TopkolikHomeShellState extends State<TopkolikHomeShell> with SingleTicker
     final prediction = await _apiService.getMyPrediction(1);
     final analysts = await _apiService.getAnalystRankings();
     final clubs = await _apiService.getClubRankings();
+    final voiceRooms = await _apiService.getVoiceTribunes(1);
+    final tacticalLineup = _apiService.getFallbackTacticalLineup();
 
     if (mounted) {
       setState(() {
@@ -67,9 +73,96 @@ class _TopkolikHomeShellState extends State<TopkolikHomeShell> with SingleTicker
         _myPrediction = prediction;
         _analysts = analysts;
         _clubs = clubs;
+        _voiceRooms = voiceRooms;
+        _tacticalLineup = tacticalLineup;
         _isLoading = false;
       });
     }
+  }
+
+  void _handleCreateVoiceRoom(String title, String phaseTag) async {
+    final newRoom = await _apiService.createVoiceTribune(
+      fixtureId: _arenaState.fixtureId,
+      title: title,
+      phaseTag: phaseTag,
+    );
+    if (newRoom != null) {
+      setState(() {
+        _voiceRooms = [newRoom, ..._voiceRooms];
+      });
+    }
+  }
+
+  void _handleTriggerVoiceAction(int roomId, String action, String? emoji) async {
+    setState(() {
+      _voiceRooms = _voiceRooms.map((r) {
+        if (r.id == roomId) {
+          if (action == 'toggle-mic') {
+            return r.copyWith(isMicMuted: !r.isMicMuted);
+          } else if (action == 'toggle-hand') {
+            return r.copyWith(isHandRaised: !r.isHandRaised);
+          } else if (action == 'toggle-join') {
+            return r.copyWith(isJoined: !r.isJoined, listenersCount: r.isJoined ? r.listenersCount - 1 : r.listenersCount + 1);
+          }
+        }
+        return r;
+      }).toList();
+    });
+
+    await _apiService.triggerVoiceAction(
+      roomId: roomId,
+      action: action,
+      emoji: emoji,
+    );
+  }
+
+  void _handleFormationChanged(String formation) {
+    setState(() {
+      _tacticalLineup = _tacticalLineup.copyWith(formation: formation);
+    });
+  }
+
+  void _handleMentalityChanged(String mentality) {
+    setState(() {
+      _tacticalLineup = _tacticalLineup.copyWith(mentality: mentality);
+    });
+  }
+
+  void _handlePlayerSubstituted(int starterIdx, int benchIdx) {
+    setState(() {
+      final sList = List<TacticalPlayerSlot>.from(_tacticalLineup.starters);
+      final bList = List<TacticalPlayerSlot>.from(_tacticalLineup.bench);
+
+      final sPos = sList.indexWhere((p) => p.slotIndex == starterIdx);
+      final bPos = bList.indexWhere((p) => p.slotIndex == benchIdx);
+
+      if (sPos != -1 && bPos != -1) {
+        final starter = sList[sPos];
+        final bench = bList[bPos];
+
+        sList[sPos] = TacticalPlayerSlot(
+          slotIndex: bench.slotIndex,
+          playerName: bench.playerName,
+          shirtNumber: bench.shirtNumber,
+          position: bench.position,
+          xRatio: starter.xRatio,
+          yRatio: starter.yRatio,
+          clubPrimaryHex: starter.clubPrimaryHex,
+        );
+
+        bList[bPos] = TacticalPlayerSlot(
+          slotIndex: starter.slotIndex,
+          playerName: starter.playerName,
+          shirtNumber: starter.shirtNumber,
+          position: starter.position,
+          xRatio: bench.xRatio,
+          yRatio: bench.yRatio,
+          clubPrimaryHex: bench.clubPrimaryHex,
+        );
+
+        _tacticalLineup = _tacticalLineup.copyWith(starters: sList, bench: bList);
+      }
+    });
   }
 
   void _handleReaction(String reactionType) async {
@@ -387,17 +480,29 @@ class _TopkolikHomeShellState extends State<TopkolikHomeShell> with SingleTicker
                   // Tab 0: Match Arena
                   _buildArenaTab(),
 
-                  // Tab 1: Predictions
+                  // Tab 1: Live Voice Tribunes (Social Fan Audio Rooms)
+                  VoiceTribuneView(
+                    rooms: _voiceRooms,
+                    onCreateRoom: _handleCreateVoiceRoom,
+                    onTriggerAction: _handleTriggerVoiceAction,
+                  ),
+
+                  // Tab 2: Interactive 11 vs 11 Pitch Tactical Board
+                  TacticalPitchBoardView(
+                    lineup: _tacticalLineup,
+                    onFormationChanged: _handleFormationChanged,
+                    onMentalityChanged: _handleMentalityChanged,
+                    onPlayerSubstituted: _handlePlayerSubstituted,
+                  ),
+
+                  // Tab 3: Predictions
                   _buildPredictionsTab(),
 
-                  // Tab 2: Fan League Rankings
+                  // Tab 4: Fan League Rankings
                   RankingsTabView(
                     analysts: _analysts,
                     clubs: _clubs,
                   ),
-
-                  // Tab 3: News / Feed
-                  _buildNewsTab(isDark, l10n),
                 ],
               ),
             ),
@@ -428,19 +533,24 @@ class _TopkolikHomeShellState extends State<TopkolikHomeShell> with SingleTicker
                     label: l10n.translate('tab_arena'),
                   ),
                   BottomNavigationBarItem(
+                    icon: const Icon(Icons.mic_none_rounded),
+                    activeIcon: const Icon(Icons.mic_rounded),
+                    label: l10n.translate('tab_voice'),
+                  ),
+                  BottomNavigationBarItem(
                     icon: const Icon(Icons.sports_soccer_outlined),
                     activeIcon: const Icon(Icons.sports_soccer_rounded),
+                    label: l10n.translate('tab_tactics'),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.fact_check_outlined),
+                    activeIcon: const Icon(Icons.fact_check_rounded),
                     label: l10n.translate('tab_predictions'),
                   ),
                   BottomNavigationBarItem(
                     icon: const Icon(Icons.leaderboard_outlined),
                     activeIcon: const Icon(Icons.leaderboard_rounded),
                     label: l10n.translate('tab_rankings'),
-                  ),
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.newspaper_outlined),
-                    activeIcon: const Icon(Icons.newspaper_rounded),
-                    label: l10n.translate('tab_news'),
                   ),
                 ],
               ),
@@ -659,90 +769,6 @@ class _TopkolikHomeShellState extends State<TopkolikHomeShell> with SingleTicker
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildNewsTab(bool isDark, TopkolikLocalizations l10n) {
-    final news = [
-      {
-        'title': 'Süper Lig Derbisi Nefes Kesti: Taktik Analiz ve Öne Çıkanlar',
-        'category': 'Derbi Özel',
-        'time': '10 dk önce',
-        'readTime': '3 dk okuma',
-      },
-      {
-        'title': 'Merkez Hakem Kurulu VAR Kayıtlarını Açıkladı',
-        'category': 'Gündem',
-        'time': '35 dk önce',
-        'readTime': '2 dk okuma',
-      },
-      {
-        'title': 'Haftanın En İyi 10 Analisti Açıklandı: Liderlik Koltuğu El Değiştirdi',
-        'category': 'Taraftar Ligi',
-        'time': '1 saat önce',
-        'readTime': '4 dk okuma',
-      },
-    ];
-
-    return ListView.separated(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      itemCount: news.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 10),
-      itemBuilder: (context, index) {
-        final item = news[index];
-        return Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: isDark ? TopkolikTheme.darkCard : TopkolikTheme.lightCard,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isDark ? TopkolikTheme.darkBorder : TopkolikTheme.lightBorder,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: TopkolikTheme.pitchGreen.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      item['category']!,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: TopkolikTheme.electricAccent,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '${item['time']} • ${item['readTime']}',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: isDark ? TopkolikTheme.textMutedDark : TopkolikTheme.textMutedLight,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                item['title']!,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? TopkolikTheme.textPrimaryDark : TopkolikTheme.textPrimaryLight,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

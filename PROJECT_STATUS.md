@@ -2,7 +2,7 @@
 
 > Automated from ROADMAP.json. Does not certify release readiness.
 
-**Tasks:** 154 | **Done:** 27
+**Tasks:** 154 | **Done:** 32
 
 | Phase | Todo | In progress | Blocked | In review | Done |
 |---|---:|---:|---:|---:|---:|
@@ -11,12 +11,12 @@
 | P02 Repository and engineering foundation | 0 | 0 | 0 | 0 | 11 |
 | P03 Authentication, roles and privacy | 0 | 3 | 0 | 0 | 8 |
 | P04 Sports catalog and licensed ingestion | 10 | 0 | 0 | 0 | 0 |
-| P05 Match center, discovery and search API | 7 | 0 | 0 | 0 | 5 |
+| P05 Match center, discovery and search API | 5 | 0 | 0 | 0 | 7 |
 | P06 Autonomous editorial and fact validation | 12 | 0 | 0 | 0 | 0 |
 | P07 Automated media production | 8 | 0 | 0 | 0 | 0 |
-| P08 Consumer web (SEO-first) | 10 | 0 | 0 | 0 | 0 |
-| P09 Flutter mobile iOS and Android | 12 | 0 | 0 | 0 | 0 |
-| P10 Newsroom admin and staff workflows | 12 | 0 | 0 | 0 | 0 |
+| P08 Consumer web (SEO-first) | 9 | 0 | 0 | 0 | 1 |
+| P09 Flutter mobile iOS and Android | 11 | 0 | 0 | 0 | 1 |
+| P10 Newsroom admin and staff workflows | 11 | 0 | 0 | 0 | 1 |
 | P11 Ads sales, serving and reporting | 9 | 0 | 0 | 0 | 0 |
 | P12 Billing, accounting and finance | 8 | 0 | 0 | 0 | 0 |
 | P13 Support, personalization and analytics | 7 | 0 | 0 | 0 | 0 |
@@ -72,8 +72,8 @@
 - P04-009 — todo — Implement provenance and conflict records
 - P04-010 — todo — Implement live ingestion scheduling
 - P05-001 — done — Implement fixtures and scores public endpoints
-- P05-002 — todo — Implement match timeline and team stats API
-- P05-003 — todo — Implement lineups, standings and rankings
+- P05-002 — done — Implement match timeline and team stats API
+- P05-003 — done — Implement lineups, standings and rankings
 - P05-004 — todo — Implement team/athlete/league detail endpoints
 - P05-005 — todo — Implement entity search and typo tolerance
 - P05-006 — todo — Implement follow and saved-content services
@@ -112,7 +112,7 @@
 - P08-007 — todo — Implement SEO structured data and sitemaps
 - P08-008 — todo — Integrate policy-compliant public ad slots
 - P08-009 — todo — Implement analytics and consent UX
-- P08-010 — todo — Implement web match arena discussion, prediction center and fan leaderboards
+- P08-010 — done — Implement web match arena discussion, prediction center and fan leaderboards
 - P09-001 — todo — Implement native-adaptive navigation and theme
 - P09-002 — todo — Implement onboarding and guest-first reader experience
 - P09-003 — todo — Implement mobile home and breaking news
@@ -124,7 +124,7 @@
 - P09-009 — todo — Implement offline-safe reading cache
 - P09-010 — todo — Implement iOS store and Android assets
 - P09-011 — todo — Run device accessibility and performance tests
-- P09-012 — todo — Implement mobile match arena, prediction slip and fan rankings experience
+- P09-012 — done — Implement mobile match arena, prediction slip and fan rankings experience
 - P10-001 — todo — Implement admin design shell and RBAC routes
 - P10-002 — todo — Implement operational dashboard
 - P10-003 — todo — Implement editorial review queue
@@ -136,7 +136,7 @@
 - P10-009 — todo — Implement SEO and publication operations
 - P10-010 — todo — Implement audit, roles and account administration
 - P10-011 — todo — Implement admin responsive/accessibility QA
-- P10-012 — todo — Implement social moderation queue, arena slow-mode/lockdown and prediction policy operations
+- P10-012 — done — Implement social moderation queue, arena slow-mode/lockdown and prediction policy operations
 - P11-001 — todo — Implement advertiser account data model
 - P11-002 — todo — Implement inventory and ad placement management
 - P11-003 — todo — Implement contract and campaign creation

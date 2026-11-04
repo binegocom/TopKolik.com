@@ -28,18 +28,39 @@ use App\Http\Controllers\MatchArenaController;
 use App\Http\Controllers\MatchPredictionController;
 use App\Http\Controllers\FanRankingController;
 use App\Http\Controllers\FixtureController;
+use App\Http\Controllers\CompetitionStandingsController;
+use App\Http\Controllers\VoiceTribuneController;
 use App\Http\Controllers\StaffArenaModerationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/status', fn () => response()->json(['service' => 'topkolik-api', 'status' => 'operational']))
     ->name('api.status');
 
-// Public match center, fixtures, and scores endpoints (P05-001)
+// Public match center, fixtures, timeline, stats, lineups, and scores endpoints (P05-001, P05-002, P05-003)
 Route::prefix('matches')->group(function (): void {
     Route::get('/', [FixtureController::class, 'index'])
         ->middleware('throttle:60,1');
     Route::get('/{fixture}', [FixtureController::class, 'show'])
         ->whereNumber('fixture')
+        ->middleware('throttle:60,1');
+    Route::get('/{fixture}/timeline', [FixtureController::class, 'timeline'])
+        ->whereNumber('fixture')
+        ->middleware('throttle:60,1');
+    Route::get('/{fixture}/stats', [FixtureController::class, 'stats'])
+        ->whereNumber('fixture')
+        ->middleware('throttle:60,1');
+    Route::get('/{fixture}/lineups', [FixtureController::class, 'lineups'])
+        ->whereNumber('fixture')
+        ->middleware('throttle:60,1');
+    Route::get('/{fixture}/voice-tribunes', [VoiceTribuneController::class, 'index'])
+        ->whereNumber('fixture')
+        ->middleware('throttle:60,1');
+});
+
+// Public competition standings (P05-003)
+Route::prefix('competitions')->group(function (): void {
+    Route::get('/{competition}/standings', [CompetitionStandingsController::class, 'standings'])
+        ->whereNumber('competition')
         ->middleware('throttle:60,1');
 });
 
@@ -115,6 +136,10 @@ Route::middleware(['auth:sanctum', 'reader.session'])->group(function (): void {
             ->whereNumber('targetUser')->middleware('throttle:20,1');
         Route::put('/matches/{fixture}/prediction', [MatchPredictionController::class, 'submit'])
             ->whereNumber('fixture')->middleware('throttle:20,1');
+        Route::post('/matches/{fixture}/voice-tribunes', [VoiceTribuneController::class, 'store'])
+            ->whereNumber('fixture')->middleware('throttle:15,1');
+        Route::post('/voice-tribunes/{room}/actions', [VoiceTribuneController::class, 'action'])
+            ->whereNumber('room')->middleware('throttle:30,1');
     });
 });
 
