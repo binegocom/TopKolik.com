@@ -2,13 +2,13 @@
 
 > Automated from ROADMAP.json. Does not certify release readiness.
 
-**Tasks:** 154 | **Done:** 19
+**Tasks:** 154 | **Done:** 22
 
 | Phase | Todo | In progress | Blocked | In review | Done |
 |---|---:|---:|---:|---:|---:|
 | P00 Project blueprint and governance | 0 | 0 | 1 | 0 | 3 |
 | P01 Rights, provider discovery and legal foundations | 9 | 1 | 0 | 0 | 0 |
-| P02 Repository and engineering foundation | 2 | 1 | 0 | 0 | 8 |
+| P02 Repository and engineering foundation | 0 | 0 | 0 | 0 | 11 |
 | P03 Authentication, roles and privacy | 0 | 3 | 0 | 0 | 8 |
 | P04 Sports catalog and licensed ingestion | 10 | 0 | 0 | 0 | 0 |
 | P05 Match center, discovery and search API | 8 | 4 | 0 | 0 | 0 |
@@ -39,10 +39,10 @@
 - P01-008 — todo — Select AI vendors and contractual data controls
 - P01-009 — todo — Select tax jurisdiction and invoicing path
 - P01-010 — todo — Approve editorial AI policy and high-risk hold rules
-- P02-001 — todo — Initialize protected GitHub monorepo
-- P02-002 — todo — Configure status tracking and issue templates
+- P02-001 — done — Initialize protected GitHub monorepo
+- P02-002 — done — Configure status tracking and issue templates
 - P02-003 — done — Pin language runtimes and dependency versions
-- P02-004 — in_progress — Create developer Docker environment
+- P02-004 — done — Create developer Docker environment
 - P02-005 — done — Scaffold Laravel modular API
 - P02-006 — done — Scaffold Next.js public web
 - P02-007 — done — Scaffold Next.js admin

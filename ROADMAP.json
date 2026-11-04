@@ -440,7 +440,7 @@
       "id": "P02-001",
       "phase": "P02",
       "title": "Initialize protected GitHub monorepo",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P01-GATE"
@@ -449,8 +449,22 @@
       "acceptance_criteria": [
         "Repo clone and branch protection visible."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "docs/engineering/MONOREPO_STRUCTURE.md, .github/workflows/clients-ci.yml, .github/workflows/editorial-guard.yml, .github/workflows/laravel-api.yml"
+        },
+        {
+          "type": "verification",
+          "command": "git status && git branch -a && python3 scripts/validate_blueprint.py",
+          "result": "PASS"
+        },
+        {
+          "type": "revision",
+          "value": "feat/monorepo-governance-and-docker-p02-closeout"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -460,7 +474,7 @@
       "id": "P02-002",
       "phase": "P02",
       "title": "Configure status tracking and issue templates",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P01-GATE"
@@ -469,8 +483,22 @@
       "acceptance_criteria": [
         "GitHub issues match ROADMAP.json IDs with evidence fields."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": ".github/ISSUE_TEMPLATE/implementation.yml, .github/pull_request_template.md, scripts/status.py, scripts/validate_blueprint.py, docs/engineering/MONOREPO_STRUCTURE.md"
+        },
+        {
+          "type": "verification",
+          "command": "python3 scripts/validate_blueprint.py && python3 scripts/status.py check",
+          "result": "PASS"
+        },
+        {
+          "type": "revision",
+          "value": "feat/monorepo-governance-and-docker-p02-closeout"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -514,7 +542,7 @@
       "id": "P02-004",
       "phase": "P02",
       "title": "Create developer Docker environment",
-      "status": "in_progress",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P01-GATE"
@@ -535,9 +563,22 @@
           "command": "bash scripts/check-dev-infra.sh && bash scripts/check-dev-tools.sh",
           "result": "PostgreSQL/Redis live health and Mailpit HTTP smoke passed on GitHub Actions",
           "reference": "https://github.com/binegocom/TopKolik.com/actions/runs/41244912287"
+        },
+        {
+          "type": "reference",
+          "value": "infrastructure/compose.dev.yaml, scripts/dev-env.py, scripts/check-dev-infra.sh, scripts/check-dev-tools.sh, tests/test_dev_infrastructure.py"
+        },
+        {
+          "type": "verification",
+          "command": "python3 -m unittest discover -s tests -p test_dev_infrastructure.py -v && bash -n scripts/check-dev-infra.sh scripts/check-dev-tools.sh",
+          "result": "7/7 passed locally and in GitHub Actions"
+        },
+        {
+          "type": "revision",
+          "value": "feat/monorepo-governance-and-docker-p02-closeout"
         }
       ],
-      "verified_at": null,
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
