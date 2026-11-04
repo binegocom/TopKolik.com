@@ -2,13 +2,13 @@
 
 > Automated from ROADMAP.json. Does not certify release readiness.
 
-**Tasks:** 154 | **Done:** 18
+**Tasks:** 154 | **Done:** 19
 
 | Phase | Todo | In progress | Blocked | In review | Done |
 |---|---:|---:|---:|---:|---:|
 | P00 Project blueprint and governance | 0 | 0 | 1 | 0 | 3 |
 | P01 Rights, provider discovery and legal foundations | 9 | 1 | 0 | 0 | 0 |
-| P02 Repository and engineering foundation | 3 | 1 | 0 | 0 | 7 |
+| P02 Repository and engineering foundation | 2 | 1 | 0 | 0 | 8 |
 | P03 Authentication, roles and privacy | 0 | 3 | 0 | 0 | 8 |
 | P04 Sports catalog and licensed ingestion | 10 | 0 | 0 | 0 | 0 |
 | P05 Match center, discovery and search API | 8 | 4 | 0 | 0 | 0 |
@@ -41,7 +41,7 @@
 - P01-010 — todo — Approve editorial AI policy and high-risk hold rules
 - P02-001 — todo — Initialize protected GitHub monorepo
 - P02-002 — todo — Configure status tracking and issue templates
-- P02-003 — todo — Pin language runtimes and dependency versions
+- P02-003 — done — Pin language runtimes and dependency versions
 - P02-004 — in_progress — Create developer Docker environment
 - P02-005 — done — Scaffold Laravel modular API
 - P02-006 — done — Scaffold Next.js public web
