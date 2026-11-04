@@ -687,7 +687,7 @@
       "id": "P02-009",
       "phase": "P02",
       "title": "Define OpenAPI and typed client generation",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P01-GATE"
@@ -696,8 +696,22 @@
       "acceptance_criteria": [
         "Contract validation and generated clients build."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "docs/api/openapi.yaml, apps/web/src/lib/topkolik-api.ts, apps/admin/src/lib/topkolik-api.ts, apps/mobile/lib/core/services/topkolik_api_service.dart"
+        },
+        {
+          "type": "verification",
+          "command": "npm run build in apps/web (6/6 static routes) and apps/admin (4/4 static routes); flutter analyze && flutter test (12/12 passed)",
+          "result": "PASS"
+        },
+        {
+          "type": "revision",
+          "value": "feat/openapi-and-typed-clients-p02-009"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,

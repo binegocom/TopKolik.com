@@ -1,0 +1,661 @@
+openapi: 3.1.0
+info:
+  title: Topkolik.com API
+  description: >
+    Official Contract-First REST API for Topkolik.com — Social sports & football fan platform
+    for Türkiye, featuring real-time segmented match arenas, free-to-play predictions,
+    fan/club leaderboards, automated UGC safety filters, and staff moderation.
+  version: 1.0.0
+servers:
+  - url: https://topkolik.com/api/v1
+    description: Production API Server
+  - url: http://127.0.0.1:8000/api/v1
+    description: Local Development API Server
+
+paths:
+  /health:
+    get:
+      summary: Liveness Probe
+      description: Returns service liveness status.
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /ready:
+    get:
+      summary: Readiness Probe
+      description: Returns database, cache, and queue readiness status.
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessStatus'
+
+  /api/v1/status:
+    get:
+      summary: API Status & Version
+      description: Returns API metadata, active environment, and supported locales.
+      responses:
+        '200':
+          description: Status information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiStatus'
+
+  /api/v1/me/preferences:
+    get:
+      summary: Get Reader Preferences
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Reader preferences including preferred and effective locale
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReaderPreferencesResponse'
+    patch:
+      summary: Update Reader Preferences
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePreferencesRequest'
+      responses:
+        '200':
+          description: Preferences updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReaderPreferencesResponse'
+
+  /api/v1/matches/{fixtureId}/arena:
+    get:
+      summary: Get Social Match Arena State
+      description: Returns live arena metadata, fixture header, mood reaction counts, active polls, and visible comments.
+      parameters:
+        - name: fixtureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Arena state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchArenaResponse'
+
+  /api/v1/matches/{fixtureId}/arena/comments:
+    post:
+      summary: Post Comment to Tribune Room
+      description: Enforces favorite club follow rule for home/away sections, slow mode rate limits, and safety filter.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: fixtureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostCommentRequest'
+      responses:
+        '201':
+          description: Comment published successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResponse'
+        '202':
+          description: Comment quarantined by safety filter for manual staff review
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResponse'
+        '403':
+          description: Cannot post in supporter section without following the club
+        '429':
+          description: Slow mode active; rate limit exceeded
+
+  /api/v1/matches/{fixtureId}/arena/reaction:
+    put:
+      summary: Toggle/Update Tactical Mood Reaction
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: fixtureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReactionRequest'
+      responses:
+        '200':
+          description: Reaction updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReactionResponse'
+
+  /api/v1/matches/{fixtureId}/arena/polls/{pollId}/votes:
+    post:
+      summary: Cast Vote in Arena Match Poll
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: fixtureId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: pollId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VotePollRequest'
+      responses:
+        '201':
+          description: Vote recorded
+        '409':
+          description: Already voted in this poll or poll is closed
+
+  /api/v1/matches/{fixtureId}/prediction:
+    get:
+      summary: Get Reader's Match Prediction
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: fixtureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Current prediction slip and settlement details if finished
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchPredictionResponse'
+    put:
+      summary: Submit Free-to-Play Score Prediction
+      description: Must be submitted before kick-off. Zero gambling/wagering allowed; rejects stake parameters.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: fixtureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitPredictionRequest'
+      responses:
+        '200':
+          description: Prediction saved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchPredictionResponse'
+        '409':
+          description: Match already started; predictions are locked
+        '422':
+          description: Invalid prediction attributes or disallowed wagering parameters
+
+  /api/v1/rankings/users:
+    get:
+      summary: Get Top Fan Analysts Leaderboard
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 25
+      responses:
+        '200':
+          description: Individual analyst rankings with points and badges
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalystRankingsResponse'
+
+  /api/v1/rankings/clubs:
+    get:
+      summary: Get Normalized Club Supporter Rankings
+      responses:
+        '200':
+          description: Club rankings normalized by active supporter sample size
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClubRankingsResponse'
+
+  /api/v1/staff/moderation/arenas/{arenaId}/control:
+    patch:
+      summary: Staff Arena Moderation & Lockdown Control
+      description: Requires staff session and MFA step-up verification.
+      security:
+        - BearerAuth: []
+        - MfaStepUpAuth: []
+      parameters:
+        - name: arenaId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffArenaControlRequest'
+      responses:
+        '200':
+          description: Arena state updated with audit ledger record
+        '403':
+          description: Missing MFA step-up authentication
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    MfaStepUpAuth:
+      type: apiKey
+      in: header
+      name: X-Staff-Step-Up-Token
+
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        timestamp:
+          type: string
+          format: date-time
+
+    ReadinessStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ready
+        checks:
+          type: object
+          properties:
+            database:
+              type: boolean
+            redis:
+              type: boolean
+
+    ApiStatus:
+      type: object
+      properties:
+        app:
+          type: string
+          example: Topkolik.com API
+        version:
+          type: string
+          example: 1.0.0
+        supported_locales:
+          type: array
+          items:
+            type: string
+          example: ["de", "fr", "it", "en", "tr"]
+
+    ReaderPreferencesResponse:
+      type: object
+      properties:
+        preferences:
+          type: object
+          properties:
+            preferred_locale:
+              type: string
+              nullable: true
+              enum: [de, fr, it, en, tr]
+            effective_locale:
+              type: string
+              enum: [de, fr, it, en, tr]
+
+    UpdatePreferencesRequest:
+      type: object
+      properties:
+        preferred_locale:
+          type: string
+          enum: [de, fr, it, en, tr]
+
+    MatchArenaResponse:
+      type: object
+      properties:
+        arena:
+          type: object
+          properties:
+            id:
+              type: integer
+            state:
+              type: string
+              enum: [pre_match_open, live_open, post_match_open, archived, suspended]
+            posting_enabled:
+              type: boolean
+            slow_mode_seconds:
+              type: integer
+            fixture:
+              $ref: '#/components/schemas/Fixture'
+            reactions:
+              type: object
+              properties:
+                totals:
+                  type: object
+                  additionalProperties:
+                    type: integer
+                my_reaction:
+                  type: string
+                  nullable: true
+            polls:
+              type: array
+              items:
+                $ref: '#/components/schemas/Poll'
+            comments:
+              type: array
+              items:
+                $ref: '#/components/schemas/Comment'
+
+    Fixture:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+          enum: [scheduled, live, finished]
+        home_team_id:
+          type: integer
+        home_team_name:
+          type: string
+        away_team_id:
+          type: integer
+        away_team_name:
+          type: string
+        home_score:
+          type: integer
+          nullable: true
+        away_score:
+          type: integer
+          nullable: true
+        starts_at:
+          type: string
+          format: date-time
+
+    Poll:
+      type: object
+      properties:
+        id:
+          type: integer
+        question_text:
+          type: string
+        is_closed:
+          type: boolean
+        my_vote_option_id:
+          type: integer
+          nullable: true
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              option_key:
+                type: string
+              label:
+                type: string
+              votes_count:
+                type: integer
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        author_name:
+          type: string
+        section:
+          type: string
+          enum: [home, away, neutral]
+        body:
+          type: string
+        moderation_state:
+          type: string
+          enum: [visible, quarantined, hidden, removed]
+        created_at:
+          type: string
+          format: date-time
+
+    PostCommentRequest:
+      type: object
+      required:
+        - section
+        - body
+      properties:
+        section:
+          type: string
+          enum: [home, away, neutral]
+        body:
+          type: string
+          maxLength: 500
+        parent_comment_id:
+          type: integer
+          nullable: true
+
+    CommentResponse:
+      type: object
+      properties:
+        comment:
+          $ref: '#/components/schemas/Comment'
+
+    ReactionRequest:
+      type: object
+      required:
+        - reaction_type
+      properties:
+        reaction_type:
+          type: string
+          enum: [fire, hype, tactics, shock, sad, protest]
+
+    ReactionResponse:
+      type: object
+      properties:
+        reaction:
+          type: string
+          nullable: true
+
+    VotePollRequest:
+      type: object
+      required:
+        - option_id
+      properties:
+        option_id:
+          type: integer
+
+    MatchPredictionResponse:
+      type: object
+      properties:
+        prediction:
+          $ref: '#/components/schemas/Prediction'
+
+    Prediction:
+      type: object
+      properties:
+        id:
+          type: integer
+        predicted_outcome:
+          type: string
+          enum: [home, draw, away]
+        predicted_home_score:
+          type: integer
+        predicted_away_score:
+          type: integer
+        predicted_goal_range:
+          type: string
+          enum: ["0_1", "2_3", "4_plus"]
+        predicted_first_scoring_team:
+          type: string
+          enum: [home, away, none]
+        submitted_at:
+          type: string
+          format: date-time
+        settlement:
+          type: object
+          nullable: true
+          properties:
+            total_points:
+              type: integer
+            outcome_points_awarded:
+              type: integer
+            exact_score_points_awarded:
+              type: integer
+            goal_range_points_awarded:
+              type: integer
+            first_scorer_points_awarded:
+              type: integer
+            is_outcome_hit:
+              type: boolean
+            is_exact_score_hit:
+              type: boolean
+
+    SubmitPredictionRequest:
+      type: object
+      required:
+        - predicted_outcome
+        - predicted_home_score
+        - predicted_away_score
+        - predicted_goal_range
+        - predicted_first_scoring_team
+      properties:
+        predicted_outcome:
+          type: string
+          enum: [home, draw, away]
+        predicted_home_score:
+          type: integer
+          minimum: 0
+          maximum: 9
+        predicted_away_score:
+          type: integer
+          minimum: 0
+          maximum: 9
+        predicted_goal_range:
+          type: string
+          enum: ["0_1", "2_3", "4_plus"]
+        predicted_first_scoring_team:
+          type: string
+          enum: [home, away, none]
+
+    AnalystRankingsResponse:
+      type: object
+      properties:
+        rankings:
+          type: array
+          items:
+            type: object
+            properties:
+              rank:
+                type: integer
+              user_id:
+                type: integer
+              display_name:
+                type: string
+              total_points:
+                type: integer
+              exact_score_hits:
+                type: integer
+              outcome_hits:
+                type: integer
+              settled_predictions_count:
+                type: integer
+              outcome_accuracy_pct:
+                type: number
+              badges:
+                type: array
+                items:
+                  type: string
+
+    ClubRankingsResponse:
+      type: object
+      properties:
+        club_rankings:
+          type: array
+          items:
+            type: object
+            properties:
+              rank:
+                type: integer
+              team_id:
+                type: integer
+              team_slug:
+                type: string
+              team_name:
+                type: string
+              active_supporters_count:
+                type: integer
+              min_required_supporters:
+                type: integer
+              is_qualified_for_official_rank:
+                type: boolean
+              settled_predictions_count:
+                type: integer
+              total_points:
+                type: integer
+              avg_points_per_prediction:
+                type: number
+
+    StaffArenaControlRequest:
+      type: object
+      properties:
+        state:
+          type: string
+          enum: [pre_match_open, live_open, post_match_open, archived, suspended]
+        posting_enabled:
+          type: boolean
+        slow_mode_seconds:
+          type: integer
+          minimum: 0
+          maximum: 300
+        lock_reason:
+          type: string
+          nullable: true
