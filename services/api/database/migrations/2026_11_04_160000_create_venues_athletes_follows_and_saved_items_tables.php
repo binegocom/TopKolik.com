@@ -134,3 +134,4 @@ SQL);
         Schema::dropIfExists('venues');
     }
 };
+

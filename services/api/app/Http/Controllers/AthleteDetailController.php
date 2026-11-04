@@ -78,3 +78,4 @@ final class AthleteDetailController extends Controller
         return $this->cacheService->makeCachedResponse($request, $payload, 180, true);
     }
 }
+

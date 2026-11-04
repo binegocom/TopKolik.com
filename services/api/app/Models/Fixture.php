@@ -49,3 +49,4 @@ final class Fixture extends Model
         return $this->belongsTo(Team::class, 'away_team_id');
     }
 }
+

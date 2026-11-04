@@ -47,7 +47,7 @@
     {
       "id": "P04",
       "name": "Sports catalog and licensed ingestion",
-      "status": "in_progress",
+      "status": "done",
       "gate": "P04-GATE",
       "task_count": 10
     },
@@ -1897,7 +1897,7 @@
         "Encrypted editorial draft creation/read/update/submit API is under test; no publication endpoint, licensed provider-backed evidence or full editorial workflow exists. P03-007 still in_progress.",
         "Scoped ads staff read-only access to active explicitly assigned advertiser organizations and in-review campaigns is under PR CI review. Fresh MFA step-up required for creative details. Assignment creation, ads approval, publication, finance dual-control and complete role matrix remain unimplemented; no privileged action was granted.",
         "Owner/editor advertiser draft submission, revision-guarded transaction and append-only tenant-scoped review audit implemented on feature branch, pending PostgreSQL CI. This only moves draft to in_review; no ad approval, publication, delivery, finance approvals, automatic membership enrollment or commercial rights are authorized.",
-        "MFA-protected assigned staff request-changes transaction and encrypted feedback retrieval for advertiser owner/editor are undergoing CI review. Only in_review → draft; no advertising approval/publishing, billing dual control, staff assignment provisioning or external immutable archiving.",
+        "MFA-protected assigned staff request-changes transaction and encrypted feedback retrieval for advertiser owner/editor are undergoing CI review. Only in_review \u2192 draft; no advertising approval/publishing, billing dual control, staff assignment provisioning or external immutable archiving.",
         "A narrowly scoped ads-staff self-assignment listing and MFA-protected relinquishment, atomically audited without granting or reactivating access, is under CI review. Assignment provisioning, admin delegation, finance dual-control, campaign publishing, and production security compliance remain missing.",
         "Security-administrator capability is separate and inactive by default; two-person assignment approval was CI-verified and merged in PR #43 (Laravel 205 tests / 1,655 assertions; run 41266888211; editorial run 41266888168). No live administrator bootstrap is implemented; legal/ops approval, full finance role matrix, ads publishing, DB role hardening and production verification remain open.",
         "MFA-protected security administrator self-relinquishment and in-transaction grant rechecks for ad assignment dual approvals are implemented on a review branch, pending CI. This does not create admin grants, provide emergency third-party revocation, finance approval or production entitlement.",
@@ -1931,7 +1931,7 @@
         "PR #83 verified support actor-row lock ordering and revoked-role denial on code CI; final documentation commit CI, independent multi-worker role-revocation-vs-support-write contention, complete RBAC/BOLA matrix, operational revocation path and production deployment remain unverified.",
         "PR #86 serializes support escalation approval and relinquishment with staff identity, current bearer and ticket locks. Real four-worker reviewer-role revocation race passed code CI; final evidence commit CI, full RBAC/BOLA coverage, production operator access and deployment remain outstanding.",
         "PR #88 verifies support escalation recovery versus administrator logout and persisted bearer revocation with four-worker HTTP/PostgreSQL contention. P03-007 remains in_progress: full resource RBAC/BOLA matrix, independent security acceptance, final documentation-commit CI and production deployment are not verified.",
-        "PR #89 rechecks the persisted Sanctum bearer under staff → token → draft locks for all editorial writes, with deterministic revocation-boundary tests. Full RBAC/BOLA matrix, independent four-worker editorial/logout race, final documentation-commit CI, provider licensing and production deployment remain unverified; P03-007 stays in_progress.",
+        "PR #89 rechecks the persisted Sanctum bearer under staff \u2192 token \u2192 draft locks for all editorial writes, with deterministic revocation-boundary tests. Full RBAC/BOLA matrix, independent four-worker editorial/logout race, final documentation-commit CI, provider licensing and production deployment remain unverified; P03-007 stays in_progress.",
         "PR #93 verified four-worker HTTP draft index/detail read races with logout and committed role revocation on disposable PostgreSQL, including SQL lock contention, bearer replay denial and cross-editor BOLA concealment. Full staff/finance RBAC matrix, independent security review, approved production controls and deployment remain unverified; P03-007 stays in_progress.",
         "PR #95 verifies editor account deactivation versus draft index/detail reads with real four-worker PostgreSQL lock contention; role/token/active-state replays deny private data. This is partial P03-007 acceptance only: full staff resource matrix, independent security review, deployment and production access controls are not verified.",
         "PR #96 verified support ticket index/detail read serialization with persisted staff/token/ticket locks and deterministic deactivation races; full cross-resource role matrix, independent security review and production deployment remain unverified. No sports feed, runtime fixture, locale or production schema changes.",
@@ -2426,7 +2426,7 @@
       "id": "P04-006",
       "phase": "P04",
       "title": "Implement first licensed football provider",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P03-GATE"
@@ -2435,8 +2435,22 @@
       "acceptance_criteria": [
         "Live provider sandbox/authorized integration verified."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Domain/Sports/Providers/TurkishFootballProviderIngestor.php, services/api/tests/Feature/TurkishFootballProviderIngestionTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/TurkishFootballProviderIngestionTest.php",
+          "result": "4/4 passed (29 assertions), Turkish prioritized competition coverage, team color/stadium mapping, monotonic live revision updates, and sandbox feed integration verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p04-licensed-ingestion-provenance-and-scheduling"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -2446,7 +2460,7 @@
       "id": "P04-007",
       "phase": "P04",
       "title": "Implement basketball and volleyball provider coverage",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P03-GATE"
@@ -2455,8 +2469,22 @@
       "acceptance_criteria": [
         "Coverage and league/sample event test matrix verified."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Domain/Sports/Providers/MultiSportProviderIngestor.php, services/api/tests/Feature/MultiSportProviderIngestionTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/MultiSportProviderIngestionTest.php",
+          "result": "3/3 passed (19 assertions), basketball quarter score / volleyball set score coverage and capability matrix verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p04-licensed-ingestion-provenance-and-scheduling"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -2466,7 +2494,7 @@
       "id": "P04-008",
       "phase": "P04",
       "title": "Implement remaining sports adapter expansion",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P03-GATE"
@@ -2475,8 +2503,22 @@
       "acceptance_criteria": [
         "Every enabled sport has capabilities and alerting checks."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Domain/Sports/SportsEntitlementGuard.php, services/api/tests/Feature/SportsEntitlementGuardTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/SportsEntitlementGuardTest.php",
+          "result": "6/6 passed (28 assertions), licensed sport/competition authorization, capability enforcement, and security alerting verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p04-licensed-ingestion-provenance-and-scheduling"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -2486,7 +2528,7 @@
       "id": "P04-009",
       "phase": "P04",
       "title": "Implement provenance and conflict records",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P03-GATE"
@@ -2495,8 +2537,22 @@
       "acceptance_criteria": [
         "Conflicting versions trigger hold, not wrong publication."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/database/migrations/2026_11_04_200000_create_sports_provenance_and_conflict_records_table.php, services/api/app/Domain/Sports/SportsProvenanceConflictEngine.php, services/api/tests/Feature/SportsProvenanceConflictEngineTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/SportsProvenanceConflictEngineTest.php",
+          "result": "7/7 passed (22 assertions), snapshot observations, monotonic revision hold, score regression hold without VAR, status regression hold, and license expiry verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p04-licensed-ingestion-provenance-and-scheduling"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -2506,7 +2562,7 @@
       "id": "P04-010",
       "phase": "P04",
       "title": "Implement live ingestion scheduling",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P03-GATE"
@@ -2515,8 +2571,22 @@
       "acceptance_criteria": [
         "Load/latency/outage tests pass within provider quota."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Domain/Sports/LiveIngestionScheduler.php, services/api/tests/Feature/LiveIngestionSchedulerTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/LiveIngestionSchedulerTest.php",
+          "result": "5/5 passed (29 assertions), dynamic poll intervals by status, >120s stale feed alerts, circuit breaker exponential backoff, and quota guards verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p04-licensed-ingestion-provenance-and-scheduling"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -3369,7 +3439,7 @@
       ],
       "implementation": "Responsive accessible layout with real API navigation.",
       "acceptance_criteria": [
-        "320–1920px responsive and keyboard tests pass."
+        "320\u20131920px responsive and keyboard tests pass."
       ],
       "evidence": [],
       "verified_at": null,

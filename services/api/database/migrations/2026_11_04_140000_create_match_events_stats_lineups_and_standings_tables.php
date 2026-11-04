@@ -150,3 +150,4 @@ SQL);
         Schema::dropIfExists('fixture_events');
     }
 };
+

@@ -83,3 +83,4 @@ final class CompetitionStandingsController extends Controller
         ]);
     }
 }
+

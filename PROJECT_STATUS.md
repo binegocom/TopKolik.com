@@ -2,7 +2,7 @@
 
 > Automated from ROADMAP.json. Does not certify release readiness.
 
-**Tasks:** 154 | **Done:** 42
+**Tasks:** 154 | **Done:** 47
 
 | Phase | Todo | In progress | Blocked | In review | Done |
 |---|---:|---:|---:|---:|---:|
@@ -10,7 +10,7 @@
 | P01 Rights, provider discovery and legal foundations | 9 | 1 | 0 | 0 | 0 |
 | P02 Repository and engineering foundation | 0 | 0 | 0 | 0 | 11 |
 | P03 Authentication, roles and privacy | 0 | 3 | 0 | 0 | 8 |
-| P04 Sports catalog and licensed ingestion | 5 | 0 | 0 | 0 | 5 |
+| P04 Sports catalog and licensed ingestion | 0 | 0 | 0 | 0 | 10 |
 | P05 Match center, discovery and search API | 0 | 0 | 0 | 0 | 12 |
 | P06 Autonomous editorial and fact validation | 12 | 0 | 0 | 0 | 0 |
 | P07 Automated media production | 8 | 0 | 0 | 0 | 0 |
@@ -66,11 +66,11 @@
 - P04-003 — done — Implement fixture/event domain model
 - P04-004 — done — Implement normalized statistics dictionary
 - P04-005 — done — Implement provider adapter contract
-- P04-006 — todo — Implement first licensed football provider
-- P04-007 — todo — Implement basketball and volleyball provider coverage
-- P04-008 — todo — Implement remaining sports adapter expansion
-- P04-009 — todo — Implement provenance and conflict records
-- P04-010 — todo — Implement live ingestion scheduling
+- P04-006 — done — Implement first licensed football provider
+- P04-007 — done — Implement basketball and volleyball provider coverage
+- P04-008 — done — Implement remaining sports adapter expansion
+- P04-009 — done — Implement provenance and conflict records
+- P04-010 — done — Implement live ingestion scheduling
 - P05-001 — done — Implement fixtures and scores public endpoints
 - P05-002 — done — Implement match timeline and team stats API
 - P05-003 — done — Implement lineups, standings and rankings

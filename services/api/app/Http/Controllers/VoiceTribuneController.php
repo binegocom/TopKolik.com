@@ -132,3 +132,4 @@ final class VoiceTribuneController extends Controller
         ]);
     }
 }
+

@@ -96,3 +96,4 @@ final class ApiRateLimitingAndCachePolicyTest extends TestCase
         $this->assertFalse(Cache::has('topkolik:team-trabzonspor'));
     }
 }
+

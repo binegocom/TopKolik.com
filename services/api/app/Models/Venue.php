@@ -27,3 +27,4 @@ final class Venue extends Model
         return $this->hasMany(Team::class);
     }
 }
+

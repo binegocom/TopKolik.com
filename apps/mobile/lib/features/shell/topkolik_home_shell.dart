@@ -3,6 +3,7 @@ import '../../core/theme/topkolik_theme.dart';
 import '../../core/localization/topkolik_localizations.dart';
 import '../../core/models/topkolik_domain_models.dart';
 import '../../core/services/topkolik_api_service.dart';
+import '../../core/widgets/motion_widgets.dart';
 import '../match_arena/presentation/widgets/reaction_strip.dart';
 import '../match_arena/presentation/widgets/arena_poll_card.dart';
 import '../match_arena/presentation/widgets/segmented_tribune_view.dart';
@@ -509,54 +510,36 @@ class _TopkolikHomeShellState extends State<TopkolikHomeShell> with SingleTicker
           ],
         ),
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: isDark ? TopkolikTheme.darkBorder : TopkolikTheme.lightBorder,
-            ),
+      bottomNavigationBar: LuxuryBottomNavDock(
+        currentIndex: _currentIndex,
+        onTap: (idx) => setState(() => _currentIndex = idx),
+        items: [
+          LuxuryBottomNavItem(
+            icon: Icons.stadium_outlined,
+            activeIcon: Icons.stadium_rounded,
+            label: l10n.translate('tab_arena'),
           ),
-        ),
-        child: SafeArea(
-          top: false,
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: BottomNavigationBar(
-                currentIndex: _currentIndex,
-                onTap: (idx) => setState(() => _currentIndex = idx),
-                items: [
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.stadium_outlined),
-                    activeIcon: const Icon(Icons.stadium_rounded),
-                    label: l10n.translate('tab_arena'),
-                  ),
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.mic_none_rounded),
-                    activeIcon: const Icon(Icons.mic_rounded),
-                    label: l10n.translate('tab_voice'),
-                  ),
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.sports_soccer_outlined),
-                    activeIcon: const Icon(Icons.sports_soccer_rounded),
-                    label: l10n.translate('tab_tactics'),
-                  ),
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.fact_check_outlined),
-                    activeIcon: const Icon(Icons.fact_check_rounded),
-                    label: l10n.translate('tab_predictions'),
-                  ),
-                  BottomNavigationBarItem(
-                    icon: const Icon(Icons.leaderboard_outlined),
-                    activeIcon: const Icon(Icons.leaderboard_rounded),
-                    label: l10n.translate('tab_rankings'),
-                  ),
-                ],
-              ),
-            ),
+          LuxuryBottomNavItem(
+            icon: Icons.mic_none_rounded,
+            activeIcon: Icons.mic_rounded,
+            label: l10n.translate('tab_voice'),
           ),
-        ),
+          LuxuryBottomNavItem(
+            icon: Icons.sports_soccer_outlined,
+            activeIcon: Icons.sports_soccer_rounded,
+            label: l10n.translate('tab_tactics'),
+          ),
+          LuxuryBottomNavItem(
+            icon: Icons.fact_check_outlined,
+            activeIcon: Icons.fact_check_rounded,
+            label: l10n.translate('tab_predictions'),
+          ),
+          LuxuryBottomNavItem(
+            icon: Icons.leaderboard_outlined,
+            activeIcon: Icons.leaderboard_rounded,
+            label: l10n.translate('tab_rankings'),
+          ),
+        ],
       ),
     );
   }

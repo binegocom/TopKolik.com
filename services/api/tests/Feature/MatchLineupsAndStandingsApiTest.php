@@ -250,3 +250,4 @@ final class MatchLineupsAndStandingsApiTest extends TestCase
         $this->getJson('/api/v1/competitions/999999/standings')->assertStatus(404);
     }
 }
+

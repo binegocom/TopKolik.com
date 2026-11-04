@@ -30,3 +30,4 @@ final class ArenaComment extends Model
         return $this->belongsTo(User::class);
     }
 }
+

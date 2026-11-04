@@ -216,3 +216,4 @@ final class TeamAthleteCompetitionDetailApiTest extends TestCase
         $this->getJson('/api/v1/competitions/non-existent-comp')->assertStatus(404);
     }
 }
+

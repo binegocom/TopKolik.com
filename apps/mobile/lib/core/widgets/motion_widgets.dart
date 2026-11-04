@@ -217,3 +217,124 @@ class SkeletonShimmerView extends StatelessWidget {
     );
   }
 }
+
+/// Luxury Responsive Bottom Navigation Item
+class LuxuryBottomNavItem {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+
+  const LuxuryBottomNavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+  });
+}
+
+/// Luxury Bottom Navigation Dock with FittedBox and Neon Indicator
+class LuxuryBottomNavDock extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+  final List<LuxuryBottomNavItem> items;
+
+  const LuxuryBottomNavDock({
+    super.key,
+    required this.currentIndex,
+    required this.onTap,
+    required this.items,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? TopkolikTheme.darkSurface : TopkolikTheme.lightSurface,
+        border: Border(
+          top: BorderSide(
+            color: isDark ? TopkolikTheme.darkBorder : TopkolikTheme.lightBorder,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.20),
+            blurRadius: 16,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 64,
+          child: Row(
+            children: List.generate(items.length, (index) {
+              final item = items[index];
+              final isSelected = index == currentIndex;
+
+              return Expanded(
+                child: PressableScale(
+                  onTap: () => onTap(index),
+                  child: Container(
+                    color: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isSelected ? item.activeIcon : item.icon,
+                          size: 24,
+                          color: isSelected
+                              ? TopkolikTheme.electricAccent
+                              : (isDark ? TopkolikTheme.textMutedDark : TopkolikTheme.textMutedLight),
+                        ),
+                        const SizedBox(height: 3),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            item.label,
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                              color: isSelected
+                                  ? TopkolikTheme.electricAccent
+                                  : (isDark ? TopkolikTheme.textMutedDark : TopkolikTheme.textMutedLight),
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: isSelected ? 16 : 0,
+                          height: 2.5,
+                          decoration: BoxDecoration(
+                            color: isSelected ? TopkolikTheme.electricAccent : Colors.transparent,
+                            borderRadius: BorderRadius.circular(2),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: TopkolikTheme.electricAccent.withValues(alpha: 0.8),
+                                      blurRadius: 4,
+                                      spreadRadius: 1,
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

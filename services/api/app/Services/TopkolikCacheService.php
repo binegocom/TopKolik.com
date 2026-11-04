@@ -46,3 +46,4 @@ final class TopkolikCacheService
         Cache::forget("topkolik:{$tag}");
     }
 }
+

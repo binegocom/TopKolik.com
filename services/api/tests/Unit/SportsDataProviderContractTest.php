@@ -76,3 +76,4 @@ final class SportsDataProviderContractTest extends TestCase
         $adapter->fetchLiveMatchState('fix-02');
     }
 }
+

@@ -72,3 +72,4 @@ void main() {
     expect(actionTriggered, 'toggle-hand');
   });
 }
+
