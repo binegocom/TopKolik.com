@@ -591,7 +591,7 @@
       "id": "P02-006",
       "phase": "P02",
       "title": "Scaffold Next.js public web",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P01-GATE"
@@ -600,12 +600,24 @@
       "acceptance_criteria": [
         "Typecheck, build and server smoke pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "verification",
+          "command": "cd apps/web && npm run build",
+          "result": "Next.js 15 App Router production build succeeded (6/6 static routes prerendered, TypeScript typecheck clean, Tailwind CSS brand tokens #0B5D3B/#7CFF4D compiled)."
+        },
+        {
+          "type": "revision",
+          "value": "HEAD"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
-      "limitations": []
+      "limitations": [
+        "P01-GATE remains open. Foundation public web scaffolding does not authorize live wagering, unmoderated user comments, or unauthorized third-party sports data acquisition."
+      ]
     },
     {
       "id": "P02-007",
