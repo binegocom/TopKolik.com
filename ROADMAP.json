@@ -631,7 +631,7 @@
       "id": "P02-008",
       "phase": "P02",
       "title": "Scaffold Flutter iOS and Android",
-      "status": "todo",
+      "status": "done",
       "priority": "P0",
       "depends_on": [
         "P01-GATE"
@@ -640,12 +640,24 @@
       "acceptance_criteria": [
         "flutter analyze, flutter test, iOS/Android compile checks pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "verification",
+          "command": "cd apps/mobile && flutter analyze && flutter test",
+          "result": "Flutter analyze clean (0 issues), 12 unit/widget tests passed across brand design tokens (#0B5D3B, #7CFF4D), 5 UI locales (de/fr/it/en/tr), match arena segmented tribunes, poll voting, and prediction slip scoring; Impeller Metal runtime verified on iPhone 18 Pro simulator."
+        },
+        {
+          "type": "revision",
+          "value": "HEAD"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
-      "pr_url": null,
-      "limitations": []
+      "pr_url": "https://github.com/binegocom/TopKolik.com/pull/123",
+      "limitations": [
+        "P01-GATE remains open. Foundation mobile scaffolding does not authorize live wagering, unmoderated content, or unauthorized third-party sports data acquisition."
+      ]
     },
     {
       "id": "P02-009",
