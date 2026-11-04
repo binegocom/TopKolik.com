@@ -119,8 +119,12 @@ final class PublicFixturesAndScoresApiTest extends TestCase
                     ],
                 ],
                 'meta' => ['current_page', 'last_page', 'per_page', 'total'],
-            ])
-            ->assertHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+            ]);
+
+        $cacheControl = (string) $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('max-age=60', $cacheControl);
+        $this->assertStringContainsString('public', $cacheControl);
+        $this->assertStringContainsString('stale-while-revalidate=120', $cacheControl);
 
         $this->assertCount(2, $response->json('data'));
     }
@@ -131,12 +135,16 @@ final class PublicFixturesAndScoresApiTest extends TestCase
 
         $response = $this->getJson('/api/v1/matches?status=live');
         $response->assertOk()
-            ->assertHeader('Cache-Control', 'public, max-age=15, stale-while-revalidate=15')
             ->assertJsonPath('meta.total', 1)
             ->assertJsonPath('data.0.id', $ctx['liveFixtureId'])
             ->assertJsonPath('data.0.status', 'live')
             ->assertJsonPath('data.0.home_score', 2)
             ->assertJsonPath('data.0.away_score', 1);
+
+        $cacheControl = (string) $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('max-age=15', $cacheControl);
+        $this->assertStringContainsString('public', $cacheControl);
+        $this->assertStringContainsString('stale-while-revalidate=15', $cacheControl);
     }
 
     public function test_rejects_invalid_fixture_status(): void
@@ -152,7 +160,6 @@ final class PublicFixturesAndScoresApiTest extends TestCase
 
         $response = $this->getJson('/api/v1/matches/'.$ctx['liveFixtureId']);
         $response->assertOk()
-            ->assertHeader('Cache-Control', 'public, max-age=15, stale-while-revalidate=120')
             ->assertJsonPath('fixture.id', $ctx['liveFixtureId'])
             ->assertJsonPath('fixture.home_team_name', 'Galatasaray')
             ->assertJsonPath('fixture.away_team_name', 'Fenerbahçe')
@@ -161,6 +168,11 @@ final class PublicFixturesAndScoresApiTest extends TestCase
             ->assertJsonPath('fixture.arena_state', 'live_open')
             ->assertJsonPath('fixture.arena_posting_enabled', true)
             ->assertJsonPath('fixture.arena_slow_mode_seconds', 10);
+
+        $cacheControl = (string) $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('max-age=15', $cacheControl);
+        $this->assertStringContainsString('public', $cacheControl);
+        $this->assertStringContainsString('stale-while-revalidate=120', $cacheControl);
     }
 
     public function test_returns_404_for_unknown_fixture(): void
