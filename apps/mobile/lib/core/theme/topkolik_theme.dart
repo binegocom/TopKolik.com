@@ -38,6 +38,28 @@ class TopkolikTheme {
   static const Color dangerRed = Color(0xFFE71D36);
   static const Color infoBlue = Color(0xFF2EC4B6);
 
+  // Luxury Motion and Stadium Visual aliases
+  static const Color turfNeon = electricAccent;
+  static const Color obsidianBg = darkBg;
+  static const Color stadiumSurface = darkSurface;
+  static const Color cardElevated = darkCard;
+  static const Color liveCrimson = dangerRed;
+  static const Color derbyGold = warningOrange;
+  static const Color textSecondary = textSecondaryDark;
+  static const Color textMuted = textMutedDark;
+
+  static Color parseHex(String hex, {Color fallback = electricAccent}) {
+    try {
+      final clean = hex.replaceAll('#', '').trim();
+      if (clean.length == 6) {
+        return Color(int.parse('0xFF$clean'));
+      } else if (clean.length == 8) {
+        return Color(int.parse('0x$clean'));
+      }
+    } catch (_) {}
+    return fallback;
+  }
+
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,

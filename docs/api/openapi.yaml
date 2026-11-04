@@ -79,6 +79,153 @@ paths:
               schema:
                 $ref: '#/components/schemas/ReaderPreferencesResponse'
 
+  /api/v1/matches:
+    get:
+      summary: List Match Fixtures
+      description: Returns fixtures filtered by status and competition with deterministic Cache-Control.
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [scheduled, live, finished, postponed, cancelled]
+        - name: competition_id
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: per_page
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of fixtures
+
+  /api/v1/matches/{fixtureId}:
+    get:
+      summary: Get Fixture Details
+      parameters:
+        - name: fixtureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Fixture details
+        '404':
+          description: Fixture not found
+
+  /api/v1/matches/{fixtureId}/timeline:
+    get:
+      summary: Get Match Timeline Events (P05-002)
+      description: Chronological match events including goals, cards, substitutions, and VAR cancellations with source provenance.
+      parameters:
+        - name: fixtureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Timeline events
+        '404':
+          description: Fixture not found
+
+  /api/v1/matches/{fixtureId}/stats:
+    get:
+      summary: Get Comparative Match Team Stats (P05-002)
+      description: Possession, shots, xG, corners, fouls, cards, and pass accuracy.
+      parameters:
+        - name: fixtureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Team statistics
+        '404':
+          description: Fixture not found
+
+  /api/v1/matches/{fixtureId}/lineups:
+    get:
+      summary: Get Match Formations and Lineups (P05-003)
+      description: Starting XI and bench players with positions, shirt numbers, and captaincy.
+      parameters:
+        - name: fixtureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lineups data
+        '404':
+          description: Fixture not found
+
+  /api/v1/matches/{fixtureId}/voice-tribunes:
+    get:
+      summary: List Active Voice Tribune Rooms
+      description: Live audio tribune rooms for match discussions.
+      parameters:
+        - name: fixtureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Active voice rooms
+    post:
+      summary: Create Voice Tribune Room
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: fixtureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: Voice room created with +40 XP
+
+  /api/v1/voice-tribunes/{roomId}/actions:
+    post:
+      summary: Trigger Interactive Voice Action
+      description: Handles mic toggle, hand raise, emoji reaction, and room join.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Action acknowledged
+
+  /api/v1/competitions/{competitionId}/standings:
+    get:
+      summary: Get Competition League Standings (P05-003)
+      description: Full league table with positions, played, won, drawn, lost, goal difference, points, and form.
+      parameters:
+        - name: competitionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Competition standings
+        '404':
+          description: Competition not found
+
   /api/v1/matches/{fixtureId}/arena:
     get:
       summary: Get Social Match Arena State

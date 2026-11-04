@@ -28,6 +28,8 @@ class TopkolikLocalizations {
     'tr': {
       'app_title': 'Topkolik.com',
       'tab_arena': 'Maç Arenası',
+      'tab_voice': 'Sesli Tribün',
+      'tab_tactics': 'Taktik Tahta',
       'tab_predictions': 'Tahminler',
       'tab_rankings': 'Taraftar Ligi',
       'tab_news': 'Haberler',
@@ -77,6 +79,8 @@ class TopkolikLocalizations {
     'en': {
       'app_title': 'Topkolik.com',
       'tab_arena': 'Match Arena',
+      'tab_voice': 'Voice Tribune',
+      'tab_tactics': 'Tactics Board',
       'tab_predictions': 'Predictions',
       'tab_rankings': 'Fan League',
       'tab_news': 'News',
@@ -126,6 +130,8 @@ class TopkolikLocalizations {
     'de': {
       'app_title': 'Topkolik.com',
       'tab_arena': 'Spiel-Arena',
+      'tab_voice': 'Sprach-Tribüne',
+      'tab_tactics': 'Taktiktafel',
       'tab_predictions': 'Tippspiel',
       'tab_rankings': 'Fan-Liga',
       'tab_news': 'Nachrichten',
@@ -175,6 +181,8 @@ class TopkolikLocalizations {
     'fr': {
       'app_title': 'Topkolik.com',
       'tab_arena': 'Arène du Match',
+      'tab_voice': 'Tribune Vocale',
+      'tab_tactics': 'Tableau Tactique',
       'tab_predictions': 'Pronostics',
       'tab_rankings': 'Ligue des Fans',
       'tab_news': 'Actualités',
@@ -224,6 +232,8 @@ class TopkolikLocalizations {
     'it': {
       'app_title': 'Topkolik.com',
       'tab_arena': 'Arena della Partita',
+      'tab_voice': 'Tribuna Vocale',
+      'tab_tactics': 'Lavagna Tattica',
       'tab_predictions': 'Pronostici',
       'tab_rankings': 'Lega Tifosi',
       'tab_news': 'Notizie',

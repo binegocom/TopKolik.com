@@ -302,3 +302,192 @@ class ClubRanking {
     );
   }
 }
+
+class VoiceTribuneRoom {
+  final int id;
+  final int fixtureId;
+  final String title;
+  final String phaseTag;
+  final int listenersCount;
+  final int? clubId;
+  final String? clubName;
+  final String hostName;
+  final bool isMicMuted;
+  final bool isHandRaised;
+  final bool isJoined;
+
+  const VoiceTribuneRoom({
+    required this.id,
+    required this.fixtureId,
+    required this.title,
+    required this.phaseTag,
+    required this.listenersCount,
+    this.clubId,
+    this.clubName,
+    required this.hostName,
+    this.isMicMuted = true,
+    this.isHandRaised = false,
+    this.isJoined = false,
+  });
+
+  VoiceTribuneRoom copyWith({
+    int? listenersCount,
+    bool? isMicMuted,
+    bool? isHandRaised,
+    bool? isJoined,
+  }) {
+    return VoiceTribuneRoom(
+      id: id,
+      fixtureId: fixtureId,
+      title: title,
+      phaseTag: phaseTag,
+      listenersCount: listenersCount ?? this.listenersCount,
+      clubId: clubId,
+      clubName: clubName,
+      hostName: hostName,
+      isMicMuted: isMicMuted ?? this.isMicMuted,
+      isHandRaised: isHandRaised ?? this.isHandRaised,
+      isJoined: isJoined ?? this.isJoined,
+    );
+  }
+
+  factory VoiceTribuneRoom.fromJson(Map<String, dynamic> json) {
+    return VoiceTribuneRoom(
+      id: json['id'] as int? ?? 1,
+      fixtureId: json['fixture_id'] as int? ?? 1,
+      title: json['title'] as String? ?? 'Canlı Taktik ve Tribün Odası',
+      phaseTag: json['phase_tag'] as String? ?? 'MAÇ ANINDA CANLI',
+      listenersCount: json['listeners_count'] as int? ?? 1,
+      clubId: json['club_id'] as int?,
+      clubName: json['club_name'] as String?,
+      hostName: json['host_name'] as String? ?? 'Tribün Lideri',
+    );
+  }
+}
+
+class TacticalPlayerSlot {
+  final int slotIndex;
+  final String playerName;
+  final int shirtNumber;
+  final String position;
+  final double xRatio;
+  final double yRatio;
+  final String clubPrimaryHex;
+
+  const TacticalPlayerSlot({
+    required this.slotIndex,
+    required this.playerName,
+    required this.shirtNumber,
+    required this.position,
+    required this.xRatio,
+    required this.yRatio,
+    required this.clubPrimaryHex,
+  });
+}
+
+class TacticalLineup {
+  final String formation;
+  final String mentality;
+  final String coachName;
+  final List<TacticalPlayerSlot> starters;
+  final List<TacticalPlayerSlot> bench;
+
+  const TacticalLineup({
+    required this.formation,
+    required this.mentality,
+    required this.coachName,
+    required this.starters,
+    required this.bench,
+  });
+
+  TacticalLineup copyWith({
+    String? formation,
+    String? mentality,
+    List<TacticalPlayerSlot>? starters,
+    List<TacticalPlayerSlot>? bench,
+  }) {
+    return TacticalLineup(
+      formation: formation ?? this.formation,
+      mentality: mentality ?? this.mentality,
+      coachName: coachName,
+      starters: starters ?? this.starters,
+      bench: bench ?? this.bench,
+    );
+  }
+}
+
+class TimelineEvent {
+  final int id;
+  final int minute;
+  final int? extraMinute;
+  final String period;
+  final String eventType;
+  final String? playerName;
+  final String? teamName;
+  final String? detail;
+  final bool isVarCancelled;
+
+  const TimelineEvent({
+    required this.id,
+    required this.minute,
+    this.extraMinute,
+    required this.period,
+    required this.eventType,
+    this.playerName,
+    this.teamName,
+    this.detail,
+    this.isVarCancelled = false,
+  });
+
+  factory TimelineEvent.fromJson(Map<String, dynamic> json) {
+    return TimelineEvent(
+      id: json['id'] as int? ?? 0,
+      minute: json['minute'] as int? ?? 1,
+      extraMinute: json['extra_minute'] as int?,
+      period: json['period'] as String? ?? '1h',
+      eventType: json['event_type'] as String? ?? 'goal',
+      playerName: json['player_name'] as String?,
+      teamName: json['team_name'] as String?,
+      detail: json['detail'] as String?,
+      isVarCancelled: json['is_var_cancelled'] as bool? ?? false,
+    );
+  }
+}
+
+class TeamStats {
+  final double possessionPct;
+  final int totalShots;
+  final int shotsOnTarget;
+  final int cornerKicks;
+  final int fouls;
+  final int yellowCards;
+  final int redCards;
+  final double passAccuracyPct;
+  final double expectedGoalsXg;
+
+  const TeamStats({
+    required this.possessionPct,
+    required this.totalShots,
+    required this.shotsOnTarget,
+    required this.cornerKicks,
+    required this.fouls,
+    required this.yellowCards,
+    required this.redCards,
+    required this.passAccuracyPct,
+    required this.expectedGoalsXg,
+  });
+
+  factory TeamStats.fromJson(Map<String, dynamic> json) {
+    return TeamStats(
+      possessionPct: (json['possession_pct'] as num?)?.toDouble() ?? 50.0,
+      totalShots: json['total_shots'] as int? ?? 0,
+      shotsOnTarget: json['shots_on_target'] as int? ?? 0,
+      cornerKicks: json['corner_kicks'] as int? ?? 0,
+      fouls: json['fouls'] as int? ?? 0,
+      yellowCards: json['yellow_cards'] as int? ?? 0,
+      redCards: json['red_cards'] as int? ?? 0,
+      passAccuracyPct: (json['pass_accuracy_pct'] as num?)?.toDouble() ?? 80.0,
+      expectedGoalsXg: (json['expected_goals_xg'] as num?)?.toDouble() ?? 1.2,
+    );
+  }
+}

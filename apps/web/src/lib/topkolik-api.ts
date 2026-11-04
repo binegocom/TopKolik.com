@@ -112,6 +112,88 @@ export interface ClubRanking {
   avg_points_per_prediction: number;
 }
 
+export interface TimelineEvent {
+  id: number;
+  fixture_id: number;
+  team_id?: number | null;
+  team_name?: string | null;
+  player_name?: string | null;
+  minute: number;
+  extra_minute?: number | null;
+  period: string;
+  event_type: string;
+  detail?: string | null;
+  is_var_cancelled: boolean;
+  source_provenance: string;
+}
+
+export interface TeamStats {
+  team_id: number;
+  team_name: string;
+  possession_pct: number;
+  total_shots: number;
+  shots_on_target: number;
+  shots_off_target: number;
+  blocked_shots: number;
+  corner_kicks: number;
+  offsides: number;
+  fouls: number;
+  yellow_cards: number;
+  red_cards: number;
+  passes_completed: number;
+  passes_total: number;
+  pass_accuracy_pct: number;
+  expected_goals_xg: number;
+}
+
+export interface MatchLineupPlayer {
+  player_name: string;
+  shirt_number: number;
+  position: string;
+  grid_row: number;
+  grid_col: number;
+  is_starter: boolean;
+  is_captain: boolean;
+}
+
+export interface MatchLineup {
+  team_id: number;
+  team_name: string;
+  formation: string;
+  coach_name: string;
+  starters: MatchLineupPlayer[];
+  bench: MatchLineupPlayer[];
+}
+
+export interface CompetitionStandingRow {
+  position: number;
+  team_id: number;
+  team_name: string;
+  team_slug: string;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goals_for: number;
+  goals_against: number;
+  goal_difference: number;
+  points: number;
+  form: string;
+  source_provenance: string;
+}
+
+export interface VoiceTribuneRoom {
+  id: number;
+  fixture_id: number;
+  title: string;
+  phase_tag: string;
+  listeners_count: number;
+  club_id?: number | null;
+  club_name?: string | null;
+  created_by_user_id: number;
+  host_name: string;
+}
+
 export class TopkolikApiClient {
   private baseUrl: string;
   private bearerToken?: string;
@@ -185,5 +267,72 @@ export class TopkolikApiClient {
     if (!res.ok) throw new Error(`Failed to fetch club rankings: ${res.statusText}`);
     const data = await res.json();
     return data.club_rankings;
+  }
+
+  async getTimeline(fixtureId: number): Promise<TimelineEvent[]> {
+    const res = await fetch(`${this.baseUrl}/matches/${fixtureId}/timeline`, {
+      headers: this.headers,
+    });
+    if (!res.ok) throw new Error(`Failed to fetch timeline: ${res.statusText}`);
+    const data = await res.json();
+    return data.events;
+  }
+
+  async getStats(fixtureId: number): Promise<{ home: TeamStats | null; away: TeamStats | null }> {
+    const res = await fetch(`${this.baseUrl}/matches/${fixtureId}/stats`, {
+      headers: this.headers,
+    });
+    if (!res.ok) throw new Error(`Failed to fetch stats: ${res.statusText}`);
+    const data = await res.json();
+    return { home: data.home, away: data.away };
+  }
+
+  async getLineups(fixtureId: number): Promise<{ home: MatchLineup | null; away: MatchLineup | null }> {
+    const res = await fetch(`${this.baseUrl}/matches/${fixtureId}/lineups`, {
+      headers: this.headers,
+    });
+    if (!res.ok) throw new Error(`Failed to fetch lineups: ${res.statusText}`);
+    const data = await res.json();
+    return { home: data.home, away: data.away };
+  }
+
+  async getStandings(competitionId: number): Promise<CompetitionStandingRow[]> {
+    const res = await fetch(`${this.baseUrl}/competitions/${competitionId}/standings`, {
+      headers: this.headers,
+    });
+    if (!res.ok) throw new Error(`Failed to fetch standings: ${res.statusText}`);
+    const data = await res.json();
+    return data.standings;
+  }
+
+  async getVoiceTribunes(fixtureId: number): Promise<VoiceTribuneRoom[]> {
+    const res = await fetch(`${this.baseUrl}/matches/${fixtureId}/voice-tribunes`, {
+      headers: this.headers,
+    });
+    if (!res.ok) throw new Error(`Failed to fetch voice tribunes: ${res.statusText}`);
+    const data = await res.json();
+    return data.rooms;
+  }
+
+  async createVoiceTribune(fixtureId: number, params: { title: string; phase_tag: string; club_id?: number }): Promise<VoiceTribuneRoom> {
+    const res = await fetch(`${this.baseUrl}/matches/${fixtureId}/voice-tribunes`, {
+      method: "POST",
+      headers: this.headers,
+      body: JSON.stringify(params),
+    });
+    if (!res.ok) throw new Error(`Failed to create voice tribune: ${res.statusText}`);
+    const data = await res.json();
+    return data.room;
+  }
+
+  async triggerVoiceAction(roomId: number, action: string, emoji?: string): Promise<boolean> {
+    const res = await fetch(`${this.baseUrl}/voice-tribunes/${roomId}/actions`, {
+      method: "POST",
+      headers: this.headers,
+      body: JSON.stringify({ action, emoji }),
+    });
+    if (!res.ok) throw new Error(`Failed to trigger voice action: ${res.statusText}`);
+    const data = await res.json();
+    return data.success;
   }
 }

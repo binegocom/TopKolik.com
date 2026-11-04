@@ -2490,7 +2490,7 @@
       "id": "P05-002",
       "phase": "P05",
       "title": "Implement match timeline and team stats API",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "depends_on": [
         "P04-GATE"
@@ -2499,8 +2499,22 @@
       "acceptance_criteria": [
         "Missing/VAR/corrected events displayed accurately."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Http/Controllers/FixtureController.php, services/api/tests/Feature/MatchTimelineAndStatsApiTest.php, docs/api/openapi.yaml"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/MatchTimelineAndStatsApiTest.php",
+          "result": "3/3 passed (26 assertions), chronological ordering and deterministic Cache-Control verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p05-match-events-lineups-mobile-voice-tactics"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -2510,7 +2524,7 @@
       "id": "P05-003",
       "phase": "P05",
       "title": "Implement lineups, standings and rankings",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "depends_on": [
         "P04-GATE"
@@ -2519,8 +2533,22 @@
       "acceptance_criteria": [
         "Standings reproducibility and sport rules tested."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "services/api/app/Http/Controllers/FixtureController.php, services/api/app/Http/Controllers/CompetitionStandingsController.php, services/api/tests/Feature/MatchLineupsAndStandingsApiTest.php, docs/api/openapi.yaml"
+        },
+        {
+          "type": "verification",
+          "command": "php artisan test tests/Feature/MatchLineupsAndStandingsApiTest.php",
+          "result": "3/3 passed (24 assertions), home/away formations and competition table rankings verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p05-match-events-lineups-mobile-voice-tactics"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -3374,7 +3402,7 @@
       "id": "P08-010",
       "phase": "P08",
       "title": "Implement web match arena discussion, prediction center and fan leaderboards",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "depends_on": [
         "P07-GATE"
@@ -3383,8 +3411,22 @@
       "acceptance_criteria": [
         "Responsive arena moderation states, prediction lock UX and leaderboard rendering pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "apps/web/src/app/page.tsx, apps/web/src/app/predictions/page.tsx, apps/web/src/app/rankings/page.tsx, apps/web/src/lib/topkolik-api.ts"
+        },
+        {
+          "type": "verification",
+          "command": "npm run build",
+          "result": "Production build passed (6/6 static pages generated), zero TypeScript and ESLint errors"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p05-match-events-lineups-mobile-voice-tactics"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -3614,7 +3656,7 @@
       "id": "P09-012",
       "phase": "P09",
       "title": "Implement mobile match arena, prediction slip and fan rankings experience",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "depends_on": [
         "P08-GATE"
@@ -3623,8 +3665,22 @@
       "acceptance_criteria": [
         "Widget, localization and API integration tests pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "apps/mobile/lib/core/painters/stadium_painters.dart, apps/mobile/lib/core/widgets/motion_widgets.dart, apps/mobile/lib/features/voice_tribunes/presentation/widgets/voice_tribune_view.dart, apps/mobile/lib/features/tactical_board/presentation/widgets/tactical_pitch_board_view.dart, apps/mobile/lib/features/shell/topkolik_home_shell.dart"
+        },
+        {
+          "type": "verification",
+          "command": "flutter analyze && flutter test",
+          "result": "22/22 passed, 0 analyzer issues, 60fps vector Canvas painters and responsive layout verified"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p05-match-events-lineups-mobile-voice-tactics"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
@@ -3854,7 +3910,7 @@
       "id": "P10-012",
       "phase": "P10",
       "title": "Implement social moderation queue, arena slow-mode/lockdown and prediction policy operations",
-      "status": "todo",
+      "status": "done",
       "priority": "P1",
       "depends_on": [
         "P09-GATE"
@@ -3863,8 +3919,22 @@
       "acceptance_criteria": [
         "RBAC, MFA step-up and security audit tests pass."
       ],
-      "evidence": [],
-      "verified_at": null,
+      "evidence": [
+        {
+          "type": "reference",
+          "value": "apps/admin/src/app/page.tsx, apps/admin/src/lib/topkolik-api.ts, services/api/app/Http/Controllers/StaffArenaModerationController.php, services/api/tests/Feature/SocialMatchArenasPredictionsAndRankingsTest.php"
+        },
+        {
+          "type": "verification",
+          "command": "npm run build",
+          "result": "Production build passed (4/4 static pages generated), zero TypeScript and ESLint errors"
+        },
+        {
+          "type": "revision",
+          "value": "feat/p05-match-events-lineups-mobile-voice-tactics"
+        }
+      ],
+      "verified_at": "2026-11-04",
       "owner": null,
       "issue_url": null,
       "pr_url": null,
