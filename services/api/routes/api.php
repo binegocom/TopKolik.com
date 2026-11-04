@@ -27,11 +27,21 @@ use App\Http\Controllers\StaffEditorialDraftController;
 use App\Http\Controllers\MatchArenaController;
 use App\Http\Controllers\MatchPredictionController;
 use App\Http\Controllers\FanRankingController;
+use App\Http\Controllers\FixtureController;
 use App\Http\Controllers\StaffArenaModerationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/status', fn () => response()->json(['service' => 'topkolik-api', 'status' => 'operational']))
     ->name('api.status');
+
+// Public match center, fixtures, and scores endpoints (P05-001)
+Route::prefix('matches')->group(function (): void {
+    Route::get('/', [FixtureController::class, 'index'])
+        ->middleware('throttle:60,1');
+    Route::get('/{fixture}', [FixtureController::class, 'show'])
+        ->whereNumber('fixture')
+        ->middleware('throttle:60,1');
+});
 
 Route::prefix('auth')->group(function (): void {
     Route::post('/register', [ReaderAuthController::class, 'register'])->middleware('throttle:reader-register');

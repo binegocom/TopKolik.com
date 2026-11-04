@@ -2,7 +2,7 @@
 
 > Automated from ROADMAP.json. Does not certify release readiness.
 
-**Tasks:** 154 | **Done:** 22
+**Tasks:** 154 | **Done:** 23
 
 | Phase | Todo | In progress | Blocked | In review | Done |
 |---|---:|---:|---:|---:|---:|
@@ -11,7 +11,7 @@
 | P02 Repository and engineering foundation | 0 | 0 | 0 | 0 | 11 |
 | P03 Authentication, roles and privacy | 0 | 3 | 0 | 0 | 8 |
 | P04 Sports catalog and licensed ingestion | 10 | 0 | 0 | 0 | 0 |
-| P05 Match center, discovery and search API | 8 | 4 | 0 | 0 | 0 |
+| P05 Match center, discovery and search API | 7 | 4 | 0 | 0 | 1 |
 | P06 Autonomous editorial and fact validation | 12 | 0 | 0 | 0 | 0 |
 | P07 Automated media production | 8 | 0 | 0 | 0 | 0 |
 | P08 Consumer web (SEO-first) | 10 | 0 | 0 | 0 | 0 |
@@ -71,7 +71,7 @@
 - P04-008 — todo — Implement remaining sports adapter expansion
 - P04-009 — todo — Implement provenance and conflict records
 - P04-010 — todo — Implement live ingestion scheduling
-- P05-001 — todo — Implement fixtures and scores public endpoints
+- P05-001 — done — Implement fixtures and scores public endpoints
 - P05-002 — todo — Implement match timeline and team stats API
 - P05-003 — todo — Implement lineups, standings and rankings
 - P05-004 — todo — Implement team/athlete/league detail endpoints
