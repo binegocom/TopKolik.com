@@ -90,3 +90,4 @@ class AiSchemaAndPromptRegistryTest extends TestCase
         $this->assertStringContainsString('[filtered_system_role]', $rendered['user_prompt']);
     }
 }
+

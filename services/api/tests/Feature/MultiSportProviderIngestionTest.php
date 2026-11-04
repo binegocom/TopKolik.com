@@ -142,3 +142,4 @@ class MultiSportProviderIngestionTest extends TestCase
         $this->ingestor->assertSportSupportsCapability('basketbol', 'xG');
     }
 }
+

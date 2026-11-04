@@ -2,7 +2,7 @@
 
 > Automated from ROADMAP.json. Does not certify release readiness.
 
-**Tasks:** 154 | **Done:** 50
+**Tasks:** 154 | **Done:** 55
 
 | Phase | Todo | In progress | Blocked | In review | Done |
 |---|---:|---:|---:|---:|---:|
@@ -12,7 +12,7 @@
 | P03 Authentication, roles and privacy | 0 | 3 | 0 | 0 | 8 |
 | P04 Sports catalog and licensed ingestion | 0 | 0 | 0 | 0 | 10 |
 | P05 Match center, discovery and search API | 0 | 0 | 0 | 0 | 12 |
-| P06 Autonomous editorial and fact validation | 9 | 0 | 0 | 0 | 3 |
+| P06 Autonomous editorial and fact validation | 4 | 0 | 0 | 0 | 8 |
 | P07 Automated media production | 8 | 0 | 0 | 0 | 0 |
 | P08 Consumer web (SEO-first) | 9 | 0 | 0 | 0 | 1 |
 | P09 Flutter mobile iOS and Android | 11 | 0 | 0 | 0 | 1 |
@@ -86,11 +86,11 @@
 - P06-001 — done — Implement deterministic story signal rules
 - P06-002 — done — Implement evidence-bound fact packs
 - P06-003 — done — Implement AI schema and prompt version registry
-- P06-004 — todo — Implement AI article drafting pipeline
-- P06-005 — todo — Implement numerical/identity claim validation
-- P06-006 — todo — Implement cross-source and high-risk review gate
-- P06-007 — todo — Implement semantic and event duplicate suppression
-- P06-008 — todo — Implement autonomous safe publishing state machine
+- P06-004 — done — Implement AI article drafting pipeline
+- P06-005 — done — Implement numerical/identity claim validation
+- P06-006 — done — Implement cross-source and high-risk review gate
+- P06-007 — done — Implement semantic and event duplicate suppression
+- P06-008 — done — Implement autonomous safe publishing state machine
 - P06-009 — todo — Implement correction/retraction lifecycle
 - P06-010 — todo — Implement editorial quality analytics
 - P06-011 — todo — Implement source-aware official transfer reporting

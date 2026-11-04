@@ -127,3 +127,4 @@ class LiveIngestionSchedulerTest extends TestCase
         });
     }
 }
+

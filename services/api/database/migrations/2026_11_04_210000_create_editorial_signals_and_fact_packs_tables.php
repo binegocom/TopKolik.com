@@ -59,3 +59,4 @@ SQL);
         Schema::dropIfExists('editorial_story_signals');
     }
 };
+
