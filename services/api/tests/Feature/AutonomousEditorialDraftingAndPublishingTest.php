@@ -282,6 +282,41 @@ class AutonomousEditorialDraftingAndPublishingTest extends TestCase
         $this->assertStringContainsString('Idempotent replay', $replayResult['message']);
     }
 
+    public function test_idempotency_key_cannot_replay_a_different_canonical_event(): void
+    {
+        $draft = $this->draftingPipeline->draftFromFactPack($this->factPack);
+        $key = 'idem_event_binding_' . uniqid();
+        $canonical = 'canonical:futbol:super-lig:' . $this->fixture->id . ':final_match_result';
+
+        $first = $this->publishingStateMachine->publishArticle(
+            $draft,
+            $this->factPack,
+            $canonical,
+            $key
+        );
+        $this->assertSame('published', $first['status']);
+
+        try {
+            $this->publishingStateMachine->publishArticle(
+                $draft,
+                $this->factPack,
+                $canonical . ':unrelated_event',
+                $key
+            );
+            $this->fail('An idempotency key must not be reusable across canonical events.');
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(
+                'Idempotency key belongs to a different canonical event',
+                $exception->getMessage()
+            );
+        }
+
+        $this->assertSame(1, DB::table('editorial_publication_records')
+            ->where('idempotency_key', $key)->count());
+        $this->assertSame(1, DB::table('editorial_outbox')
+            ->where('publication_record_id', $first['record_id'])->count());
+    }
+
     public function test_autonomous_publishing_state_machine_quarantines_high_risk_story(): void
     {
         $canonicalKey = 'canonical:futbol:super-lig:' . $this->fixture->id . ':quarantine_test';
