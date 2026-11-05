@@ -317,6 +317,70 @@ class AutonomousEditorialDraftingAndPublishingTest extends TestCase
             ->where('publication_record_id', $first['record_id'])->count());
     }
 
+    public function test_correction_requires_an_existing_published_canonical_event(): void
+    {
+        $draft = $this->draftingPipeline->draftFromFactPack($this->factPack);
+        $canonical = 'canonical:futbol:super-lig:' . $this->fixture->id . ':correction_without_source';
+
+        try {
+            $this->publishingStateMachine->publishArticle(
+                $draft,
+                $this->factPack,
+                $canonical,
+                'idem_missing_source_' . uniqid(),
+                isCorrection: true
+            );
+            $this->fail('A correction cannot create the initial canonical publication.');
+        } catch (InvalidArgumentException $exception) {
+            $this->assertSame(
+                'Correction requires an existing published canonical event',
+                $exception->getMessage()
+            );
+        }
+
+        $this->assertSame(0, DB::table('editorial_publication_records')
+            ->where('canonical_event_key', $canonical)->count());
+        $this->assertSame(0, DB::table('editorial_outbox')->count());
+    }
+
+    public function test_correction_does_not_use_a_quarantined_record_as_published_source(): void
+    {
+        $draft = $this->draftingPipeline->draftFromFactPack($this->factPack);
+        $canonical = 'canonical:futbol:super-lig:' . $this->fixture->id . ':quarantined_source';
+
+        DB::table('editorial_publication_records')->insert([
+            'canonical_event_key' => $canonical,
+            'story_signal_id' => $this->storySignalId,
+            'fact_pack_id' => $this->factPack['fact_pack_id'],
+            'headline' => $draft['headline'],
+            'summary' => $draft['summary'],
+            'paragraphs' => json_encode($draft['paragraphs']),
+            'cited_claim_ids' => json_encode($draft['cited_claim_ids']),
+            'publishing_state' => 'quarantined',
+            'revision' => 1,
+            'idempotency_key' => 'idem_quarantined_source_' . uniqid(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Correction requires an existing published canonical event');
+
+        try {
+            $this->publishingStateMachine->publishArticle(
+                $draft,
+                $this->factPack,
+                $canonical,
+                'idem_correction_quarantined_' . uniqid(),
+                isCorrection: true
+            );
+        } finally {
+            $this->assertSame(1, DB::table('editorial_publication_records')
+                ->where('canonical_event_key', $canonical)->count());
+            $this->assertSame(0, DB::table('editorial_outbox')->count());
+        }
+    }
+
     public function test_autonomous_publishing_state_machine_quarantines_high_risk_story(): void
     {
         $canonicalKey = 'canonical:futbol:super-lig:' . $this->fixture->id . ':quarantine_test';
