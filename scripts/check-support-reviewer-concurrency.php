@@ -40,8 +40,17 @@ if (getenv('CI') !== 'true'
 $server = null;
 $log = null;
 $exit = 0;
+$previouslyActiveSupportIds = [];
 
 try {
+    // The CI database is shared with earlier tests. Keep this harness's
+    // reviewer pool deterministic without resetting tables or audit history.
+    $previouslyActiveSupportIds = StaffMember::query()
+        ->where('role', 'support')->where('is_active', true)->pluck('id')->all();
+    if ($previouslyActiveSupportIds !== []) {
+        StaffMember::query()->whereIn('id', $previouslyActiveSupportIds)
+            ->update(['is_active' => false]);
+    }
     $run = bin2hex(random_bytes(8));
     $staff = [];
     foreach (['assignee', 'reviewer-a', 'reviewer-b'] as $role) {
@@ -1034,6 +1043,12 @@ try {
     fwrite(STDERR, 'FAIL: support reviewer HTTP concurrency: '.$exception->getMessage()."\n");
     $exit = 1;
 } finally {
+    // Restore exactly the pre-existing active support staff even on failure.
+    // Only this CI harness's own newly created reviewers remain as fixtures.
+    if ($previouslyActiveSupportIds !== []) {
+        StaffMember::query()->whereIn('id', $previouslyActiveSupportIds)
+            ->update(['is_active' => true]);
+    }
     if (is_resource($server)) {
         proc_terminate($server);
         proc_close($server);
