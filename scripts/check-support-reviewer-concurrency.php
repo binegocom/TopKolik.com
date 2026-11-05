@@ -197,7 +197,7 @@ try {
     $reviewerA = (int) $staff['reviewer-a']->getKey();
     $reviewerB = (int) $staff['reviewer-b']->getKey();
     if ($counts->count() !== 2 || $counts->get($reviewerA) !== 2 || $counts->get($reviewerB) !== 2) {
-        throw new RuntimeException('Concurrent reviewer assignment violated least-loaded balancing.');
+        throw new RuntimeException('Concurrent reviewer assignment violated least-loaded balancing: '.json_encode([ 'expected_reviewer_ids' => [$reviewerA, $reviewerB], 'actual_counts' => $counts->all(), 'eligible_support_staff' => StaffMember::query()->where('role', 'support')->where('is_active', true)->count(), ], JSON_THROW_ON_ERROR));
     }
 
     $audit = DB::table('security_audit_events')
