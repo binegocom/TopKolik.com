@@ -41,6 +41,10 @@ final class AutonomousPublishingStateMachine
             ->first();
 
         if ($existingByIdempotency !== null) {
+            if ($existingByIdempotency->canonical_event_key !== $canonicalEventKey) {
+                throw new InvalidArgumentException('Idempotency key belongs to a different canonical event');
+            }
+
             return [
                 'status' => $existingByIdempotency->publishing_state,
                 'published' => $existingByIdempotency->publishing_state === 'published',
