@@ -478,4 +478,30 @@ class AutonomousEditorialDraftingAndPublishingTest extends TestCase
             ->first();
         $this->assertNull($outboxItem);
     }
+
+    public function test_successive_corrections_allocate_distinct_revisions_and_outbox_events(): void
+    {
+        $draft = $this->draftingPipeline->draftFromFactPack($this->factPack);
+        $canonical = 'canonical:futbol:super-lig:' . $this->fixture->id . ':revision_sequence';
+        $initial = $this->publishingStateMachine->publishArticle($draft, $this->factPack, $canonical, 'initial_revision_' . uniqid());
+        $second = $this->publishingStateMachine->publishArticle($draft, $this->factPack, $canonical, 'second_revision_' . uniqid(), isCorrection: true);
+        $third = $this->publishingStateMachine->publishArticle($draft, $this->factPack, $canonical, 'third_revision_' . uniqid(), isCorrection: true);
+
+        $this->assertSame([1, 2, 3], [$initial['revision'], $second['revision'], $third['revision']]);
+        $this->assertSame([1, 2, 3], DB::table('editorial_publication_records')
+            ->where('canonical_event_key', $canonical)
+            ->orderBy('revision')
+            ->pluck('revision')
+            ->map(fn ($revision) => (int) $revision)
+            ->all());
+
+        $events = DB::table('editorial_outbox')
+            ->whereIn('publication_record_id', [$initial['record_id'], $second['record_id'], $third['record_id']])
+            ->orderBy('publication_record_id')
+            ->get();
+
+        $this->assertSame(['article.published', 'article.corrected', 'article.corrected'], $events->pluck('event_name')->all());
+        $this->assertSame([1, 2, 3], $events->map(fn ($event) => json_decode($event->payload, true)['revision'])->all());
+    }
+
 }
