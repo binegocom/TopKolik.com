@@ -45,6 +45,14 @@ final class AutonomousPublishingStateMachine
                 throw new InvalidArgumentException('Idempotency key belongs to a different canonical event');
             }
 
+            // An idempotency key identifies both the canonical event and the operation.
+            // Replaying an initial publication as a correction (or vice versa) is unsafe.
+            $existingIsCorrection = (int) $existingByIdempotency->revision > 1;
+
+            if ($existingIsCorrection !== $isCorrection) {
+                throw new InvalidArgumentException('Idempotency key belongs to a different publication operation');
+            }
+
             return [
                 'status' => $existingByIdempotency->publishing_state,
                 'published' => $existingByIdempotency->publishing_state === 'published',

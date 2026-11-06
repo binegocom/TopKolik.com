@@ -317,6 +317,33 @@ class AutonomousEditorialDraftingAndPublishingTest extends TestCase
             ->where('publication_record_id', $first['record_id'])->count());
     }
 
+    public function test_idempotency_key_cannot_switch_between_initial_publication_and_correction(): void
+    {
+        $draft = $this->draftingPipeline->draftFromFactPack($this->factPack);
+        $canonical = 'canonical:futbol:super-lig:' . $this->fixture->id . ':operation_binding';
+        $initialKey = 'idem_operation_initial_' . uniqid();
+        $correctionKey = 'idem_operation_correction_' . uniqid();
+
+        $initial = $this->publishingStateMachine->publishArticle($draft, $this->factPack, $canonical, $initialKey);
+        $correction = $this->publishingStateMachine->publishArticle($draft, $this->factPack, $canonical, $correctionKey, isCorrection: true);
+        $this->assertSame('published', $initial['status']);
+        $this->assertSame(2, $correction['revision']);
+
+        foreach ([[$initialKey, true], [$correctionKey, false]] as [$key, $isCorrection]) {
+            try {
+                $this->publishingStateMachine->publishArticle($draft, $this->factPack, $canonical, $key, isCorrection: $isCorrection);
+                $this->fail('An idempotency key cannot change its publication operation.');
+            } catch (InvalidArgumentException $exception) {
+                $this->assertSame('Idempotency key belongs to a different publication operation', $exception->getMessage());
+            }
+        }
+
+        $replay = $this->publishingStateMachine->publishArticle($draft, $this->factPack, $canonical, $correctionKey, isCorrection: true);
+        $this->assertSame($correction['record_id'], $replay['record_id']);
+        $this->assertSame(2, DB::table('editorial_publication_records')->where('canonical_event_key', $canonical)->count());
+        $this->assertSame(2, DB::table('editorial_outbox')->whereIn('publication_record_id', [$initial['record_id'], $correction['record_id']])->count());
+    }
+
     public function test_correction_emits_distinct_outbox_event_with_revision(): void
     {
         $draft = $this->draftingPipeline->draftFromFactPack($this->factPack);
