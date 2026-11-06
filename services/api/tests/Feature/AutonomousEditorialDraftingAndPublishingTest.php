@@ -317,6 +317,43 @@ class AutonomousEditorialDraftingAndPublishingTest extends TestCase
             ->where('publication_record_id', $first['record_id'])->count());
     }
 
+    public function test_correction_emits_distinct_outbox_event_with_revision(): void
+    {
+        $draft = $this->draftingPipeline->draftFromFactPack($this->factPack);
+        $canonical = 'canonical:futbol:super-lig:' . $this->fixture->id . ':correction_event';
+
+        $initial = $this->publishingStateMachine->publishArticle(
+            $draft,
+            $this->factPack,
+            $canonical,
+            'idem_initial_correction_event_' . uniqid()
+        );
+        $this->assertSame('published', $initial['status']);
+
+        $corrected = $this->publishingStateMachine->publishArticle(
+            $draft,
+            $this->factPack,
+            $canonical,
+            'idem_corrected_event_' . uniqid(),
+            isCorrection: true
+        );
+
+        $this->assertSame('published', $corrected['status']);
+        $this->assertSame(2, $corrected['revision']);
+        $this->assertNotSame($initial['record_id'], $corrected['record_id']);
+
+        $events = DB::table('editorial_outbox')
+            ->whereIn('publication_record_id', [$initial['record_id'], $corrected['record_id']])
+            ->orderBy('publication_record_id')
+            ->get();
+
+        $this->assertCount(2, $events);
+        $this->assertSame('article.published', $events[0]->event_name);
+        $this->assertSame('article.corrected', $events[1]->event_name);
+        $this->assertSame(1, json_decode($events[0]->payload, true)['revision']);
+        $this->assertSame(2, json_decode($events[1]->payload, true)['revision']);
+    }
+
     public function test_correction_requires_an_existing_published_canonical_event(): void
     {
         $draft = $this->draftingPipeline->draftFromFactPack($this->factPack);
