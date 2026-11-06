@@ -111,7 +111,8 @@ final class AutonomousPublishingStateMachine
             $idempotencyKey,
             $publishingState,
             $quarantineReason,
-            $dupEval
+            $dupEval,
+            $isCorrection
         ) {
             $recordId = (int) DB::table('editorial_publication_records')->insertGetId([
                 'canonical_event_key' => $canonicalEventKey,
@@ -134,9 +135,10 @@ final class AutonomousPublishingStateMachine
             if ($publishingState === 'published') {
                 DB::table('editorial_outbox')->insert([
                     'publication_record_id' => $recordId,
-                    'event_name' => 'article.published',
+                    'event_name' => $isCorrection ? 'article.corrected' : 'article.published',
                     'payload' => json_encode([
                         'publication_id' => $recordId,
+                        'revision' => $dupEval['next_revision'],
                         'canonical_event_key' => $canonicalEventKey,
                         'headline' => $draft['headline'],
                         'summary' => $draft['summary'],
