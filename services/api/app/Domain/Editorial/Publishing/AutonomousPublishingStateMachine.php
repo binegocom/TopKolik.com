@@ -62,14 +62,8 @@ final class AutonomousPublishingStateMachine
             ];
         }
 
-        // A correction must reference an existing published canonical event.
-        // Never allow a correction flag to create the first publication.
-        if ($isCorrection && ! DB::table('editorial_publication_records')
-            ->where('canonical_event_key', $canonicalEventKey)
-            ->where('publishing_state', 'published')
-            ->exists()) {
-            throw new InvalidArgumentException('Correction requires an existing published canonical event');
-        }
+        // Check correction source only after acquiring the event lock below.
+        // A concurrent initial publication may be uncommitted during preflight.
 
         // 2. Duplicate suppression evaluation
         $dupEval = $this->duplicateSuppressor->evaluateDuplicate(
