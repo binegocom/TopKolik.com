@@ -62,14 +62,8 @@ final class AutonomousPublishingStateMachine
             ];
         }
 
-        // A correction must reference an existing published canonical event.
-        // Never allow a correction flag to create the first publication.
-        if ($isCorrection && ! DB::table('editorial_publication_records')
-            ->where('canonical_event_key', $canonicalEventKey)
-            ->where('publishing_state', 'published')
-            ->exists()) {
-            throw new InvalidArgumentException('Correction requires an existing published canonical event');
-        }
+        // Check correction source only after acquiring the event lock below.
+        // A concurrent initial publication may be uncommitted during preflight.
 
         // 2. Duplicate suppression evaluation
         $dupEval = $this->duplicateSuppressor->evaluateDuplicate(
@@ -122,6 +116,60 @@ final class AutonomousPublishingStateMachine
             $dupEval,
             $isCorrection
         ) {
+            // Serialize writers for the same canonical event before allocating a revision.
+            // The advisory lock is transaction-scoped and releases on commit or rollback.
+            if (DB::getDriverName() === 'pgsql') {
+                DB::select('SELECT pg_advisory_xact_lock(hashtext(?))', [$canonicalEventKey]);
+            }
+
+            // The preflight checks are advisory only: another worker may have committed
+            // while validation ran. Recheck under the canonical-event lock.
+            $existing = DB::table('editorial_publication_records')
+                ->where('idempotency_key', $idempotencyKey)
+                ->first();
+
+            if ($existing !== null) {
+                if ($existing->canonical_event_key !== $canonicalEventKey) {
+                    throw new InvalidArgumentException('Idempotency key belongs to a different canonical event');
+                }
+                if (((int) $existing->revision > 1) !== $isCorrection) {
+                    throw new InvalidArgumentException('Idempotency key belongs to a different publication operation');
+                }
+
+                return [
+                    'status' => $existing->publishing_state,
+                    'published' => $existing->publishing_state === 'published',
+                    'record_id' => $existing->id,
+                    'canonical_event_key' => $canonicalEventKey,
+                    'message' => 'Idempotent replay: already processed',
+                ];
+            }
+
+            if ($isCorrection && ! DB::table('editorial_publication_records')
+                ->where('canonical_event_key', $canonicalEventKey)
+                ->where('publishing_state', 'published')
+                ->exists()) {
+                throw new InvalidArgumentException('Correction requires an existing published canonical event');
+            }
+
+            $lockedDuplicateEvaluation = $this->duplicateSuppressor->evaluateDuplicate(
+                $canonicalEventKey,
+                $draft['headline'],
+                $isCorrection
+            );
+
+            if ($lockedDuplicateEvaluation['is_duplicate']) {
+                return [
+                    'status' => 'suppressed_duplicate',
+                    'published' => false,
+                    'record_id' => $lockedDuplicateEvaluation['existing_id'],
+                    'canonical_event_key' => $canonicalEventKey,
+                    'message' => $lockedDuplicateEvaluation['reason'],
+                ];
+            }
+
+            $revision = $lockedDuplicateEvaluation['next_revision'];
+
             $recordId = (int) DB::table('editorial_publication_records')->insertGetId([
                 'canonical_event_key' => $canonicalEventKey,
                 'story_signal_id' => $draft['story_signal_id'],
@@ -132,7 +180,7 @@ final class AutonomousPublishingStateMachine
                 'cited_claim_ids' => json_encode($draft['cited_claim_ids']),
                 'publishing_state' => $publishingState,
                 'quarantine_reason' => $quarantineReason,
-                'revision' => $dupEval['next_revision'],
+                'revision' => $revision,
                 'idempotency_key' => $idempotencyKey,
                 'published_at' => $publishingState === 'published' ? now() : null,
                 'created_at' => now(),
@@ -146,7 +194,7 @@ final class AutonomousPublishingStateMachine
                     'event_name' => $isCorrection ? 'article.corrected' : 'article.published',
                     'payload' => json_encode([
                         'publication_id' => $recordId,
-                        'revision' => $dupEval['next_revision'],
+                        'revision' => $revision,
                         'canonical_event_key' => $canonicalEventKey,
                         'headline' => $draft['headline'],
                         'summary' => $draft['summary'],
@@ -164,7 +212,7 @@ final class AutonomousPublishingStateMachine
                 'published' => $publishingState === 'published',
                 'record_id' => $recordId,
                 'canonical_event_key' => $canonicalEventKey,
-                'revision' => $dupEval['next_revision'],
+                'revision' => $revision,
                 'quarantine_reason' => $quarantineReason,
                 'message' => $publishingState === 'published' ? 'Article published and queued to outbox' : 'Article quarantined for manual staff review',
             ];
