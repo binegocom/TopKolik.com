@@ -47,10 +47,7 @@ final class AutonomousPublishingStateMachine
 
             // An idempotency key identifies both the canonical event and the operation.
             // Replaying an initial publication as a correction (or vice versa) is unsafe.
-            $existingIsCorrection = DB::table('editorial_outbox')
-                ->where('publication_record_id', $existingByIdempotency->id)
-                ->where('event_name', 'article.corrected')
-                ->exists();
+            $existingIsCorrection = (int) $existingByIdempotency->revision > 1;
 
             if ($existingIsCorrection !== $isCorrection) {
                 throw new InvalidArgumentException('Idempotency key belongs to a different publication operation');
