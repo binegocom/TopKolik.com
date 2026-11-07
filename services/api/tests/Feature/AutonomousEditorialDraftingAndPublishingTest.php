@@ -316,3 +316,4 @@ class AutonomousEditorialDraftingAndPublishingTest extends TestCase
         $this->assertNull($outboxItem);
     }
 }
+

@@ -64,3 +64,4 @@ SQL);
         Schema::dropIfExists('editorial_publication_records');
     }
 };
+
